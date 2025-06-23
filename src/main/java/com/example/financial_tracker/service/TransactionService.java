@@ -18,14 +18,12 @@ public class TransactionService {
   private final TransactionRepository transactionRepository;
   private final TransactionMapper transactionMapper;
   private final CategoryRepository categoryRepository;
-  private final UserRepository userRepository;
 
   public TransactionService(TransactionRepository transactionRepository, TransactionMapper transactionMapper,
-                            CategoryRepository categoryRepository, UserRepository userRepository) {
+                            CategoryRepository categoryRepository) {
     this.transactionRepository = transactionRepository;
     this.transactionMapper = transactionMapper;
     this.categoryRepository = categoryRepository;
-    this.userRepository = userRepository;
   }
 
   public List<TransactionDTO> getAllTransactions() {

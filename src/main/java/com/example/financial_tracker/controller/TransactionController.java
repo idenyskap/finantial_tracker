@@ -18,7 +18,7 @@ public class TransactionController {
   private final TransactionService transactionService;
 
   @GetMapping
-  public ResponseEntity<List<TransactionDTO>> getAll() {
+  public ResponseEntity<List<TransactionDTO>> getAllTransactions() {
     List<TransactionDTO> all = transactionService.getAllTransactions();
     return ResponseEntity.ok(all);
   }
