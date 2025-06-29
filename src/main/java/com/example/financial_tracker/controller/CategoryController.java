@@ -9,6 +9,7 @@ import com.example.financial_tracker.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,15 +24,11 @@ public class CategoryController {
   private final UserRepository userRepository;
 
   @GetMapping
-  public ResponseEntity<List<CategoryDTO>> getCategoriesByUserId(@RequestParam Long userId) {
-    User user = userRepository.findById(userId)
-      .orElseThrow(() -> new RuntimeException("User not found"));
-
+  public ResponseEntity<List<CategoryDTO>> getCategoriesByCurrentUser(@AuthenticationPrincipal User user) {
     List<Category> categories = categoryService.getAllCategories(user);
-
-    List<CategoryDTO> all = categoryMapper.toDtoList(categories);
-    return ResponseEntity.ok(all);
+    return ResponseEntity.ok(categoryMapper.toDtoList(categories));
   }
+
 
   @GetMapping("/{id}")
   public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
