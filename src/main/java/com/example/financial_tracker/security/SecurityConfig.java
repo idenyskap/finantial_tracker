@@ -34,8 +34,8 @@ public class SecurityConfig {
       .and()
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-        .anyRequest().authenticated()
+        .requestMatchers("/api/auth/**").permitAll()
+        .anyRequest().authenticated() // Защищенные эндпоинты снова требуют токен
       )
       .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .userDetailsService(userDetailsService)

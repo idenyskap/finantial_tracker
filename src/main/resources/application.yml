@@ -17,7 +17,13 @@ spring:
         format_sql: true
   logging:
     level:
-      org.springframework.jdbc.datasource: DEBUG
+      com.example.financial_tracker: DEBUG
+      org.springframework.security: DEBUG
+      org.springframework.web: DEBUG
+  security:
+    method:
+      secured-annotations: enabled
+      pre-post-annotations: enabled
 
 jwt:
   secret: your_jwt_secret_which_should_be_long_enough_32_chars_minimum
