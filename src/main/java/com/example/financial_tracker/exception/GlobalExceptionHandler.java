@@ -196,4 +196,32 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
   }
+
+  @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+  public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
+    org.springframework.http.converter.HttpMessageNotReadableException ex,
+    HttpServletRequest request) {
+
+    log.warn("Invalid request body: {}", ex.getMessage());
+
+    String message = "Invalid request format";
+
+    if (ex.getMessage().contains("TransactionType")) {
+      message = "Invalid transaction type. Must be 'INCOME' or 'EXPENSE'";
+    } else if (ex.getMessage().contains("LocalDate")) {
+      message = "Invalid date format. Use YYYY-MM-DD format";
+    } else if (ex.getMessage().contains("BigDecimal")) {
+      message = "Invalid amount format";
+    }
+
+    ErrorResponse errorResponse = ErrorResponse.builder()
+      .message(message)
+      .error("INVALID_REQUEST_BODY")
+      .status(HttpStatus.BAD_REQUEST.value())
+      .timestamp(LocalDateTime.now())
+      .path(request.getRequestURI())
+      .build();
+
+    return ResponseEntity.badRequest().body(errorResponse);
+  }
 }

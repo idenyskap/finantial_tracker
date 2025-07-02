@@ -5,6 +5,7 @@ import com.example.financial_tracker.entity.TransactionType;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.TransactionService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -22,10 +24,10 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/transactions")
+@Validated // Enable method-level validation
 public class TransactionController {
 
   private final TransactionService transactionService;
-
 
   @GetMapping
   public ResponseEntity<List<TransactionDTO>> getAllTransactions(@AuthenticationPrincipal User user) {
@@ -43,7 +45,7 @@ public class TransactionController {
 
   @GetMapping("/{id}")
   public ResponseEntity<TransactionDTO> getTransactionById(
-    @PathVariable Long id,
+    @PathVariable @Positive(message = "Transaction ID must be positive") Long id,
     @AuthenticationPrincipal User user) {
     TransactionDTO transaction = transactionService.getTransactionById(id, user);
     if (transaction == null) {
@@ -62,7 +64,7 @@ public class TransactionController {
 
   @PutMapping("/{id}")
   public ResponseEntity<TransactionDTO> updateTransaction(
-    @PathVariable Long id,
+    @PathVariable @Positive(message = "Transaction ID must be positive") Long id,
     @Valid @RequestBody TransactionDTO dto,
     @AuthenticationPrincipal User user) {
     TransactionDTO updated = transactionService.updateTransaction(id, dto, user);
@@ -71,13 +73,13 @@ public class TransactionController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteTransaction(
-    @PathVariable Long id,
+    @PathVariable @Positive(message = "Transaction ID must be positive") Long id,
     @AuthenticationPrincipal User user) {
     transactionService.deleteTransaction(id, user);
     return ResponseEntity.noContent().build();
   }
 
-    @GetMapping("/balance")
+  @GetMapping("/balance")
   public ResponseEntity<BigDecimal> getBalance(@AuthenticationPrincipal User user) {
     BigDecimal balance = transactionService.getBalanceByUser(user);
     return ResponseEntity.ok(balance);
@@ -102,7 +104,7 @@ public class TransactionController {
   public ResponseEntity<List<TransactionDTO>> getTransactionsWithFilters(
     @AuthenticationPrincipal User user,
     @RequestParam(required = false) TransactionType type,
-    @RequestParam(required = false) Long categoryId,
+    @RequestParam(required = false) @Positive(message = "Category ID must be positive") Long categoryId,
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
@@ -116,7 +118,7 @@ public class TransactionController {
     List<TransactionDTO> transactions = transactionService.getTransactionsByType(user, TransactionType.INCOME);
     return ResponseEntity.ok(transactions);
   }
-  
+
   @GetMapping("/expense")
   public ResponseEntity<List<TransactionDTO>> getExpenseTransactions(@AuthenticationPrincipal User user) {
     List<TransactionDTO> transactions = transactionService.getTransactionsByType(user, TransactionType.EXPENSE);

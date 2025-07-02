@@ -5,10 +5,14 @@ import com.example.financial_tracker.entity.Category;
 import com.example.financial_tracker.entity.Transaction;
 import com.example.financial_tracker.entity.TransactionType;
 import com.example.financial_tracker.entity.User;
+import com.example.financial_tracker.exception.AccessDeniedException;
+import com.example.financial_tracker.exception.BusinessLogicException;
+import com.example.financial_tracker.exception.ResourceNotFoundException;
 import com.example.financial_tracker.mapper.TransactionMapper;
 import com.example.financial_tracker.repository.CategoryRepository;
 import com.example.financial_tracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -44,11 +49,24 @@ public class TransactionService {
   }
 
   public TransactionDTO createTransaction(TransactionDTO dto, User user) {
+    log.info("Creating transaction with data: {}", dto);
+
+    // Validate transaction type manually if mapper returned null
+    if (dto.getType() != null) {
+      try {
+        TransactionType.valueOf(dto.getType().toUpperCase());
+      } catch (IllegalArgumentException e) {
+        throw new BusinessLogicException("Invalid transaction type: " + dto.getType() +
+          ". Must be 'INCOME' or 'EXPENSE'");
+      }
+    }
+
+    // Check that category belongs to user
     Category category = categoryRepository.findById(dto.getCategoryId())
-      .orElseThrow(() -> new RuntimeException("Category not found"));
+      .orElseThrow(() -> new ResourceNotFoundException("Category", "id", dto.getCategoryId()));
 
     if (!category.getUser().getId().equals(user.getId())) {
-      throw new RuntimeException("Category does not belong to user");
+      throw new AccessDeniedException("Category does not belong to user");
     }
 
     Transaction transaction = transactionMapper.toEntity(dto);
