@@ -18,18 +18,13 @@ import java.util.Optional;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
+  // Existing methods...
   List<Transaction> findByUserOrderByDateDesc(User user);
-
   Page<Transaction> findByUserOrderByDateDesc(User user, Pageable pageable);
-
   Optional<Transaction> findByIdAndUser(Long id, User user);
-
   List<Transaction> findByUserAndCategoryNameOrderByDateDesc(User user, String categoryName);
-
   List<Transaction> findByUserAndTypeOrderByDateDesc(User user, TransactionType type);
-
   List<Transaction> findByUserAndDateBetweenOrderByDateDesc(User user, LocalDate startDate, LocalDate endDate);
-
 
   @Query("SELECT t FROM Transaction t WHERE t.user = :user " +
     "AND (:type IS NULL OR t.type = :type) " +
@@ -55,10 +50,89 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     "WHERE t.user = :user AND t.type = 'EXPENSE'")
   BigDecimal getTotalExpenseByUser(@Param("user") User user);
 
-  @Query("SELECT SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE -t.amount END) " +
-    "FROM Transaction t WHERE t.user = :user " +
-    "AND YEAR(t.date) = :year AND MONTH(t.date) = :month")
-  BigDecimal getBalanceByUserAndMonth(@Param("user") User user,
-                                      @Param("year") int year,
-                                      @Param("month") int month);
+  // FIXED: PostgreSQL-compatible queries using TO_CHAR instead of DATE_FORMAT
+  @Query("SELECT " +
+    "TO_CHAR(t.date, 'YYYY-MM') as month, " +
+    "COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END), 0) as income, " +
+    "COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) as expense, " +
+    "COUNT(t.id) as transactionCount " +
+    "FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND t.date >= :startDate " +
+    "AND t.date <= :endDate " +
+    "GROUP BY TO_CHAR(t.date, 'YYYY-MM') " +
+    "ORDER BY month DESC")
+  List<Object[]> getMonthlyStatsByUser(@Param("user") User user,
+                                       @Param("startDate") LocalDate startDate,
+                                       @Param("endDate") LocalDate endDate);
+
+  // FIXED: Remove problematic IS NULL checks and use method-level logic instead
+  @Query("SELECT " +
+    "t.category.id, " +
+    "t.category.name, " +
+    "t.category.color, " +
+    "SUM(t.amount) as totalAmount, " +
+    "COUNT(t.id) as transactionCount, " +
+    "AVG(t.amount) as averageAmount " +
+    "FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND t.type = 'EXPENSE' " +
+    "AND t.date >= :startDate " +
+    "AND t.date <= :endDate " +
+    "GROUP BY t.category.id, t.category.name, t.category.color " +
+    "ORDER BY totalAmount DESC")
+  List<Object[]> getExpenseCategoryStats(@Param("user") User user,
+                                         @Param("startDate") LocalDate startDate,
+                                         @Param("endDate") LocalDate endDate);
+
+  @Query("SELECT " +
+    "t.category.id, " +
+    "t.category.name, " +
+    "t.category.color, " +
+    "SUM(t.amount) as totalAmount, " +
+    "COUNT(t.id) as transactionCount, " +
+    "AVG(t.amount) as averageAmount " +
+    "FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND t.type = 'INCOME' " +
+    "AND t.date >= :startDate " +
+    "AND t.date <= :endDate " +
+    "GROUP BY t.category.id, t.category.name, t.category.color " +
+    "ORDER BY totalAmount DESC")
+  List<Object[]> getIncomeCategoryStats(@Param("user") User user,
+                                        @Param("startDate") LocalDate startDate,
+                                        @Param("endDate") LocalDate endDate);
+
+  @Query("SELECT " +
+    "COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END), 0) as income, " +
+    "COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) as expense, " +
+    "COUNT(t.id) as transactionCount " +
+    "FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND t.date >= :startDate " +
+    "AND t.date <= :endDate")
+  List<Object[]> getPeriodStats(@Param("user") User user,
+                                @Param("startDate") LocalDate startDate,
+                                @Param("endDate") LocalDate endDate);
+
+  @Query("SELECT t FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND LOWER(t.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+    "ORDER BY t.date DESC")
+  List<Transaction> searchTransactionsByDescription(@Param("user") User user,
+                                                    @Param("searchTerm") String searchTerm);
+
+  @Query("SELECT t FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND EXTRACT(YEAR FROM t.date) = :year " +
+    "AND EXTRACT(MONTH FROM t.date) = :month " +
+    "ORDER BY t.date DESC")
+  List<Transaction> getTransactionsByMonth(@Param("user") User user,
+                                           @Param("year") int year,
+                                           @Param("month") int month);
+
+  @Query("SELECT t FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "ORDER BY t.date DESC, t.id DESC")
+  List<Transaction> getRecentTransactions(@Param("user") User user, Pageable pageable);
 }
