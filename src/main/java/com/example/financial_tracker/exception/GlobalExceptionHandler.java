@@ -224,4 +224,42 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.badRequest().body(errorResponse);
   }
+
+  @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleSecurityAccessDenied(
+    org.springframework.security.access.AccessDeniedException ex,
+    HttpServletRequest request) {
+
+    log.warn("Security access denied for request: {} {} - {}",
+      request.getMethod(), request.getRequestURI(), ex.getMessage());
+
+    ErrorResponse errorResponse = ErrorResponse.builder()
+      .message("Access denied. You don't have permission to access this resource.")
+      .error("ACCESS_DENIED")
+      .status(HttpStatus.FORBIDDEN.value())
+      .timestamp(LocalDateTime.now())
+      .path(request.getRequestURI())
+      .build();
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+  }
+
+  @ExceptionHandler(SecurityException.class)
+  public ResponseEntity<ErrorResponse> handleSecurityException(
+    SecurityException ex,
+    HttpServletRequest request) {
+
+    log.error("Security exception: {}", ex.getMessage());
+
+    ErrorResponse errorResponse = ErrorResponse.builder()
+      .message(ex.getMessage())
+      .error("SECURITY_ERROR")
+      .status(HttpStatus.FORBIDDEN.value())
+      .timestamp(LocalDateTime.now())
+      .path(request.getRequestURI())
+      .build();
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+  }
+
 }

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true) // Enable method-level security
 public class SecurityConfig {
 
   private final JwtAuthFilter jwtAuthFilter;
@@ -30,11 +32,26 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-      .cors()
-      .and()
+      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(auth -> auth
+        // Public endpoints - no authentication required
         .requestMatchers("/api/auth/**").permitAll()
+        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+        .requestMatchers("/actuator/health").permitAll()
+
+        // Personal profile - доступен всем аутентифицированным пользователям
+        .requestMatchers("/api/users/me").authenticated()
+
+        // Admin-only endpoints
+        .requestMatchers("/api/users/**").hasRole("ADMIN")
+        .requestMatchers("/actuator/**").hasRole("ADMIN")
+
+        // Protected endpoints - authentication required
+        .requestMatchers("/api/transactions/**").authenticated()
+        .requestMatchers("/api/categories/**").authenticated()
+
+        // All other requests require authentication
         .anyRequest().authenticated()
       )
       .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -47,10 +64,18 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+
+    // Allow specific origins in production, * only for development
+    configuration.setAllowedOrigins(List.of(
+      "http://localhost:5173",  // React development server
+      "http://localhost:3000",  // Alternative React port
+      "https://your-domain.com" // Production domain
+    ));
+
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
-    configuration.setAllowCredentials(true); // если используешь JWT в Authorization
+    configuration.setAllowCredentials(true);
+    configuration.setMaxAge(3600L); // Cache preflight requests for 1 hour
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
@@ -59,7 +84,7 @@ public class SecurityConfig {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    return new BCryptPasswordEncoder(12); // Increased strength from default 10 to 12
   }
 
   @Bean

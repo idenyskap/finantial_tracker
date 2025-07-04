@@ -3,6 +3,8 @@ package com.example.financial_tracker.service;
 import com.example.financial_tracker.dto.CategoryDTO;
 import com.example.financial_tracker.entity.Category;
 import com.example.financial_tracker.entity.User;
+import com.example.financial_tracker.exception.AccessDeniedException;
+import com.example.financial_tracker.exception.ResourceNotFoundException;
 import com.example.financial_tracker.mapper.CategoryMapper;
 import com.example.financial_tracker.repository.CategoryRepository;
 import com.example.financial_tracker.repository.UserRepository;
@@ -32,20 +34,14 @@ public class CategoryService {
     return categories;
   }
 
-  public CategoryDTO createCategory(CategoryDTO dto) {
-    log.info("Creating new category '{}' with color '{}' for user ID: {}",
-      dto.getName(), dto.getColor(), dto.getUserId());
+  public CategoryDTO createCategory(CategoryDTO dto, User user) {
+    log.info("Creating new category '{}' with color '{}' for user: {}",
+      dto.getName(), dto.getColor(), user.getEmail());
 
+    // Security: Always use the authenticated user, ignore userId from DTO
     Category entity = categoryMapper.toEntity(dto);
-
-    User user = userRepository.findById(dto.getUserId())
-      .orElseThrow(() -> {
-        log.error("User ID: {} not found when creating category '{}'",
-          dto.getUserId(), dto.getName());
-        return new RuntimeException("User not found");
-      });
-
     entity.setUser(user);
+
     Category saved = categoryRepository.save(entity);
 
     log.info("Successfully created category ID: {} ('{}') for user: {}",
@@ -54,62 +50,75 @@ public class CategoryService {
     return categoryMapper.toDto(saved);
   }
 
-  public Category getCategoryById(Long id) {
-    log.debug("Fetching category by ID: {}", id);
+  public CategoryDTO getCategoryById(Long id, User user) {
+    log.debug("Fetching category ID: {} for user: {}", id, user.getEmail());
 
     Category category = categoryRepository.findById(id)
       .orElseThrow(() -> {
         log.error("Category ID: {} not found", id);
-        return new RuntimeException("Category not found");
+        return new ResourceNotFoundException("Category", "id", id);
       });
 
-    log.debug("Found category ID: {} - Name: '{}', User: {}",
-      id, category.getName(), category.getUser().getEmail());
+    // Security: Verify ownership
+    if (!category.getUser().getId().equals(user.getId())) {
+      log.warn("User: {} attempted to access category ID: {} belonging to user: {}",
+        user.getEmail(), id, category.getUser().getEmail());
+      throw new AccessDeniedException("You don't have permission to access this category");
+    }
 
-    return category;
+    log.debug("Found category ID: {} - Name: '{}' for user: {}",
+      id, category.getName(), user.getEmail());
+
+    return categoryMapper.toDto(category);
   }
 
-  public void deleteById(Long id) {
-    log.info("Deleting category ID: {}", id);
+  public void deleteById(Long id, User user) {
+    log.info("Deleting category ID: {} for user: {}", id, user.getEmail());
 
     Category category = categoryRepository.findById(id)
       .orElseThrow(() -> {
         log.error("Category ID: {} not found for deletion", id);
-        return new RuntimeException("Category not found");
+        return new ResourceNotFoundException("Category", "id", id);
       });
 
-    log.info("Deleting category '{}' (ID: {}) belonging to user: {}",
-      category.getName(), id, category.getUser().getEmail());
+    // Security: Verify ownership
+    if (!category.getUser().getId().equals(user.getId())) {
+      log.warn("User: {} attempted to delete category ID: {} belonging to user: {}",
+        user.getEmail(), id, category.getUser().getEmail());
+      throw new AccessDeniedException("You don't have permission to delete this category");
+    }
 
-    categoryRepository.deleteById(id);
+    log.info("Deleting category '{}' (ID: {}) for user: {}",
+      category.getName(), id, user.getEmail());
+
+    categoryRepository.delete(category);
 
     log.info("Successfully deleted category ID: {}", id);
   }
 
-  public CategoryDTO updateCategory(Long categoryId, CategoryDTO dto) {
-    log.info("Updating category ID: {} with new data: Name='{}', Color='{}'",
-      categoryId, dto.getName(), dto.getColor());
+  public CategoryDTO updateCategory(Long categoryId, CategoryDTO dto, User user) {
+    log.info("Updating category ID: {} for user: {} with new data: Name='{}', Color='{}'",
+      categoryId, user.getEmail(), dto.getName(), dto.getColor());
 
     Category existing = categoryRepository.findById(categoryId)
       .orElseThrow(() -> {
         log.error("Category ID: {} not found for update", categoryId);
-        return new RuntimeException("Category not found");
+        return new ResourceNotFoundException("Category", "id", categoryId);
       });
+
+    // Security: Verify ownership
+    if (!existing.getUser().getId().equals(user.getId())) {
+      log.warn("User: {} attempted to update category ID: {} belonging to user: {}",
+        user.getEmail(), categoryId, existing.getUser().getEmail());
+      throw new AccessDeniedException("You don't have permission to update this category");
+    }
 
     log.debug("Original category - Name: '{}', Color: '{}'",
       existing.getName(), existing.getColor());
 
     existing.setName(dto.getName());
     existing.setColor(dto.getColor());
-
-    if (dto.getUserId() != null) {
-      User user = userRepository.findById(dto.getUserId())
-        .orElseThrow(() -> {
-          log.error("User ID: {} not found during category update", dto.getUserId());
-          return new RuntimeException("User not found");
-        });
-      existing.setUser(user);
-    }
+    // Security: Don't allow changing the user - keep original owner
 
     Category saved = categoryRepository.save(existing);
 
