@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -41,9 +40,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     FilterChain filterChain) throws ServletException, IOException {
 
     final String authHeader = request.getHeader("Authorization");
+    final String clientIp = getClientIpAddress(request);
+
+    log.info("=== JWT Filter triggered for: {} {} from IP: {}",
+      request.getMethod(), request.getRequestURI(), clientIp);
+    log.debug("Authorization header: {}", authHeader != null ? "Bearer [PRESENT]" : "null");
 
     // If no Authorization header present, continue filter chain
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      log.debug("No valid Authorization header found, continuing filter chain");
       filterChain.doFilter(request, response);
       return;
     }
@@ -54,16 +59,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     try {
       // Try to extract username from token
       username = jwtService.extractUsername(jwt);
+      log.debug("Extracted username from JWT: {}", username);
     } catch (ExpiredJwtException ex) {
-      log.warn("JWT token expired: {}", ex.getMessage());
+      log.warn("JWT token expired for IP: {} - {}", clientIp, ex.getMessage());
       handleJwtException(response, request, "JWT token has expired", "TOKEN_EXPIRED", HttpStatus.UNAUTHORIZED);
       return;
     } catch (JwtException ex) {
-      log.warn("Invalid JWT token: {}", ex.getMessage());
+      log.warn("Invalid JWT token from IP: {} - {}", clientIp, ex.getMessage());
       handleJwtException(response, request, "Invalid JWT token", "INVALID_TOKEN", HttpStatus.UNAUTHORIZED);
       return;
     } catch (Exception ex) {
-      log.error("Error processing JWT token: {}", ex.getMessage());
+      log.error("Error processing JWT token from IP: {} - {}", clientIp, ex.getMessage());
       handleJwtException(response, request, "Error processing JWT token", "TOKEN_ERROR", HttpStatus.UNAUTHORIZED);
       return;
     }
@@ -73,6 +79,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       try {
         // Get the actual User entity directly
         User user = userService.getUserByEmail(username);
+        log.debug("Found user: {} (ID: {})", user.getEmail(), user.getId());
 
         if (jwtService.isTokenValid(jwt, user)) {
           UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -82,13 +89,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           );
           authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(authToken);
+
+          log.info("Successfully authenticated user: {} from IP: {}", username, clientIp);
         } else {
-          log.warn("Invalid JWT token for user: {}", username);
+          log.warn("Invalid JWT token for user: {} from IP: {}", username, clientIp);
           handleJwtException(response, request, "Invalid JWT token", "INVALID_TOKEN", HttpStatus.UNAUTHORIZED);
           return;
         }
       } catch (Exception ex) {
-        log.error("Error loading user details: {}", ex.getMessage());
+        log.error("Error loading user details for: {} from IP: {} - {}", username, clientIp, ex.getMessage());
         handleJwtException(response, request, "Error authenticating user", "AUTHENTICATION_ERROR", HttpStatus.UNAUTHORIZED);
         return;
       }
@@ -106,6 +115,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                   String errorCode,
                                   HttpStatus status) throws IOException {
 
+    log.warn("JWT Security Event - {} - {} {} - IP: {} - Error: {}",
+      errorCode, request.getMethod(), request.getRequestURI(),
+      getClientIpAddress(request), message);
+
     response.setStatus(status.value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
@@ -120,5 +133,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     String jsonResponse = objectMapper.writeValueAsString(errorResponse);
     response.getWriter().write(jsonResponse);
     response.getWriter().flush();
+  }
+
+  private String getClientIpAddress(HttpServletRequest request) {
+    String xForwardedFor = request.getHeader("X-Forwarded-For");
+    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+      return xForwardedFor.split(",")[0].trim();
+    }
+
+    String xRealIp = request.getHeader("X-Real-IP");
+    if (xRealIp != null && !xRealIp.isEmpty()) {
+      return xRealIp;
+    }
+
+    return request.getRemoteAddr();
   }
 }

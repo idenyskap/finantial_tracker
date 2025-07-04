@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!-- Console appender for development -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- File appender for application logs -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/financial-tracker.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>logs/financial-tracker.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>10MB</maxFileSize>
+      <maxHistory>30</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Separate file for security events -->
+  <appender name="SECURITY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/security.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/security.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>90</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Logger for security events -->
+  <logger name="com.example.financial_tracker.service.AuthService" level="INFO" additivity="false">
+    <appender-ref ref="SECURITY"/>
+    <appender-ref ref="CONSOLE"/>
+  </logger>
+
+  <!-- Logger for JWT authentication -->
+  <logger name="com.example.financial_tracker.security.jwt" level="INFO" additivity="false">
+    <appender-ref ref="SECURITY"/>
+    <appender-ref ref="CONSOLE"/>
+  </logger>
+
+  <!-- Application loggers -->
+  <logger name="com.example.financial_tracker" level="INFO"/>
+
+  <!-- Spring Security (reduce noise) -->
+  <logger name="org.springframework.security" level="WARN"/>
+
+  <!-- Database queries (for debugging) -->
+  <logger name="org.hibernate.SQL" level="DEBUG"/>
+  <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+
+  <!-- Root logger -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </root>
+</configuration>

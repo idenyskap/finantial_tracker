@@ -30,12 +30,12 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-      .cors() // Важно: включаем CORS
+      .cors()
       .and()
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(auth -> auth
         .requestMatchers("/api/auth/**").permitAll()
-        .anyRequest().authenticated() // Защищенные эндпоинты снова требуют токен
+        .anyRequest().authenticated()
       )
       .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .userDetailsService(userDetailsService)
