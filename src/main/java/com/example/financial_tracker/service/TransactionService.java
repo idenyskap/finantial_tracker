@@ -17,10 +17,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.financial_tracker.dto.TransactionSearchDTO;
+import com.example.financial_tracker.dto.TransactionSearchStatsDTO;
+import com.opencsv.CSVWriter;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
-import java.math.BigDecimal;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.math.BigDecimal;
 
 @Slf4j
 @Service
@@ -246,5 +256,206 @@ public class TransactionService {
       dto.getDate(),
       dto.getDescription() != null && dto.getDescription().length() > 50 ?
         dto.getDescription().substring(0, 50) + "..." : dto.getDescription());
+  }
+
+  public Page<TransactionDTO> searchTransactions(User user, TransactionSearchDTO searchDto) {
+    log.info("Searching transactions for user: {} with criteria: {}", user.getEmail(), searchDto);
+
+    // Применяем быстрые фильтры к датам
+    applyQuickDateFilter(searchDto);
+
+    // Создаем спецификацию для поиска
+    Specification<Transaction> spec = createSearchSpecification(user, searchDto);
+
+    // Создаем Pageable с сортировкой
+    Pageable pageable = createPageable(searchDto);
+
+    // Выполняем поиск
+    Page<Transaction> transactions = transactionRepository.findAll(spec, pageable);
+
+    log.info("Found {} transactions matching criteria", transactions.getTotalElements());
+    return transactions.map(transactionMapper::toDto);
+  }
+
+  private void applyQuickDateFilter(TransactionSearchDTO searchDto) {
+    if (searchDto.getQuickDateFilter() == null ||
+      searchDto.getQuickDateFilter() == TransactionSearchDTO.QuickDateFilter.CUSTOM) {
+      return;
+    }
+
+    LocalDate now = LocalDate.now();
+
+    switch (searchDto.getQuickDateFilter()) {
+      case TODAY:
+        searchDto.setDateFrom(now);
+        searchDto.setDateTo(now);
+        break;
+      case LAST_7_DAYS:
+        searchDto.setDateFrom(now.minusDays(6));
+        searchDto.setDateTo(now);
+        break;
+      case LAST_30_DAYS:
+        searchDto.setDateFrom(now.minusDays(29));
+        searchDto.setDateTo(now);
+        break;
+      case LAST_90_DAYS:
+        searchDto.setDateFrom(now.minusDays(89));
+        searchDto.setDateTo(now);
+        break;
+      case THIS_MONTH:
+        searchDto.setDateFrom(now.withDayOfMonth(1));
+        searchDto.setDateTo(now);
+        break;
+      case LAST_MONTH:
+        LocalDate lastMonth = now.minusMonths(1);
+        searchDto.setDateFrom(lastMonth.withDayOfMonth(1));
+        searchDto.setDateTo(lastMonth.withDayOfMonth(lastMonth.lengthOfMonth()));
+        break;
+      case THIS_YEAR:
+        searchDto.setDateFrom(now.withDayOfYear(1));
+        searchDto.setDateTo(now);
+        break;
+    }
+  }
+
+  private Specification<Transaction> createSearchSpecification(User user, TransactionSearchDTO searchDto) {
+    return (root, query, cb) -> {
+      List<Predicate> predicates = new ArrayList<>();
+
+      // Обязательный фильтр по пользователю
+      predicates.add(cb.equal(root.get("user"), user));
+
+      // Поиск по тексту в описании
+      if (searchDto.getSearchText() != null && !searchDto.getSearchText().trim().isEmpty()) {
+        String searchPattern = "%" + searchDto.getSearchText().toLowerCase().trim() + "%";
+        predicates.add(cb.like(cb.lower(root.get("description")), searchPattern));
+      }
+
+      // Фильтр по минимальной сумме
+      if (searchDto.getMinAmount() != null) {
+        predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), searchDto.getMinAmount()));
+      }
+
+      // Фильтр по максимальной сумме
+      if (searchDto.getMaxAmount() != null) {
+        predicates.add(cb.lessThanOrEqualTo(root.get("amount"), searchDto.getMaxAmount()));
+      }
+
+      // Фильтр по датам
+      if (searchDto.getDateFrom() != null) {
+        predicates.add(cb.greaterThanOrEqualTo(root.get("date"), searchDto.getDateFrom()));
+      }
+
+      if (searchDto.getDateTo() != null) {
+        predicates.add(cb.lessThanOrEqualTo(root.get("date"), searchDto.getDateTo()));
+      }
+
+      // Фильтр по типу транзакции
+      if (searchDto.getType() != null && !searchDto.getType().isEmpty()) {
+        try {
+          TransactionType type = TransactionType.valueOf(searchDto.getType().toUpperCase());
+          predicates.add(cb.equal(root.get("type"), type));
+        } catch (IllegalArgumentException e) {
+          log.warn("Invalid transaction type in search: {}", searchDto.getType());
+        }
+      }
+
+      // Фильтр по категориям
+      if (searchDto.getCategoryIds() != null && !searchDto.getCategoryIds().isEmpty()) {
+        predicates.add(root.get("category").get("id").in(searchDto.getCategoryIds()));
+      }
+
+      return cb.and(predicates.toArray(new Predicate[0]));
+    };
+  }
+
+  private Pageable createPageable(TransactionSearchDTO searchDto) {
+    Sort.Direction sortDirection = searchDto.getSortDirection() == TransactionSearchDTO.SortDirection.ASC
+      ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+    String sortBy = searchDto.getSortBy();
+    // Валидация поля сортировки
+    if (!List.of("date", "amount", "description", "type").contains(sortBy)) {
+      sortBy = "date";
+    }
+
+    return PageRequest.of(
+      searchDto.getPage(),
+      searchDto.getSize(),
+      Sort.by(sortDirection, sortBy)
+    );
+  }
+
+  public byte[] exportTransactionsToCsv(User user, TransactionSearchDTO searchDto) {
+    log.info("Exporting transactions to CSV for user: {}", user.getEmail());
+
+    // Используем те же критерии поиска, но без пагинации
+    applyQuickDateFilter(searchDto);
+    Specification<Transaction> spec = createSearchSpecification(user, searchDto);
+
+    // Сортировка
+    Sort sort = Sort.by(
+      searchDto.getSortDirection() == TransactionSearchDTO.SortDirection.ASC
+        ? Sort.Direction.ASC : Sort.Direction.DESC,
+      searchDto.getSortBy()
+    );
+
+    List<Transaction> transactions = transactionRepository.findAll(spec, sort);
+
+    try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         OutputStreamWriter osw = new OutputStreamWriter(baos, "UTF-8");
+         CSVWriter csvWriter = new CSVWriter(osw)) {
+
+      // Заголовки
+      String[] headers = {"Date", "Type", "Category", "Amount", "Description", "Created At"};
+      csvWriter.writeNext(headers);
+
+      // Данные
+      for (Transaction transaction : transactions) {
+        String[] data = {
+          transaction.getDate().toString(),
+          transaction.getType().toString(),
+          transaction.getCategory().getName(),
+          transaction.getAmount().toString(),
+          transaction.getDescription() != null ? transaction.getDescription() : "",
+          transaction.getCreatedAt() != null ? transaction.getCreatedAt().toString() : ""
+        };
+        csvWriter.writeNext(data);
+      }
+
+      csvWriter.flush();
+      log.info("Successfully exported {} transactions to CSV", transactions.size());
+      return baos.toByteArray();
+
+    } catch (Exception e) {
+      log.error("Error exporting transactions to CSV", e);
+      throw new BusinessLogicException("Failed to export transactions to CSV");
+    }
+  }
+
+  public TransactionSearchStatsDTO getSearchStats(User user, TransactionSearchDTO searchDto) {
+    log.info("Calculating search statistics for user: {}", user.getEmail());
+
+    applyQuickDateFilter(searchDto);
+    Specification<Transaction> spec = createSearchSpecification(user, searchDto);
+
+    List<Transaction> transactions = transactionRepository.findAll(spec);
+
+    BigDecimal totalIncome = transactions.stream()
+      .filter(t -> t.getType() == TransactionType.INCOME)
+      .map(Transaction::getAmount)
+      .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    BigDecimal totalExpense = transactions.stream()
+      .filter(t -> t.getType() == TransactionType.EXPENSE)
+      .map(Transaction::getAmount)
+      .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    return TransactionSearchStatsDTO.builder()
+      .totalCount(transactions.size())
+      .totalIncome(totalIncome)
+      .totalExpense(totalExpense)
+      .netAmount(totalIncome.subtract(totalExpense))
+      .build();
   }
 }
