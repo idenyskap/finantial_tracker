@@ -24,6 +24,8 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
@@ -457,5 +459,77 @@ public class TransactionService {
       .totalExpense(totalExpense)
       .netAmount(totalIncome.subtract(totalExpense))
       .build();
+  }
+
+  public byte[] exportTransactionsToExcel(User user, TransactionSearchDTO searchDto) {
+    log.info("Exporting transactions to Excel for user: {}", user.getEmail());
+
+    applyQuickDateFilter(searchDto);
+    Specification<Transaction> spec = createSearchSpecification(user, searchDto);
+
+    Sort sort = Sort.by(
+      searchDto.getSortDirection() == TransactionSearchDTO.SortDirection.ASC
+        ? Sort.Direction.ASC : Sort.Direction.DESC,
+      searchDto.getSortBy()
+    );
+
+    List<Transaction> transactions = transactionRepository.findAll(spec, sort);
+
+    try (Workbook workbook = new XSSFWorkbook();
+         ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+      Sheet sheet = workbook.createSheet("Transactions");
+
+      CellStyle headerStyle = workbook.createCellStyle();
+      Font headerFont = workbook.createFont();
+      headerFont.setBold(true);
+      headerStyle.setFont(headerFont);
+      headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+      headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+      CellStyle dateStyle = workbook.createCellStyle();
+      dateStyle.setDataFormat(workbook.createDataFormat().getFormat("yyyy-MM-dd"));
+
+      CellStyle currencyStyle = workbook.createCellStyle();
+      currencyStyle.setDataFormat(workbook.createDataFormat().getFormat("$#,##0.00"));
+
+      Row headerRow = sheet.createRow(0);
+      String[] headers = {"Date", "Type", "Category", "Amount", "Description"};
+      for (int i = 0; i < headers.length; i++) {
+        Cell cell = headerRow.createCell(i);
+        cell.setCellValue(headers[i]);
+        cell.setCellStyle(headerStyle);
+      }
+
+      int rowNum = 1;
+      for (Transaction transaction : transactions) {
+        Row row = sheet.createRow(rowNum++);
+
+        Cell dateCell = row.createCell(0);
+        dateCell.setCellValue(transaction.getDate());
+        dateCell.setCellStyle(dateStyle);
+
+        row.createCell(1).setCellValue(transaction.getType().toString());
+        row.createCell(2).setCellValue(transaction.getCategory().getName());
+
+        Cell amountCell = row.createCell(3);
+        amountCell.setCellValue(transaction.getAmount().doubleValue());
+        amountCell.setCellStyle(currencyStyle);
+
+        row.createCell(4).setCellValue(transaction.getDescription() != null ? transaction.getDescription() : "");
+      }
+
+      for (int i = 0; i < headers.length; i++) {
+        sheet.autoSizeColumn(i);
+      }
+
+      workbook.write(baos);
+      log.info("Successfully exported {} transactions to Excel", transactions.size());
+      return baos.toByteArray();
+
+    } catch (Exception e) {
+      log.error("Error exporting transactions to Excel", e);
+      throw new BusinessLogicException("Failed to export transactions to Excel");
+    }
   }
 }

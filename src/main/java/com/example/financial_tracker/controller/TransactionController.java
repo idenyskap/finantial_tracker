@@ -360,4 +360,69 @@ public class TransactionController {
 
     return new ResponseEntity<>(csvData, headers, HttpStatus.OK);
   }
+
+  @GetMapping("/export/excel")
+  public ResponseEntity<byte[]> exportTransactionsToExcel(
+    @AuthenticationPrincipal User user,
+    @RequestParam(required = false) String searchText,
+    @RequestParam(required = false) BigDecimal minAmount,
+    @RequestParam(required = false) BigDecimal maxAmount,
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+    @RequestParam(required = false) TransactionSearchDTO.QuickDateFilter quickDateFilter,
+    @RequestParam(required = false) String type,
+    @RequestParam(required = false) List<Long> categoryIds,
+    @RequestParam(defaultValue = "date") String sortBy,
+    @RequestParam(defaultValue = "DESC") TransactionSearchDTO.SortDirection sortDirection,
+    HttpServletRequest request) {
+
+    log.info("Export transactions to Excel request from IP: {}", getClientIpAddress(request));
+
+    TransactionSearchDTO searchDto = TransactionSearchDTO.builder()
+      .searchText(searchText)
+      .minAmount(minAmount)
+      .maxAmount(maxAmount)
+      .dateFrom(dateFrom)
+      .dateTo(dateTo)
+      .quickDateFilter(quickDateFilter)
+      .type(type)
+      .categoryIds(categoryIds)
+      .sortBy(sortBy)
+      .sortDirection(sortDirection)
+      .build();
+
+    byte[] excelData = transactionService.exportTransactionsToExcel(user, searchDto);
+
+    String filename = String.format("transactions_%s.xlsx",
+      LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")));
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+    headers.setContentDispositionFormData("attachment", filename);
+    headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+    return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+  }
+
+  @PostMapping("/export/excel")
+  public ResponseEntity<byte[]> exportTransactionsToExcelPost(
+    @AuthenticationPrincipal User user,
+    @Valid @RequestBody TransactionSearchDTO searchDto,
+    HttpServletRequest request) {
+
+    log.info("Export transactions to Excel POST request from IP: {}", getClientIpAddress(request));
+
+    byte[] excelData = transactionService.exportTransactionsToExcel(user, searchDto);
+
+    String filename = String.format("transactions_%s.xlsx",
+      LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")));
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+    headers.setContentDispositionFormData("attachment", filename);
+    headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+    return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+  }
+
 }
