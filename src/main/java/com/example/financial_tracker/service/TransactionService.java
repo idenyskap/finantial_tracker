@@ -1,5 +1,6 @@
 package com.example.financial_tracker.service;
 
+import com.example.financial_tracker.dto.SavedSearchDTO;
 import com.example.financial_tracker.dto.TransactionDTO;
 import com.example.financial_tracker.entity.Category;
 import com.example.financial_tracker.entity.Transaction;
@@ -43,6 +44,7 @@ public class TransactionService {
   private final TransactionRepository transactionRepository;
   private final TransactionMapper transactionMapper;
   private final CategoryRepository categoryRepository;
+  private final SavedSearchService savedSearchService;
 
   public List<TransactionDTO> getTransactionsByUser(User user) {
     log.info("Fetching all transactions for user: {} (ID: {})", user.getEmail(), user.getId());
@@ -531,5 +533,22 @@ public class TransactionService {
       log.error("Error exporting transactions to Excel", e);
       throw new BusinessLogicException("Failed to export transactions to Excel");
     }
+  }
+
+  public Page<TransactionDTO> searchBySavedSearch(User user, Long savedSearchId, Integer page, Integer size) {
+    log.info("Executing saved search ID: {} for user: {}", savedSearchId, user.getEmail());
+
+    SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
+
+    TransactionSearchDTO searchDto = savedSearch.getSearchCriteria();
+    if (page != null) {
+      searchDto.setPage(page);
+    }
+    if (size != null) {
+      searchDto.setSize(size);
+    }
+
+    log.info("Executing search with criteria from saved search '{}'", savedSearch.getName());
+    return searchTransactions(user, searchDto);
   }
 }

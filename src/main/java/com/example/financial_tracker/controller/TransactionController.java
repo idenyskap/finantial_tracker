@@ -1,5 +1,6 @@
 package com.example.financial_tracker.controller;
 
+import com.example.financial_tracker.dto.SavedSearchDTO;
 import com.example.financial_tracker.dto.TransactionDTO;
 import com.example.financial_tracker.entity.TransactionType;
 import com.example.financial_tracker.entity.User;
@@ -22,6 +23,7 @@ import com.example.financial_tracker.dto.TransactionSearchDTO;
 import com.example.financial_tracker.dto.TransactionSearchStatsDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import com.example.financial_tracker.service.SavedSearchService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,6 +40,7 @@ import java.util.Map;
 public class TransactionController {
 
   private final TransactionService transactionService;
+  private final SavedSearchService savedSearchService;
 
   @GetMapping
   public ResponseEntity<List<TransactionDTO>> getAllTransactions(
@@ -416,6 +419,90 @@ public class TransactionController {
 
     String filename = String.format("transactions_%s.xlsx",
       LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")));
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+    headers.setContentDispositionFormData("attachment", filename);
+    headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+    return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+  }
+
+  // В TransactionController добавьте:
+
+  @GetMapping("/search/saved/{savedSearchId}")
+  public ResponseEntity<Page<TransactionDTO>> searchBySavedSearch(
+    @AuthenticationPrincipal User user,
+    @PathVariable Long savedSearchId,
+    @RequestParam(defaultValue = "0") @Min(0) Integer page,
+    @RequestParam(defaultValue = "20") @Positive Integer size,
+    HttpServletRequest request) {
+
+    log.info("Search by saved search ID: {} - User: {} from IP: {}",
+      savedSearchId, user.getEmail(), getClientIpAddress(request));
+
+    Page<TransactionDTO> results = transactionService.searchBySavedSearch(user, savedSearchId, page, size);
+    return ResponseEntity.ok(results);
+  }
+
+  @GetMapping("/search/saved/{savedSearchId}/stats")
+  public ResponseEntity<TransactionSearchStatsDTO> getSavedSearchStats(
+    @AuthenticationPrincipal User user,
+    @PathVariable Long savedSearchId,
+    HttpServletRequest request) {
+
+    log.info("Get stats for saved search ID: {} - User: {} from IP: {}",
+      savedSearchId, user.getEmail(), getClientIpAddress(request));
+
+    // Получаем сохраненный поиск
+    SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
+
+    // Получаем статистику используя критерии из сохраненного поиска
+    TransactionSearchStatsDTO stats = transactionService.getSearchStats(user, savedSearch.getSearchCriteria());
+    return ResponseEntity.ok(stats);
+  }
+
+  @GetMapping("/export/csv/saved/{savedSearchId}")
+  public ResponseEntity<byte[]> exportSavedSearchToCsv(
+    @AuthenticationPrincipal User user,
+    @PathVariable Long savedSearchId,
+    HttpServletRequest request) {
+
+    log.info("Export saved search ID: {} to CSV - User: {} from IP: {}",
+      savedSearchId, user.getEmail(), getClientIpAddress(request));
+
+    SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
+
+    byte[] csvData = transactionService.exportTransactionsToCsv(user, savedSearch.getSearchCriteria());
+
+    String filename = String.format("%s_%s.csv",
+      savedSearch.getName().replaceAll("[^a-zA-Z0-9-_]", "_"),
+      LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType("text/csv"));
+    headers.setContentDispositionFormData("attachment", filename);
+    headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+    return new ResponseEntity<>(csvData, headers, HttpStatus.OK);
+  }
+
+  @GetMapping("/export/excel/saved/{savedSearchId}")
+  public ResponseEntity<byte[]> exportSavedSearchToExcel(
+    @AuthenticationPrincipal User user,
+    @PathVariable Long savedSearchId,
+    HttpServletRequest request) {
+
+    log.info("Export saved search ID: {} to Excel - User: {} from IP: {}",
+      savedSearchId, user.getEmail(), getClientIpAddress(request));
+
+    SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
+
+    byte[] excelData = transactionService.exportTransactionsToExcel(user, savedSearch.getSearchCriteria());
+
+    String filename = String.format("%s_%s.xlsx",
+      savedSearch.getName().replaceAll("[^a-zA-Z0-9-_]", "_"),
+      LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
