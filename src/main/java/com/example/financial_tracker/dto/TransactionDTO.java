@@ -2,13 +2,19 @@ package com.example.financial_tracker.dto;
 
 import com.example.financial_tracker.validation.ValidTransactionAmount;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @ValidTransactionAmount
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TransactionDTO {
   private Long id;
 

@@ -21,7 +21,6 @@ public class UserService implements UserDetailsService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
 
-  // Method required by UserDetailsService interface
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     return userRepository.findByEmail(email)

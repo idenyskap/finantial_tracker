@@ -24,6 +24,9 @@ spring:
     method:
       secured-annotations: enabled
       pre-post-annotations: enabled
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
 
 jwt:
   secret: your_jwt_secret_which_should_be_long_enough_32_chars_minimum

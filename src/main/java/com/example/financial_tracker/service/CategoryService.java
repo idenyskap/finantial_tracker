@@ -23,7 +23,6 @@ public class CategoryService {
 
   private final CategoryRepository categoryRepository;
   private final CategoryMapper categoryMapper;
-  private final UserRepository userRepository;
 
   public List<Category> getAllCategories(User user) {
     log.info("Fetching all categories for user: {} (ID: {})", user.getEmail(), user.getId());
@@ -59,7 +58,6 @@ public class CategoryService {
         return new ResourceNotFoundException("Category", "id", id);
       });
 
-    // Security: Verify ownership
     if (!category.getUser().getId().equals(user.getId())) {
       log.warn("User: {} attempted to access category ID: {} belonging to user: {}",
         user.getEmail(), id, category.getUser().getEmail());
@@ -81,7 +79,6 @@ public class CategoryService {
         return new ResourceNotFoundException("Category", "id", id);
       });
 
-    // Security: Verify ownership
     if (!category.getUser().getId().equals(user.getId())) {
       log.warn("User: {} attempted to delete category ID: {} belonging to user: {}",
         user.getEmail(), id, category.getUser().getEmail());
@@ -106,7 +103,6 @@ public class CategoryService {
         return new ResourceNotFoundException("Category", "id", categoryId);
       });
 
-    // Security: Verify ownership
     if (!existing.getUser().getId().equals(user.getId())) {
       log.warn("User: {} attempted to update category ID: {} belonging to user: {}",
         user.getEmail(), categoryId, existing.getUser().getEmail());
@@ -118,7 +114,6 @@ public class CategoryService {
 
     existing.setName(dto.getName());
     existing.setColor(dto.getColor());
-    // Security: Don't allow changing the user - keep original owner
 
     Category saved = categoryRepository.save(existing);
 
