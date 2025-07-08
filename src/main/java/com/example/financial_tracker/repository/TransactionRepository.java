@@ -1,5 +1,6 @@
 package com.example.financial_tracker.repository;
 
+import com.example.financial_tracker.entity.Category;
 import com.example.financial_tracker.entity.Transaction;
 import com.example.financial_tracker.entity.TransactionType;
 import com.example.financial_tracker.entity.User;
@@ -155,4 +156,24 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
   List<Object[]> getDailyStats(@Param("user") User user,
                                @Param("startDate") LocalDate startDate,
                                @Param("endDate") LocalDate endDate);
+
+  @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND t.type = 'EXPENSE' " +
+    "AND t.category = :category " +
+    "AND t.date >= :startDate " +
+    "AND t.date <= :endDate")
+  BigDecimal getTotalExpenseByUserAndCategoryAndDateRange(@Param("user") User user,
+                                                          @Param("category") Category category,
+                                                          @Param("startDate") LocalDate startDate,
+                                                          @Param("endDate") LocalDate endDate);
+
+  @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND t.type = 'EXPENSE' " +
+    "AND t.date >= :startDate " +
+    "AND t.date <= :endDate")
+  BigDecimal getTotalExpenseByUserAndDateRange(@Param("user") User user,
+                                               @Param("startDate") LocalDate startDate,
+                                               @Param("endDate") LocalDate endDate);
 }
