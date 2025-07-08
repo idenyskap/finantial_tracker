@@ -97,7 +97,7 @@ public class BudgetController {
       categoryId, user.getEmail(), getClientIpAddress(request));
 
     List<BudgetDTO> budgets = budgetService.getUserBudgets(user);
-    
+
     BudgetDTO relevantBudget = budgets.stream()
       .filter(b -> b.getCategoryId() != null && b.getCategoryId().equals(categoryId))
       .findFirst()

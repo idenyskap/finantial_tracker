@@ -18,6 +18,8 @@ import java.time.LocalDate;
 public class TransactionDTO {
   private Long id;
 
+  private BudgetWarningDTO budgetWarning;
+
   @NotNull(message = "Amount is required")
   @DecimalMin(value = "0.01", message = "Amount must be positive")
   @DecimalMax(value = "999999999.99", message = "Amount is too large")
@@ -42,6 +44,5 @@ public class TransactionDTO {
   @Size(max = 500, message = "Description cannot exceed 500 characters")
   private String description;
 
-  // User ID will be set automatically from Authentication
   private Long userId;
 }

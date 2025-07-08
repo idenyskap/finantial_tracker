@@ -1,11 +1,7 @@
 package com.example.financial_tracker.service;
 
-import com.example.financial_tracker.dto.SavedSearchDTO;
-import com.example.financial_tracker.dto.TransactionDTO;
-import com.example.financial_tracker.entity.Category;
-import com.example.financial_tracker.entity.Transaction;
-import com.example.financial_tracker.entity.TransactionType;
-import com.example.financial_tracker.entity.User;
+import com.example.financial_tracker.dto.*;
+import com.example.financial_tracker.entity.*;
 import com.example.financial_tracker.exception.AccessDeniedException;
 import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
@@ -18,8 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.financial_tracker.dto.TransactionSearchDTO;
-import com.example.financial_tracker.dto.TransactionSearchStatsDTO;
 import com.opencsv.CSVWriter;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.PageRequest;
@@ -27,9 +21,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.example.financial_tracker.entity.Budget;
+import com.example.financial_tracker.repository.BudgetRepository;
+import com.example.financial_tracker.dto.BudgetWarningDTO;
+import java.math.RoundingMode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +44,8 @@ public class TransactionService {
   private final TransactionMapper transactionMapper;
   private final CategoryRepository categoryRepository;
   private final SavedSearchService savedSearchService;
+  private final BudgetService budgetService;
+  private final BudgetRepository budgetRepository;
 
   public List<TransactionDTO> getTransactionsByUser(User user) {
     log.info("Fetching all transactions for user: {} (ID: {})", user.getEmail(), user.getId());
@@ -87,7 +88,7 @@ public class TransactionService {
     log.info("Creating new transaction for user: {} with data: {}", user.getEmail(),
       maskSensitiveData(dto));
 
-    // Validate transaction type manually if mapper returned null
+
     if (dto.getType() != null) {
       try {
         TransactionType.valueOf(dto.getType().toUpperCase());
@@ -99,7 +100,6 @@ public class TransactionService {
       }
     }
 
-    // Check that category belongs to user
     log.debug("Validating category ID: {} for user: {}", dto.getCategoryId(), user.getEmail());
     Category category = categoryRepository.findById(dto.getCategoryId())
       .orElseThrow(() -> {
@@ -120,11 +120,66 @@ public class TransactionService {
 
     Transaction saved = transactionRepository.save(transaction);
 
+    TransactionDTO responseDto = transactionMapper.toDto(saved);
+
+    if (saved.getType() == TransactionType.EXPENSE) {
+      BudgetWarningDTO warning = checkBudgetWarning(user, saved.getCategory());
+      responseDto.setBudgetWarning(warning);
+    }
+
     log.info("Successfully created transaction ID: {} for user: {} - Type: {}, Amount: {}, Category: '{}'",
       saved.getId(), user.getEmail(), saved.getType(),
       saved.getAmount(), category.getName());
 
-    return transactionMapper.toDto(saved);
+    return responseDto;
+  }
+
+  private BudgetWarningDTO checkBudgetWarning(User user, Category category) {
+    try {
+      List<Budget> budgets = budgetRepository.findActiveBudgetsForCategory(user, category);
+
+      for (Budget budget : budgets) {
+        BudgetDTO budgetDto = budgetService.getBudgetById(user, budget.getId());
+        BigDecimal percentUsed = budgetDto.getPercentUsed();
+
+        BudgetWarningDTO.WarningLevel level;
+        String message;
+
+        if (budgetDto.isOverBudget()) {
+          level = BudgetWarningDTO.WarningLevel.EXCEEDED;
+          message = String.format("Budget '%s' exceeded! Spent: $%.2f of $%.2f limit",
+            budget.getName(), budgetDto.getSpent(), budget.getAmount());
+        } else if (percentUsed.compareTo(new BigDecimal(budget.getNotifyThreshold())) >= 0) {
+          level = BudgetWarningDTO.WarningLevel.ALERT;
+          message = String.format("Budget '%s' is %.0f%% used. Remaining: $%.2f",
+            budget.getName(), percentUsed, budgetDto.getRemaining());
+        } else if (percentUsed.compareTo(new BigDecimal("50")) >= 0) {
+          level = BudgetWarningDTO.WarningLevel.WARNING;
+          message = String.format("Budget '%s' is %.0f%% used",
+            budget.getName(), percentUsed);
+        } else {
+          continue;
+        }
+
+        log.warn("Budget warning: {}", message);
+
+        return BudgetWarningDTO.builder()
+          .budgetId(budget.getId())
+          .budgetName(budget.getName())
+          .limit(budget.getAmount())
+          .spent(budgetDto.getSpent())
+          .remaining(budgetDto.getRemaining())
+          .percentUsed(percentUsed)
+          .overBudget(budgetDto.isOverBudget())
+          .message(message)
+          .level(level)
+          .build();
+      }
+    } catch (Exception e) {
+      log.error("Error checking budget warnings", e);
+    }
+
+    return null;
   }
 
   public TransactionDTO updateTransaction(Long id, TransactionDTO dto, User user) {
@@ -137,11 +192,9 @@ public class TransactionService {
         return new RuntimeException("Transaction not found");
       });
 
-    // Log what's being changed
     log.debug("Original transaction - Amount: {}, Type: {}, Description: '{}'",
       existing.getAmount(), existing.getType(), existing.getDescription());
 
-    // Check category if it's being changed
     if (dto.getCategoryId() != null && !dto.getCategoryId().equals(existing.getCategory().getId())) {
       log.debug("Category being changed from ID: {} to ID: {}",
         existing.getCategory().getId(), dto.getCategoryId());
@@ -183,7 +236,6 @@ public class TransactionService {
         return new RuntimeException("Transaction not found");
       });
 
-    // Log transaction details before deletion
     log.info("Deleting transaction - Type: {}, Amount: {}, Category: '{}', Date: {}",
       transaction.getType(), transaction.getAmount(),
       transaction.getCategory().getName(), transaction.getDate());
@@ -249,7 +301,6 @@ public class TransactionService {
     return transactionMapper.toDtoList(transactions);
   }
 
-  // Helper method to mask sensitive data in logs
   private String maskSensitiveData(TransactionDTO dto) {
     if (dto == null) return "null";
 
@@ -265,16 +316,12 @@ public class TransactionService {
   public Page<TransactionDTO> searchTransactions(User user, TransactionSearchDTO searchDto) {
     log.info("Searching transactions for user: {} with criteria: {}", user.getEmail(), searchDto);
 
-    // Применяем быстрые фильтры к датам
     applyQuickDateFilter(searchDto);
 
-    // Создаем спецификацию для поиска
     Specification<Transaction> spec = createSearchSpecification(user, searchDto);
 
-    // Создаем Pageable с сортировкой
     Pageable pageable = createPageable(searchDto);
 
-    // Выполняем поиск
     Page<Transaction> transactions = transactionRepository.findAll(spec, pageable);
 
     log.info("Found {} transactions matching criteria", transactions.getTotalElements());
@@ -326,26 +373,21 @@ public class TransactionService {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
 
-      // Обязательный фильтр по пользователю
       predicates.add(cb.equal(root.get("user"), user));
 
-      // Поиск по тексту в описании
       if (searchDto.getSearchText() != null && !searchDto.getSearchText().trim().isEmpty()) {
         String searchPattern = "%" + searchDto.getSearchText().toLowerCase().trim() + "%";
         predicates.add(cb.like(cb.lower(root.get("description")), searchPattern));
       }
 
-      // Фильтр по минимальной сумме
       if (searchDto.getMinAmount() != null) {
         predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), searchDto.getMinAmount()));
       }
 
-      // Фильтр по максимальной сумме
       if (searchDto.getMaxAmount() != null) {
         predicates.add(cb.lessThanOrEqualTo(root.get("amount"), searchDto.getMaxAmount()));
       }
 
-      // Фильтр по датам
       if (searchDto.getDateFrom() != null) {
         predicates.add(cb.greaterThanOrEqualTo(root.get("date"), searchDto.getDateFrom()));
       }
@@ -354,7 +396,6 @@ public class TransactionService {
         predicates.add(cb.lessThanOrEqualTo(root.get("date"), searchDto.getDateTo()));
       }
 
-      // Фильтр по типу транзакции
       if (searchDto.getType() != null && !searchDto.getType().isEmpty()) {
         try {
           TransactionType type = TransactionType.valueOf(searchDto.getType().toUpperCase());
@@ -364,7 +405,6 @@ public class TransactionService {
         }
       }
 
-      // Фильтр по категориям
       if (searchDto.getCategoryIds() != null && !searchDto.getCategoryIds().isEmpty()) {
         predicates.add(root.get("category").get("id").in(searchDto.getCategoryIds()));
       }
@@ -378,7 +418,6 @@ public class TransactionService {
       ? Sort.Direction.ASC : Sort.Direction.DESC;
 
     String sortBy = searchDto.getSortBy();
-    // Валидация поля сортировки
     if (!List.of("date", "amount", "description", "type").contains(sortBy)) {
       sortBy = "date";
     }
@@ -393,11 +432,9 @@ public class TransactionService {
   public byte[] exportTransactionsToCsv(User user, TransactionSearchDTO searchDto) {
     log.info("Exporting transactions to CSV for user: {}", user.getEmail());
 
-    // Используем те же критерии поиска, но без пагинации
     applyQuickDateFilter(searchDto);
     Specification<Transaction> spec = createSearchSpecification(user, searchDto);
 
-    // Сортировка
     Sort sort = Sort.by(
       searchDto.getSortDirection() == TransactionSearchDTO.SortDirection.ASC
         ? Sort.Direction.ASC : Sort.Direction.DESC,
@@ -410,11 +447,9 @@ public class TransactionService {
          OutputStreamWriter osw = new OutputStreamWriter(baos, "UTF-8");
          CSVWriter csvWriter = new CSVWriter(osw)) {
 
-      // Заголовки
       String[] headers = {"Date", "Type", "Category", "Amount", "Description", "Created At"};
       csvWriter.writeNext(headers);
 
-      // Данные
       for (Transaction transaction : transactions) {
         String[] data = {
           transaction.getDate().toString(),
