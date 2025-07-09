@@ -2,6 +2,7 @@ package com.example.financial_tracker.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import com.example.financial_tracker.entity.TransactionType;
 
 @Data
 public class CategoryDTO {
@@ -15,6 +16,9 @@ public class CategoryDTO {
   @NotBlank(message = "Color is required")
   @Pattern(regexp = "^#[0-9A-Fa-f]{6}$", message = "Color must be a valid hex color (e.g., #FF5733)")
   private String color;
-  
+
+  @NotNull(message = "Type is required")
+  private TransactionType type;
+
   private Long userId;
 }

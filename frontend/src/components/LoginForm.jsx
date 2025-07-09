@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
+import { toast } from 'sonner';
 
 function LoginForm() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-
-  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -20,55 +21,103 @@ function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      const response = await authService.login(formData);
+      localStorage.setItem('token', response.data.token);
 
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-
-      // ✅ редирект после успешного логина
+      toast.success('Login successful!');
       navigate('/transactions');
-
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: 'auto' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          name="email"
-          placeholder="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          name="password"
-          placeholder="password"
-          type="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        /><br />
-        <button type="submit">Login</button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div style={styles.container}>
+      <div style={styles.formWrapper}>
+        <h2 style={styles.title}>Login</h2>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <input
+            name="email"
+            placeholder="Email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+          <input
+            name="password"
+            placeholder="Password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              ...styles.button,
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '80vh',
+  },
+  formWrapper: {
+    width: '100%',
+    maxWidth: '400px',
+    padding: '2rem',
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  },
+  title: {
+    textAlign: 'center',
+    marginBottom: '1.5rem',
+    color: '#333',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  input: {
+    padding: '0.75rem',
+    fontSize: '1rem',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    outline: 'none',
+    transition: 'border-color 0.2s',
+  },
+  button: {
+    padding: '0.75rem',
+    fontSize: '1rem',
+    backgroundColor: '#44bd32',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    transition: 'all 0.2s',
+  },
+};
 
 export default LoginForm;
