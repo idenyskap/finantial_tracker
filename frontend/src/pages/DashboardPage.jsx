@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '../services/dashboardService';
 import StatsCard from '../components/dashboard/StatsCard';
 import { ArrowUpIcon, ArrowDownIcon, ChartBarIcon, BanknotesIcon } from '@heroicons/react/24/outline';
+import ExpenseIncomeChart from '../components/charts/ExpenseIncomeChart';
+import CategoryPieChart from '../components/charts/CategoryPieChart';
 
 function DashboardPage() {
   const { data, isLoading, error } = useQuery({
@@ -127,6 +129,28 @@ function DashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* Charts Section - ПЕРЕНЕСЕНО ВНУТРЬ RETURN */}
+      <div style={styles.chartsSection}>
+        <h2 style={styles.sectionTitle}>Analytics</h2>
+
+        {/* Income vs Expenses Chart */}
+        <div style={styles.chartCard}>
+          <ExpenseIncomeChart dailyStats={dashboard?.dailyStats || []} />
+        </div>
+
+        {/* Category Distribution */}
+        {dashboard?.topExpenseCategories?.length > 0 && (
+          <div style={styles.chartRow}>
+            <div style={styles.chartCard}>
+              <CategoryPieChart
+                categories={dashboard.topExpenseCategories}
+                title="Expense Distribution by Category"
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -232,6 +256,21 @@ const styles = {
   categoryPercent: {
     fontSize: '0.875rem',
     color: '#666',
+  },
+  chartsSection: {
+    marginTop: '3rem',
+  },
+  chartCard: {
+    backgroundColor: 'white',
+    padding: '1.5rem',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    marginBottom: '1.5rem',
+  },
+  chartRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+    gap: '1.5rem',
   },
 };
 

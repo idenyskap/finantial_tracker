@@ -1,7 +1,6 @@
 package com.example.financial_tracker.controller;
 
-import com.example.financial_tracker.dto.SavedSearchDTO;
-import com.example.financial_tracker.dto.TransactionDTO;
+import com.example.financial_tracker.dto.*;
 import com.example.financial_tracker.entity.TransactionType;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.TransactionService;
@@ -19,11 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import com.example.financial_tracker.dto.TransactionSearchDTO;
-import com.example.financial_tracker.dto.TransactionSearchStatsDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import com.example.financial_tracker.service.SavedSearchService;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.financial_tracker.exception.BadRequestException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -510,6 +509,31 @@ public class TransactionController {
     headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
     return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+  }
+
+  @PostMapping("/import/csv")
+  public ResponseEntity<ImportResultDTO> importFromCsv(
+    @AuthenticationPrincipal User user,
+    @RequestParam("file") MultipartFile file,
+    HttpServletRequest request) {
+
+    log.info("POST /api/transactions/import/csv - User: {} from IP: {} importing CSV file: {}",
+      user.getEmail(), getClientIpAddress(request), file.getOriginalFilename());
+
+    if (file.isEmpty()) {
+      throw new BadRequestException("Please select a file to import");
+    }
+
+    if (!file.getOriginalFilename().toLowerCase().endsWith(".csv")) {
+      throw new BadRequestException("Only CSV files are supported");
+    }
+
+    ImportResultDTO result = transactionService.importFromCsv(user, file);
+
+    log.info("CSV import completed for user: {} - Success: {}, Failed: {}",
+      user.getEmail(), result.getSuccessfulImports(), result.getFailedImports());
+
+    return ResponseEntity.ok(result);
   }
 
 }

@@ -22,4 +22,5 @@ public class AnalyticsDTO {
   private List<CategoryStatsDTO> topExpenseCategories;
   private List<CategoryStatsDTO> topIncomeCategories;
   private ComparisonStatsDTO comparison;
+  private List<MonthlyStatsDTO> monthlyStatsList;
 }

@@ -1,9 +1,11 @@
 package com.example.financial_tracker.controller;
 
+import com.example.financial_tracker.dto.ChangePasswordDTO;
 import com.example.financial_tracker.dto.UserDTO;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -147,5 +149,18 @@ public class UserController {
     }
 
     return request.getRemoteAddr();
+  }
+
+  @PutMapping("/me/password")
+  public ResponseEntity<Void> changePassword(
+    @AuthenticationPrincipal User user,
+    @RequestBody @Valid ChangePasswordDTO dto,
+    HttpServletRequest request) {
+
+    log.info("PUT /api/users/me/password - User: {} from IP: {} changing password",
+      user.getEmail(), getClientIpAddress(request));
+
+    userService.changePassword(user, dto);
+    return ResponseEntity.ok().build();
   }
 }

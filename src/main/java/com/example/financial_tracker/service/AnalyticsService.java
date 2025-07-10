@@ -1,6 +1,7 @@
 package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.*;
+import com.example.financial_tracker.entity.TransactionType;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,7 @@ public class AnalyticsService {
   private final TransactionRepository transactionRepository;
 
   public AnalyticsDTO getFullAnalytics(User user, LocalDate startDate, LocalDate endDate) {
-    log.info("Generating full analytics for user: {} from {} to {}",
-      user.getEmail(), startDate, endDate);
+    log.info("Generating full analytics for user: {}", user.getEmail());
 
     BigDecimal totalIncome = getTotalIncomeOrZero(user);
     BigDecimal totalExpense = getTotalExpenseOrZero(user);
@@ -39,7 +39,39 @@ public class AnalyticsService {
       .topExpenseCategories(getTopExpenseCategories(user, startDate, endDate, 10))
       .topIncomeCategories(getTopIncomeCategories(user, startDate, endDate, 10))
       .comparison(getComparisonStats(user))
+      .monthlyStatsList(getMonthlyStatsForLastYear(user)) // Добавлено для графиков
       .build();
+  }
+
+  private List<MonthlyStatsDTO> getMonthlyStatsForLastYear(User user) {
+    List<MonthlyStatsDTO> monthlyStats = new ArrayList<>();
+    LocalDate now = LocalDate.now();
+
+    for (int i = 11; i >= 0; i--) {
+      LocalDate monthStart = now.minusMonths(i).withDayOfMonth(1);
+      LocalDate monthEnd = monthStart.withDayOfMonth(monthStart.lengthOfMonth());
+
+      BigDecimal monthIncome = transactionRepository.getTotalByUserAndTypeBetweenDates(
+        user, TransactionType.INCOME, monthStart, monthEnd);
+      BigDecimal monthExpense = transactionRepository.getTotalByUserAndTypeBetweenDates(
+        user, TransactionType.EXPENSE, monthStart, monthEnd);
+
+      monthIncome = monthIncome != null ? monthIncome : BigDecimal.ZERO;
+      monthExpense = monthExpense != null ? monthExpense : BigDecimal.ZERO;
+
+      MonthlyStatsDTO stats = MonthlyStatsDTO.builder()
+        .monthName(monthStart.format(DateTimeFormatter.ofPattern("MMM yyyy")))
+        .month(String.valueOf(monthStart.getMonthValue()))
+        .year(monthStart.getYear())
+        .income(monthIncome)
+        .expense(monthExpense)
+        .netChange(monthIncome.subtract(monthExpense))
+        .build();
+
+      monthlyStats.add(stats);
+    }
+
+    return monthlyStats;
   }
 
   public List<MonthlyStatsDTO> getMonthlyStats(User user, LocalDate startDate, LocalDate endDate) {

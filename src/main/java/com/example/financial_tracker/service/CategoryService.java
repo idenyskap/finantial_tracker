@@ -27,7 +27,7 @@ public class CategoryService {
   public List<Category> getAllCategories(User user) {
     log.info("Fetching all categories for user: {} (ID: {})", user.getEmail(), user.getId());
 
-    List<Category> categories = categoryRepository.findAllByUser(user);
+    List<Category> categories = categoryRepository.findByUserOrderByNameAsc(user); // Изменено
 
     log.info("Found {} categories for user: {}", categories.size(), user.getEmail());
     return categories;

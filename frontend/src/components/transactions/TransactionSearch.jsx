@@ -1,8 +1,14 @@
 import { useState } from 'react';
-import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, FunnelIcon, BookmarkIcon } from '@heroicons/react/24/outline';
+import { savedSearchService } from '../../services/savedSearchService';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 function TransactionSearch({ onSearch, categories }) {
+  const queryClient = useQueryClient();
   const [showFilters, setShowFilters] = useState(false);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [searchName, setSearchName] = useState('');
   const [filters, setFilters] = useState({
     searchText: '',
     type: '',
@@ -20,6 +26,19 @@ function TransactionSearch({ onSearch, categories }) {
     { value: 'LAST_MONTH', label: 'Last Month' },
     { value: 'THIS_YEAR', label: 'This Year' },
   ];
+
+  const saveMutation = useMutation({
+    mutationFn: savedSearchService.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['saved-searches']);
+      toast.success('Search saved successfully');
+      setSaveModalOpen(false);
+      setSearchName('');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Error saving search');
+    },
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,6 +60,18 @@ function TransactionSearch({ onSearch, categories }) {
       maxAmount: '',
     });
     onSearch({});
+  };
+
+  const handleSaveSearch = () => {
+    if (!searchName.trim()) {
+      toast.error('Please enter a name for the search');
+      return;
+    }
+
+    saveMutation.mutate({
+      name: searchName,
+      searchCriteria: filters,
+    });
   };
 
   return (
@@ -65,6 +96,14 @@ function TransactionSearch({ onSearch, categories }) {
           >
             <FunnelIcon style={styles.icon} />
             Filters
+          </button>
+          <button
+            type="button"
+            onClick={() => setSaveModalOpen(true)}
+            style={styles.saveButton}
+            title="Save this search"
+          >
+            <BookmarkIcon style={styles.icon} />
           </button>
         </div>
 
@@ -138,6 +177,29 @@ function TransactionSearch({ onSearch, categories }) {
           </div>
         )}
       </form>
+
+      {saveModalOpen && (
+        <div style={styles.modal}>
+          <div style={styles.modalContent}>
+            <h3>Save Search</h3>
+            <input
+              type="text"
+              placeholder="Enter search name..."
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              style={styles.modalInput}
+            />
+            <div style={styles.modalButtons}>
+              <button onClick={handleSaveSearch} style={styles.modalSaveButton}>
+                Save
+              </button>
+              <button onClick={() => setSaveModalOpen(false)} style={styles.modalCancelButton}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -213,6 +275,62 @@ const styles = {
   resetButton: {
     padding: '0.5rem 1rem',
     backgroundColor: '#e74c3c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+  saveButton: {
+    padding: '0.75rem',
+    backgroundColor: '#9b59b6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+  modal: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: '2rem',
+    borderRadius: '8px',
+    width: '400px',
+  },
+  modalInput: {
+    width: '100%',
+    padding: '0.75rem',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    marginTop: '1rem',
+    marginBottom: '1rem',
+  },
+  modalButtons: {
+    display: 'flex',
+    gap: '0.5rem',
+  },
+  modalSaveButton: {
+    flex: 1,
+    padding: '0.75rem',
+    backgroundColor: '#27ae60',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+  modalCancelButton: {
+    flex: 1,
+    padding: '0.75rem',
+    backgroundColor: '#95a5a6',
     color: 'white',
     border: 'none',
     borderRadius: '4px',

@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transactionService } from '../services/transactionService';
 import { categoryService } from '../services/categoryService';
+import { savedSearchService } from '../services/savedSearchService';
 import TransactionSearch from '../components/transactions/TransactionSearch';
+import SavedSearchItem from '../components/savedSearches/SavedSearchItem';
 import { toast } from 'sonner';
 import { ArrowDownTrayIcon, PlusIcon } from '@heroicons/react/24/outline';
+import ImportCSV from '../components/transactions/ImportCSV';
 
 function TransactionsPage() {
   const queryClient = useQueryClient();
@@ -28,6 +31,12 @@ function TransactionsPage() {
   const { data: transactionsData, isLoading } = useQuery({
     queryKey: ['transactions', searchParams],
     queryFn: () => transactionService.search(searchParams),
+  });
+
+  // Fetch saved searches
+  const { data: savedSearchesData } = useQuery({
+    queryKey: ['saved-searches'],
+    queryFn: () => savedSearchService.getAll(),
   });
 
   // Create transaction mutation
@@ -59,8 +68,21 @@ function TransactionsPage() {
     },
   });
 
+  // Delete saved search mutation
+  const deleteSavedSearchMutation = useMutation({
+    mutationFn: savedSearchService.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['saved-searches']);
+      toast.success('Saved search deleted');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Error deleting saved search');
+    },
+  });
+
   const categories = categoriesData?.data || [];
   const transactions = transactionsData?.data?.content || [];
+  const savedSearches = savedSearchesData?.data || [];
 
   // Фильтруем категории по типу транзакции
   const filteredCategories = categories.filter(cat => {
@@ -72,6 +94,16 @@ function TransactionsPage() {
 
   const handleSearch = (params) => {
     setSearchParams(params);
+  };
+
+  const handleExecuteSavedSearch = (search) => {
+    setSearchParams(search.searchCriteria);
+  };
+
+  const handleDeleteSavedSearch = (id) => {
+    if (window.confirm('Delete this saved search?')) {
+      deleteSavedSearchMutation.mutate(id);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -135,6 +167,7 @@ function TransactionsPage() {
       <div style={styles.header}>
         <h1>Transactions</h1>
         <div style={styles.headerButtons}>
+          <ImportCSV onImportComplete={() => queryClient.invalidateQueries(['transactions'])} />
           <button onClick={handleExportCSV} style={styles.exportButton}>
             <ArrowDownTrayIcon style={styles.icon} />
             Export
@@ -147,6 +180,23 @@ function TransactionsPage() {
       </div>
 
       <TransactionSearch onSearch={handleSearch} categories={categories} />
+
+      {/* Saved Searches Section */}
+      {savedSearches.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ marginBottom: '1rem' }}>Saved Searches</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+            {savedSearches.map(search => (
+              <SavedSearchItem
+                key={search.id}
+                search={search}
+                onExecute={handleExecuteSavedSearch}
+                onDelete={handleDeleteSavedSearch}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div style={styles.formContainer}>

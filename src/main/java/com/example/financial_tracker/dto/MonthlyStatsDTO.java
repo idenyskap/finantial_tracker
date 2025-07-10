@@ -12,8 +12,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MonthlyStatsDTO {
-  private String month; // Format: "2025-07"
-  private String monthName; // Format: "July 2025"
+  private String monthName;
+  private String month;
+  private Integer year;
   private BigDecimal income;
   private BigDecimal expense;
   private BigDecimal netChange;

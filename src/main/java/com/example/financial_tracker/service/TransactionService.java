@@ -24,12 +24,15 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.example.financial_tracker.entity.Budget;
 import com.example.financial_tracker.repository.BudgetRepository;
 import com.example.financial_tracker.dto.BudgetWarningDTO;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.*;
 import java.math.RoundingMode;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
@@ -585,5 +588,105 @@ public class TransactionService {
 
     log.info("Executing search with criteria from saved search '{}'", savedSearch.getName());
     return searchTransactions(user, searchDto);
+  }
+
+  public ImportResultDTO importFromCsv(User user, MultipartFile file) {
+    ImportResultDTO result = ImportResultDTO.builder()
+      .errors(new ArrayList<>())
+      .importedTransactions(new ArrayList<>())
+      .build();
+
+    try (BufferedReader reader = new BufferedReader(
+      new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+
+      // Skip header
+      String headerLine = reader.readLine();
+      if (headerLine == null) {
+        throw new BusinessLogicException("CSV file is empty");
+      }
+
+      // Parse CSV
+      String line;
+      int rowNumber = 1;
+
+      while ((line = reader.readLine()) != null) {
+        rowNumber++;
+        result.setTotalRows(result.getTotalRows() + 1);
+
+        try {
+          TransactionDTO transaction = parseCsvLine(line, rowNumber, user);
+          Transaction saved = createTransactionFromImport(transaction, user);
+          result.getImportedTransactions().add(transactionMapper.toDto(saved));
+          result.setSuccessfulImports(result.getSuccessfulImports() + 1);
+        } catch (Exception e) {
+          result.setFailedImports(result.getFailedImports() + 1);
+          result.getErrors().add(String.format("Row %d: %s", rowNumber, e.getMessage()));
+
+          // Stop if too many errors
+          if (result.getErrors().size() >= 10) {
+            result.getErrors().add("Import stopped due to too many errors");
+            break;
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new BusinessLogicException("Error reading CSV file: " + e.getMessage());
+    }
+
+    return result;
+  }
+
+  private TransactionDTO parseCsvLine(String line, int rowNumber, User user) {
+    String[] values = line.split(",");
+
+    if (values.length < 4) {
+      throw new IllegalArgumentException("Invalid format. Expected: date,amount,type,category,description");
+    }
+
+    try {
+      TransactionDTO dto = new TransactionDTO();
+
+      // Parse date
+      dto.setDate(LocalDate.parse(values[0].trim()));
+
+      // Parse amount
+      dto.setAmount(new BigDecimal(values[1].trim()));
+
+      // Parse type
+      String type = values[2].trim().toUpperCase();
+      if (!type.equals("INCOME") && !type.equals("EXPENSE")) {
+        throw new IllegalArgumentException("Type must be INCOME or EXPENSE");
+      }
+      dto.setType(type); // Передаем как String
+
+      // Find category by name
+      String categoryName = values[3].trim();
+      Category category = categoryRepository.findByNameAndUser(categoryName, user)
+        .orElseThrow(() -> new IllegalArgumentException("Category '" + categoryName + "' not found"));
+      dto.setCategoryId(category.getId());
+
+      // Parse description (optional)
+      if (values.length > 4) {
+        dto.setDescription(values[4].trim());
+      }
+
+      return dto;
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Invalid date format. Use YYYY-MM-DD");
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid amount format");
+    }
+  }
+
+  private Transaction createTransactionFromImport(TransactionDTO dto, User user) {
+    // Use existing create logic but without budget warnings for bulk import
+    Category category = categoryRepository.findById(dto.getCategoryId())
+      .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+    Transaction transaction = transactionMapper.toEntity(dto);
+    transaction.setUser(user);
+    transaction.setCategory(category);
+
+    return transactionRepository.save(transaction);
   }
 }
