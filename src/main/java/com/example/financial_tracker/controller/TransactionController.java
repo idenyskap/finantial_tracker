@@ -63,7 +63,6 @@ public class TransactionController {
     return ResponseEntity.ok(transactions);
   }
 
-  // FIX: This endpoint was missing!
   @GetMapping("/{id}")
   public ResponseEntity<TransactionDTO> getTransactionById(
     @PathVariable @Positive(message = "Transaction ID must be positive") Long id,
@@ -177,7 +176,6 @@ public class TransactionController {
     return ResponseEntity.ok(transactions);
   }
 
-  // FIX: These endpoints were missing!
   @GetMapping("/income")
   public ResponseEntity<List<TransactionDTO>> getIncomeTransactions(
     @AuthenticationPrincipal User user,
@@ -202,7 +200,6 @@ public class TransactionController {
     return ResponseEntity.ok(transactions);
   }
 
-  // Helper method to get client IP address
   private String getClientIpAddress(HttpServletRequest request) {
     String xForwardedFor = request.getHeader("X-Forwarded-For");
     if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
@@ -427,7 +424,6 @@ public class TransactionController {
     return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
   }
 
-  // В TransactionController добавьте:
 
   @GetMapping("/search/saved/{savedSearchId}")
   public ResponseEntity<Page<TransactionDTO>> searchBySavedSearch(
@@ -453,10 +449,8 @@ public class TransactionController {
     log.info("Get stats for saved search ID: {} - User: {} from IP: {}",
       savedSearchId, user.getEmail(), getClientIpAddress(request));
 
-    // Получаем сохраненный поиск
     SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
 
-    // Получаем статистику используя критерии из сохраненного поиска
     TransactionSearchStatsDTO stats = transactionService.getSearchStats(user, savedSearch.getSearchCriteria());
     return ResponseEntity.ok(stats);
   }

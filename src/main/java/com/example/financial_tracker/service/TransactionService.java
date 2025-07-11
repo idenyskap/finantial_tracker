@@ -599,13 +599,11 @@ public class TransactionService {
     try (BufferedReader reader = new BufferedReader(
       new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
-      // Skip header
       String headerLine = reader.readLine();
       if (headerLine == null) {
         throw new BusinessLogicException("CSV file is empty");
       }
 
-      // Parse CSV
       String line;
       int rowNumber = 1;
 
@@ -622,7 +620,6 @@ public class TransactionService {
           result.setFailedImports(result.getFailedImports() + 1);
           result.getErrors().add(String.format("Row %d: %s", rowNumber, e.getMessage()));
 
-          // Stop if too many errors
           if (result.getErrors().size() >= 10) {
             result.getErrors().add("Import stopped due to too many errors");
             break;
@@ -646,26 +643,21 @@ public class TransactionService {
     try {
       TransactionDTO dto = new TransactionDTO();
 
-      // Parse date
       dto.setDate(LocalDate.parse(values[0].trim()));
 
-      // Parse amount
       dto.setAmount(new BigDecimal(values[1].trim()));
 
-      // Parse type
       String type = values[2].trim().toUpperCase();
       if (!type.equals("INCOME") && !type.equals("EXPENSE")) {
         throw new IllegalArgumentException("Type must be INCOME or EXPENSE");
       }
-      dto.setType(type); // Передаем как String
+      dto.setType(type);
 
-      // Find category by name
       String categoryName = values[3].trim();
       Category category = categoryRepository.findByNameAndUser(categoryName, user)
         .orElseThrow(() -> new IllegalArgumentException("Category '" + categoryName + "' not found"));
       dto.setCategoryId(category.getId());
 
-      // Parse description (optional)
       if (values.length > 4) {
         dto.setDescription(values[4].trim());
       }
@@ -679,7 +671,6 @@ public class TransactionService {
   }
 
   private Transaction createTransactionFromImport(TransactionDTO dto, User user) {
-    // Use existing create logic but without budget warnings for bulk import
     Category category = categoryRepository.findById(dto.getCategoryId())
       .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 

@@ -27,26 +27,22 @@ function TransactionsPage() {
     queryFn: () => categoryService.getAll(),
   });
 
-  // Fetch transactions with search params
   const { data: transactionsData, isLoading } = useQuery({
     queryKey: ['transactions', searchParams],
     queryFn: () => transactionService.search(searchParams),
   });
 
-  // Fetch saved searches
   const { data: savedSearchesData } = useQuery({
     queryKey: ['saved-searches'],
     queryFn: () => savedSearchService.getAll(),
   });
 
-  // Create transaction mutation
   const createMutation = useMutation({
     mutationFn: transactionService.create,
     onSuccess: (response) => {
       queryClient.invalidateQueries(['transactions']);
       queryClient.invalidateQueries(['dashboard']);
 
-      // Проверяем предупреждение о бюджете
       if (response.data.budgetWarning) {
         const warning = response.data.budgetWarning;
         if (warning.level === 'EXCEEDED') {
@@ -68,7 +64,6 @@ function TransactionsPage() {
     },
   });
 
-  // Delete saved search mutation
   const deleteSavedSearchMutation = useMutation({
     mutationFn: savedSearchService.delete,
     onSuccess: () => {
@@ -84,11 +79,8 @@ function TransactionsPage() {
   const transactions = transactionsData?.data?.content || [];
   const savedSearches = savedSearchesData?.data || [];
 
-  // Фильтруем категории по типу транзакции
   const filteredCategories = categories.filter(cat => {
-    // Если в категории нет поля type, показываем для всех
     if (!cat.type) return true;
-    // Иначе показываем только если тип совпадает
     return cat.type === form.type;
   });
 
@@ -114,12 +106,11 @@ function TransactionsPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Если меняется тип транзакции, сбрасываем категорию
     if (name === 'type') {
       setForm(prev => ({
         ...prev,
         [name]: value,
-        categoryId: '', // Сброс категории
+        categoryId: '',
       }));
     } else {
       setForm(prev => ({
@@ -181,7 +172,6 @@ function TransactionsPage() {
 
       <TransactionSearch onSearch={handleSearch} categories={categories} />
 
-      {/* Saved Searches Section */}
       {savedSearches.length > 0 && (
         <div style={{ marginBottom: '2rem' }}>
           <h3 style={{ marginBottom: '1rem' }}>Saved Searches</h3>

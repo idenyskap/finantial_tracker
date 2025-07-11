@@ -41,7 +41,6 @@ public class BudgetService {
         throw new BusinessLogicException("Category does not belong to user");
       }
 
-      // Проверяем, нет ли уже активного бюджета для этой категории
       if (budgetRepository.existsByUserAndCategoryAndActiveTrue(user, category)) {
         throw new BusinessLogicException("Active budget already exists for this category");
       }
@@ -123,7 +122,6 @@ public class BudgetService {
       dto.setCategoryColor(budget.getCategory().getColor());
     }
 
-    // Рассчитываем потраченную сумму
     LocalDate[] period = getPeriodDates(budget.getPeriod());
     BigDecimal spent = calculateSpent(budget, period[0], period[1]);
 
@@ -173,11 +171,9 @@ public class BudgetService {
 
   private BigDecimal calculateSpent(Budget budget, LocalDate start, LocalDate end) {
     if (budget.getCategory() != null) {
-      // Бюджет для конкретной категории
       return transactionRepository.getTotalExpenseByUserAndCategoryAndDateRange(
         budget.getUser(), budget.getCategory(), start, end);
     } else {
-      // Общий бюджет
       return transactionRepository.getTotalExpenseByUserAndDateRange(
         budget.getUser(), start, end);
     }

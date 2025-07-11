@@ -37,7 +37,6 @@ public class CategoryService {
     log.info("Creating new category '{}' with color '{}' for user: {}",
       dto.getName(), dto.getColor(), user.getEmail());
 
-    // Security: Always use the authenticated user, ignore userId from DTO
     Category entity = categoryMapper.toEntity(dto);
     entity.setUser(user);
 

@@ -32,7 +32,6 @@ public class AnalyticsController {
     log.info("GET /api/analytics/full - User: {} from IP: {} - Date range: {} to {}",
       user.getEmail(), getClientIpAddress(request), startDate, endDate);
 
-    // Default to last 12 months if no dates provided
     if (startDate == null) {
       startDate = LocalDate.now().minusMonths(12);
     }
@@ -58,7 +57,6 @@ public class AnalyticsController {
     log.info("GET /api/analytics/monthly - User: {} from IP: {}",
       user.getEmail(), getClientIpAddress(request));
 
-    // Default to last 12 months
     if (startDate == null) {
       startDate = LocalDate.now().minusMonths(12);
     }

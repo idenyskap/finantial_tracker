@@ -15,7 +15,6 @@ function ProfilePage() {
     confirmPassword: '',
   });
 
-  // Fetch user data
   const { data: userData, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => userService.getCurrentUser(),
@@ -24,13 +23,11 @@ function ProfilePage() {
     },
   });
 
-  // Fetch statistics
   const { data: statsData } = useQuery({
     queryKey: ['userStats'],
     queryFn: () => transactionService.getStats(),
   });
 
-  // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: userService.updateProfile,
     onSuccess: () => {
@@ -41,7 +38,6 @@ function ProfilePage() {
     },
   });
 
-  // Change password mutation
   const changePasswordMutation = useMutation({
     mutationFn: userService.changePassword,
     onSuccess: () => {
@@ -53,7 +49,6 @@ function ProfilePage() {
     },
   });
 
-  // Delete account mutation
   const deleteAccountMutation = useMutation({
     mutationFn: userService.deleteAccount,
     onSuccess: () => {
@@ -158,9 +153,7 @@ function ProfilePage() {
           </button>
         </div>
 
-        {/* Tab Content */}
         <div style={styles.tabContent}>
-          {/* Profile Tab */}
           {activeTab === 'profile' && (
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Profile Information</h2>
@@ -198,7 +191,6 @@ function ProfilePage() {
             </div>
           )}
 
-          {/* Security Tab */}
           {activeTab === 'security' && (
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Change Password</h2>
@@ -248,7 +240,6 @@ function ProfilePage() {
             </div>
           )}
 
-          {/* Statistics Tab */}
           {activeTab === 'statistics' && (
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Account Statistics</h2>
@@ -275,7 +266,6 @@ function ProfilePage() {
             </div>
           )}
 
-          {/* Danger Zone Tab */}
           {activeTab === 'danger' && (
             <div style={styles.section}>
               <h2 style={styles.sectionTitleDanger}>Danger Zone</h2>

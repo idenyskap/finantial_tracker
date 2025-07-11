@@ -31,13 +31,11 @@ public class AuthService {
     String email = request.getEmail();
     log.info("Registration attempt for email: {}", email);
 
-    // Check if user already exists
     if (userRepository.findByEmail(email).isPresent()) {
       log.warn("Registration failed - email already exists: {}", email);
       throw new RuntimeException("User with this email already exists");
     }
 
-    // Create new user
     User user = User.builder()
       .name(request.getName())
       .email(email)
@@ -60,12 +58,10 @@ public class AuthService {
     log.info("Login attempt for email: {}", email);
 
     try {
-      // Authenticate user
       authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(email, request.getPassword())
       );
 
-      // Get user details
       User user = userRepository.findByEmail(email)
         .orElseThrow(() -> {
           log.error("User not found after successful authentication: {}", email);

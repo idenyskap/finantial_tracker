@@ -87,7 +87,6 @@ public class AnalyticsService {
       BigDecimal expense = convertToBigDecimal(result[2]);
       Long transactionCount = (Long) result[3];
 
-      // Parse month and create readable format
       YearMonth yearMonth = YearMonth.parse(month);
       String monthName = yearMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy"));
 
@@ -109,7 +108,6 @@ public class AnalyticsService {
     log.info("Getting top {} expense categories for user: {} from {} to {}",
       limit, user.getEmail(), startDate, endDate);
 
-    // Use default date range if null values provided
     LocalDate effectiveStartDate = startDate != null ? startDate : LocalDate.now().minusYears(10);
     LocalDate effectiveEndDate = endDate != null ? endDate : LocalDate.now();
 
@@ -123,7 +121,6 @@ public class AnalyticsService {
     log.info("Getting top {} income categories for user: {} from {} to {}",
       limit, user.getEmail(), startDate, endDate);
 
-    // Use default date range if null values provided
     LocalDate effectiveStartDate = startDate != null ? startDate : LocalDate.now().minusYears(10);
     LocalDate effectiveEndDate = endDate != null ? endDate : LocalDate.now();
 
@@ -146,7 +143,6 @@ public class AnalyticsService {
       Long transactionCount = (Long) result[4];
       BigDecimal averageAmount = convertToBigDecimal(result[5]);
 
-      // Calculate percentage
       BigDecimal percentage = BigDecimal.ZERO;
       if (total.compareTo(BigDecimal.ZERO) > 0) {
         percentage = totalAmount.divide(total, 4, RoundingMode.HALF_UP)
@@ -180,11 +176,9 @@ public class AnalyticsService {
     PeriodStatsDTO currentPeriod = getPeriodStats(user, currentMonthStart, currentMonthEnd, "Current Month");
     PeriodStatsDTO previousPeriod = getPeriodStats(user, previousMonthStart, previousMonthEnd, "Previous Month");
 
-    // Calculate changes
     BigDecimal incomeChange = currentPeriod.getIncome().subtract(previousPeriod.getIncome());
     BigDecimal expenseChange = currentPeriod.getExpense().subtract(previousPeriod.getExpense());
 
-    // Calculate percentage changes
     BigDecimal incomeChangePercent = calculatePercentageChange(previousPeriod.getIncome(), currentPeriod.getIncome());
     BigDecimal expenseChangePercent = calculatePercentageChange(previousPeriod.getExpense(), currentPeriod.getExpense());
 
@@ -239,7 +233,6 @@ public class AnalyticsService {
       .multiply(BigDecimal.valueOf(100));
   }
 
-  // Helper methods to safely handle null values and type conversion
   private BigDecimal getTotalIncomeOrZero(User user) {
     BigDecimal income = transactionRepository.getTotalIncomeByUser(user);
     return income != null ? income : BigDecimal.ZERO;
@@ -255,7 +248,6 @@ public class AnalyticsService {
     return balance != null ? balance : BigDecimal.ZERO;
   }
 
-  // Convert various numeric types to BigDecimal
   private BigDecimal convertToBigDecimal(Object value) {
     if (value == null) {
       return BigDecimal.ZERO;
@@ -281,7 +273,6 @@ public class AnalyticsService {
       return BigDecimal.valueOf((Long) value);
     }
 
-    // Try to parse as string
     try {
       return new BigDecimal(value.toString());
     } catch (NumberFormatException e) {

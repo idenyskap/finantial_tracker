@@ -56,7 +56,6 @@ function CategoriesPage() {
 
   const categories = categoriesData?.data || [];
 
-  // Группируем категории по типу
   const incomeCategories = categories.filter(cat => cat.type === 'INCOME');
   const expenseCategories = categories.filter(cat => cat.type === 'EXPENSE');
 

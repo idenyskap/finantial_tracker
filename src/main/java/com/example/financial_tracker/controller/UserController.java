@@ -23,7 +23,6 @@ public class UserController {
 
   private final UserService userService;
 
-  // Only administrators can get list of all users
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<List<UserDTO>> getAllUsers(
@@ -39,7 +38,6 @@ public class UserController {
     return ResponseEntity.ok(users);
   }
 
-  // Get current user's own profile
   @GetMapping("/me")
   public ResponseEntity<UserDTO> getCurrentUser(
     @AuthenticationPrincipal User user,
@@ -52,7 +50,6 @@ public class UserController {
     return ResponseEntity.ok(userDTO);
   }
 
-  // Administrators can get any user by ID
   @GetMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserDTO> getUserById(
@@ -70,7 +67,6 @@ public class UserController {
     return ResponseEntity.ok(user);
   }
 
-  // Update current user's own profile
   @PutMapping("/me")
   public ResponseEntity<UserDTO> updateCurrentUser(
     @RequestBody UserDTO userDTO,
@@ -84,7 +80,6 @@ public class UserController {
     return ResponseEntity.ok(updated);
   }
 
-  // Only administrators can create users manually
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserDTO> createUser(
@@ -98,7 +93,6 @@ public class UserController {
     return ResponseEntity.ok(userService.createUser(userDTO));
   }
 
-  // Only administrators can delete users
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<Void> deleteUser(
@@ -109,7 +103,6 @@ public class UserController {
     log.warn("DELETE /api/users/{} - Admin: {} from IP: {} attempting to delete user",
       id, currentUser.getEmail(), getClientIpAddress(request));
 
-    // Prevent admin from deleting themselves
     if (id.equals(currentUser.getId())) {
       log.warn("Admin: {} attempted to delete their own account", currentUser.getEmail());
       return ResponseEntity.badRequest().build();
@@ -121,7 +114,6 @@ public class UserController {
     return ResponseEntity.noContent().build();
   }
 
-  // Administrators can update any user
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserDTO> updateUser(

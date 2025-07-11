@@ -65,7 +65,6 @@ function DashboardPage() {
         />
       </div>
 
-      {/* Recent Transactions */}
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>Recent Transactions</h2>
         <div style={styles.transactionsList}>
@@ -102,7 +101,6 @@ function DashboardPage() {
         </div>
       </div>
 
-      {/* Top Categories */}
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>Top Expense Categories</h2>
         <div style={styles.categoriesList}>
@@ -130,16 +128,13 @@ function DashboardPage() {
         </div>
       </div>
 
-      {/* Charts Section - ПЕРЕНЕСЕНО ВНУТРЬ RETURN */}
       <div style={styles.chartsSection}>
         <h2 style={styles.sectionTitle}>Analytics</h2>
 
-        {/* Income vs Expenses Chart */}
         <div style={styles.chartCard}>
           <ExpenseIncomeChart dailyStats={dashboard?.dailyStats || []} />
         </div>
 
-        {/* Category Distribution */}
         {dashboard?.topExpenseCategories?.length > 0 && (
           <div style={styles.chartRow}>
             <div style={styles.chartCard}>

@@ -46,7 +46,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       request.getMethod(), request.getRequestURI(), clientIp);
     log.debug("Authorization header: {}", authHeader != null ? "Bearer [PRESENT]" : "null");
 
-    // If no Authorization header present, continue filter chain
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       log.debug("No valid Authorization header found, continuing filter chain");
       filterChain.doFilter(request, response);
@@ -57,7 +56,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     String username = null;
 
     try {
-      // Try to extract username from token
       username = jwtService.extractUsername(jwt);
       log.debug("Extracted username from JWT: {}", username);
     } catch (ExpiredJwtException ex) {
@@ -74,16 +72,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       return;
     }
 
-    // If username extracted and user is not authenticated
     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       try {
-        // Get the actual User entity directly
         User user = userService.getUserByEmail(username);
         log.debug("Found user: {} (ID: {})", user.getEmail(), user.getId());
 
         if (jwtService.isTokenValid(jwt, user)) {
           UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            user, // Use User entity directly as principal
+            user,
             null,
             user.getAuthorities()
           );

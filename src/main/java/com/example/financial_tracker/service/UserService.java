@@ -33,7 +33,6 @@ public class UserService implements UserDetailsService {
       .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
   }
 
-  // Method to get User entity by email (for internal use)
   public User getUserByEmail(String email) {
     return userRepository.findByEmail(email)
       .orElseThrow(() -> new RuntimeException("User not found with email: " + email));

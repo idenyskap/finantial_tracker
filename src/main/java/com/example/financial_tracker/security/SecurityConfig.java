@@ -35,23 +35,18 @@ public class SecurityConfig {
       .cors(cors -> cors.configurationSource(corsConfigurationSource()))
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(auth -> auth
-        // Public endpoints - no authentication required
         .requestMatchers("/api/auth/**").permitAll()
         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
         .requestMatchers("/actuator/health").permitAll()
 
-        // Personal profile - доступен всем аутентифицированным пользователям
         .requestMatchers("/api/users/me").authenticated()
 
-        // Admin-only endpoints
         .requestMatchers("/api/users/**").hasRole("ADMIN")
         .requestMatchers("/actuator/**").hasRole("ADMIN")
 
-        // Protected endpoints - authentication required
         .requestMatchers("/api/transactions/**").authenticated()
         .requestMatchers("/api/categories/**").authenticated()
 
-        // All other requests require authentication
         .anyRequest().authenticated()
       )
       .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -65,17 +60,16 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
-    // Allow specific origins in production, * only for development
     configuration.setAllowedOrigins(List.of(
-      "http://localhost:5173",  // React development server
-      "http://localhost:3000",  // Alternative React port
-      "https://your-domain.com" // Production domain
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://your-domain.com"
     ));
 
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);
-    configuration.setMaxAge(3600L); // Cache preflight requests for 1 hour
+    configuration.setMaxAge(3600L);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);

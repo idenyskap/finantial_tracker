@@ -22,6 +22,7 @@ function Layout({ children }) {
                 <Link to="/categories" style={styles.link}>Categories</Link>
                 <Link to="/budgets" style={styles.link}>Budgets</Link>
                 <Link to="/dashboard" style={styles.link}>Dashboard</Link>
+                <Link to="/recurring" style={styles.link}>Recurring</Link>
                 <Link to="/profile" style={styles.link}>Profile</Link>
                 <button onClick={handleLogout} style={styles.logoutBtn}>
                   Logout

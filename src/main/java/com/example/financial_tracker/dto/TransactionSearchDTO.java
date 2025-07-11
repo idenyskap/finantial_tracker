@@ -18,35 +18,28 @@ import java.util.List;
 @AllArgsConstructor
 public class TransactionSearchDTO {
 
-  // Текстовый поиск
   private String searchText;
 
-  // Фильтры по суммам
   private BigDecimal minAmount;
   private BigDecimal maxAmount;
 
-  // Фильтры по датам
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate dateFrom;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate dateTo;
 
-  // Быстрые фильтры по периодам
   private QuickDateFilter quickDateFilter;
 
-  // Фильтры по типу и категориям
-  private String type; // "INCOME" или "EXPENSE"
+  private String type;
   private List<Long> categoryIds;
 
-  // Пагинация
   @Min(0)
   private Integer page = 0;
 
   @Positive
   private Integer size = 20;
 
-  // Сортировка
   private String sortBy = "date";
   private SortDirection sortDirection = SortDirection.DESC;
 
