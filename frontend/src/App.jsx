@@ -12,6 +12,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import BudgetsPage from './pages/BudgetsPage';
 import ProfilePage from './pages/ProfilePage';
 import RecurringTransactionsPage from './pages/RecurringTransactionsPage';
+import GoalsPage from './pages/GoalsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,6 +77,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <RecurringTransactionsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/goals"
+              element={
+                <PrivateRoute>
+                  <GoalsPage />
                 </PrivateRoute>
               }
             />

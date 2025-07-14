@@ -4,6 +4,7 @@ import StatsCard from '../components/dashboard/StatsCard';
 import { ArrowUpIcon, ArrowDownIcon, ChartBarIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import ExpenseIncomeChart from '../components/charts/ExpenseIncomeChart';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
+import GoalsWidget from '../components/dashboard/GoalsWidget';
 
 function DashboardPage() {
   const { data, isLoading, error } = useQuery({
@@ -145,6 +146,11 @@ function DashboardPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Goals Widget */}
+      <div style={styles.section}>
+        <GoalsWidget />
       </div>
     </div>
   );
