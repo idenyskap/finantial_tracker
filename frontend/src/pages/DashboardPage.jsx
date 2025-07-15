@@ -180,10 +180,6 @@ const styles = {
   section: {
     marginBottom: '2rem',
   },
-  sectionTitle: {
-    fontSize: '1.5rem',
-    marginBottom: '1rem',
-  },
   transactionsList: {
     backgroundColor: 'white',
     borderRadius: '8px',
@@ -209,19 +205,6 @@ const styles = {
     width: '12px',
     height: '12px',
     borderRadius: '50%',
-  },
-  transactionCategory: {
-    fontWeight: '500',
-    margin: 0,
-  },
-  transactionDescription: {
-    fontSize: '0.875rem',
-    color: '#666',
-    margin: 0,
-  },
-  transactionAmount: {
-    fontWeight: 'bold',
-    margin: 0,
   },
   transactionDate: {
     fontSize: '0.875rem',
@@ -272,6 +255,34 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
     gap: '1.5rem',
+  },
+  transactionCategory: {
+    fontWeight: '600',
+    margin: 0,
+    color: '#2c3e50',
+    fontSize: '1rem',
+  },
+  transactionDescription: {
+    fontSize: '0.875rem',
+    color: '#666',
+    margin: 0,
+  },
+  transactionAmount: {
+    fontWeight: 'bold',
+    margin: 0,
+    fontSize: '1rem',
+  },
+
+  categoryName: {
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
+
+  sectionTitle: {
+    fontSize: '1.5rem',
+    marginBottom: '1rem',
+    color: '#2c3e50',
+    fontWeight: '600',
   },
 };
 

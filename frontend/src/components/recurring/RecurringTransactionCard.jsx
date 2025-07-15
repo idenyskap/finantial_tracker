@@ -1,5 +1,3 @@
-import { PlayIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-
 function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -54,24 +52,24 @@ function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) 
         <div style={styles.actions}>
           <button
             onClick={() => onExecute(transaction.id)}
-            style={styles.iconButton}
+            style={styles.actionButton}
             title="Execute now"
           >
-            <PlayIcon style={styles.icon} />
+            Run Now
           </button>
           <button
             onClick={() => onEdit(transaction)}
-            style={styles.iconButton}
+            style={styles.editButton}
             title="Edit"
           >
-            <PencilIcon style={styles.icon} />
+            Edit
           </button>
           <button
             onClick={() => onDelete(transaction.id)}
-            style={styles.iconButton}
+            style={styles.deleteButton}
             title="Delete"
           >
-            <TrashIcon style={styles.icon} />
+            Delete
           </button>
         </div>
       </div>
@@ -95,7 +93,7 @@ function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) 
               ...styles.categoryDot,
               backgroundColor: transaction.categoryColor,
             }} />
-            {transaction.categoryName}
+            <span style={styles.categoryName}>{transaction.categoryName}</span>
           </div>
           {transaction.description && (
             <p style={styles.description}>{transaction.description}</p>
@@ -142,6 +140,8 @@ const styles = {
   name: {
     margin: '0 0 0.5rem 0',
     fontSize: '1.25rem',
+    fontWeight: '600',
+    color: '#2c3e50',
   },
   badges: {
     display: 'flex',
@@ -164,17 +164,35 @@ const styles = {
     display: 'flex',
     gap: '0.5rem',
   },
-  iconButton: {
-    padding: '0.5rem',
-    backgroundColor: 'transparent',
-    border: '1px solid #ddd',
+  actionButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#27ae60',
+    color: 'white',
+    border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    fontSize: '0.75rem',
+    fontWeight: '500',
   },
-  icon: {
-    width: '20px',
-    height: '20px',
+  editButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#3498db',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '500',
+  },
+  deleteButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#e74c3c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '500',
   },
   body: {
     borderTop: '1px solid #f0f0f0',
@@ -210,6 +228,10 @@ const styles = {
     height: '12px',
     borderRadius: '50%',
   },
+  categoryName: {
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
   description: {
     margin: '0.5rem 0 0 0',
     color: '#666',
@@ -226,6 +248,7 @@ const styles = {
   },
   dateValue: {
     fontWeight: '500',
+    color: '#2c3e50',
   },
 };
 

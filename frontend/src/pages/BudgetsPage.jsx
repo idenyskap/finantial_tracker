@@ -4,7 +4,6 @@ import { budgetService } from '../services/budgetService';
 import { categoryService } from '../services/categoryService';
 import BudgetProgress from '../components/budgets/BudgetProgress';
 import { toast } from 'sonner';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 function BudgetsPage() {
   const queryClient = useQueryClient();
@@ -125,8 +124,7 @@ function BudgetsPage() {
       <div style={styles.header}>
         <h1>Budgets</h1>
         <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
-          <PlusIcon style={styles.icon} />
-          Add Budget
+          + Add Budget
         </button>
       </div>
 
@@ -221,11 +219,11 @@ function BudgetsPage() {
             <div key={budget.id} style={styles.budgetItem}>
               <BudgetProgress budget={budget} />
               <div style={styles.budgetActions}>
-                <button onClick={() => handleEdit(budget)} style={styles.iconButton}>
-                  <PencilIcon style={styles.smallIcon} />
+                <button onClick={() => handleEdit(budget)} style={styles.editButton}>
+                  Edit
                 </button>
-                <button onClick={() => handleDelete(budget.id)} style={styles.iconButton}>
-                  <TrashIcon style={styles.smallIcon} />
+                <button onClick={() => handleDelete(budget.id)} style={styles.deleteButton}>
+                  Delete
                 </button>
               </div>
             </div>
@@ -244,19 +242,14 @@ const styles = {
     marginBottom: '2rem',
   },
   addButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
     padding: '0.75rem 1rem',
     backgroundColor: '#27ae60',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-  },
-  icon: {
-    width: '20px',
-    height: '20px',
+    fontSize: '1rem',
+    fontWeight: '500',
   },
   formContainer: {
     backgroundColor: 'white',
@@ -312,6 +305,7 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+    fontWeight: '500',
   },
   cancelButton: {
     flex: 1,
@@ -347,20 +341,27 @@ const styles = {
     top: '1rem',
     right: '1rem',
     display: 'flex',
-    gap: '0.25rem',
+    gap: '0.5rem',
   },
-  iconButton: {
-    padding: '0.5rem',
-    backgroundColor: 'white',
-    border: '1px solid #ddd',
+  editButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#3498db',
+    color: 'white',
+    border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    opacity: 0.8,
-    transition: 'opacity 0.2s',
+    fontSize: '0.75rem',
+    fontWeight: '500',
   },
-  smallIcon: {
-    width: '16px',
-    height: '16px',
+  deleteButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#e74c3c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '500',
   },
 };
 

@@ -21,7 +21,6 @@ function TransactionsPage() {
     description: '',
   });
 
-  // Fetch categories
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoryService.getAll(),
@@ -263,13 +262,9 @@ function TransactionsPage() {
                     }}
                   />
                   <div>
-                    <p style={styles.transactionCategory}>{tx.categoryName}</p>
-                    <p style={styles.transactionDescription}>
-                      {tx.description || 'No description'}
-                    </p>
-                    <p style={styles.transactionDate}>
-                      {new Date(tx.date).toLocaleDateString()}
-                    </p>
+                    <p style={{ ...styles.transactionCategory, color: '#000000' }}>{tx.categoryName}</p>
+                    <p style={{ ...styles.transactionDescription, color: '#000000' }}>{tx.description || 'No description'}</p>
+                    <p style={{ ...styles.transactionDate, color: '#000000' }}>{new Date(tx.date).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div style={styles.transactionAmount}>

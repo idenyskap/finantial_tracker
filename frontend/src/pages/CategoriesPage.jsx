@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoryService } from '../services/categoryService';
 import { toast } from 'sonner';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 function CategoriesPage() {
   const queryClient = useQueryClient();
@@ -108,8 +107,7 @@ function CategoriesPage() {
           onClick={() => setShowForm(!showForm)}
           style={styles.addButton}
         >
-          <PlusIcon style={styles.icon} />
-          Add Category
+          + Add Category
         </button>
       </div>
 
@@ -196,15 +194,15 @@ function CategoriesPage() {
                       <div style={styles.categoryActions}>
                         <button
                           onClick={() => handleEdit(category)}
-                          style={styles.iconButton}
+                          style={styles.editButton}
                         >
-                          <PencilIcon style={styles.smallIcon} />
+                          Edit
                         </button>
                         <button
                           onClick={() => handleDelete(category.id)}
-                          style={styles.iconButton}
+                          style={styles.deleteButton}
                         >
-                          <TrashIcon style={styles.smallIcon} />
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -235,15 +233,15 @@ function CategoriesPage() {
                       <div style={styles.categoryActions}>
                         <button
                           onClick={() => handleEdit(category)}
-                          style={styles.iconButton}
+                          style={styles.editButton}
                         >
-                          <PencilIcon style={styles.smallIcon} />
+                          Edit
                         </button>
                         <button
                           onClick={() => handleDelete(category.id)}
-                          style={styles.iconButton}
+                          style={styles.deleteButton}
                         >
-                          <TrashIcon style={styles.smallIcon} />
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -266,19 +264,14 @@ const styles = {
     marginBottom: '2rem',
   },
   addButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
     padding: '0.75rem 1rem',
     backgroundColor: '#27ae60',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-  },
-  icon: {
-    width: '20px',
-    height: '20px',
+    fontSize: '1rem',
+    fontWeight: '500',
   },
   formContainer: {
     backgroundColor: 'white',
@@ -344,6 +337,7 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+    fontWeight: '500',
   },
   cancelButton: {
     flex: 1,
@@ -364,6 +358,8 @@ const styles = {
   sectionTitle: {
     fontSize: '1.5rem',
     marginBottom: '1rem',
+    color: '#2c3e50',
+    fontWeight: '600',
   },
   categoriesGrid: {
     display: 'grid',
@@ -396,23 +392,33 @@ const styles = {
     borderRadius: '50%',
   },
   categoryName: {
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#2c3e50',
+    fontSize: '1rem',
   },
   categoryActions: {
     display: 'flex',
-    gap: '0.25rem',
+    gap: '0.5rem',
   },
-  iconButton: {
-    padding: '0.5rem',
-    backgroundColor: 'transparent',
-    border: '1px solid #ddd',
+  editButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#3498db',
+    color: 'white',
+    border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    transition: 'background-color 0.2s',
+    fontSize: '0.75rem',
+    fontWeight: '500',
   },
-  smallIcon: {
-    width: '16px',
-    height: '16px',
+  deleteButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#e74c3c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '500',
   },
 };
 

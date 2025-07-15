@@ -1,15 +1,4 @@
 import { useState } from 'react';
-import {
-  PencilIcon,
-  TrashIcon,
-  PauseIcon,
-  PlayIcon,
-  PlusIcon,
-  MinusIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ExclamationCircleIcon
-} from '@heroicons/react/24/outline';
 
 function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
   const [showContribution, setShowContribution] = useState(false);
@@ -33,14 +22,13 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
   const getStatusIcon = () => {
     switch (goal.status) {
       case 'COMPLETED':
-        return <CheckCircleIcon style={{ width: 20, height: 20, color: '#27ae60' }} />;
+        return '✓';
       case 'PAUSED':
-        return <PauseIcon style={{ width: 20, height: 20, color: '#f39c12' }} />;
+        return '❚❚';
       case 'CANCELLED':
-        return <ExclamationCircleIcon style={{ width: 20, height: 20, color: '#e74c3c' }} />;
+        return '✗';
       default:
-        return goal.isOverdue ?
-          <ClockIcon style={{ width: 20, height: 20, color: '#e74c3c' }} /> : null;
+        return goal.isOverdue ? '!' : null;
     }
   };
 
@@ -66,7 +54,16 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
         <div style={styles.titleSection}>
           <div style={styles.titleRow}>
             <h3 style={styles.name}>{goal.name}</h3>
-            {getStatusIcon()}
+            {getStatusIcon() && (
+              <span style={{
+                ...styles.statusIcon,
+                color: goal.status === 'COMPLETED' ? '#27ae60' :
+                  goal.status === 'CANCELLED' || goal.isOverdue ? '#e74c3c' :
+                    '#f39c12'
+              }}>
+                {getStatusIcon()}
+              </span>
+            )}
           </div>
           <div style={styles.badges}>
             <span style={{
@@ -83,7 +80,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
                   ...styles.categoryDot,
                   backgroundColor: goal.categoryColor || '#666',
                 }} />
-                {goal.categoryName}
+                <span style={styles.categoryName}>{goal.categoryName}</span>
               </span>
             )}
           </div>
@@ -93,31 +90,31 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
           <div style={styles.actions}>
             <button
               onClick={() => setShowContribution(!showContribution)}
-              style={styles.iconButton}
+              style={styles.actionButton}
               title="Add/Withdraw funds"
             >
-              <PlusIcon style={styles.icon} />
+              Add Funds
             </button>
             <button
               onClick={() => onStatusChange(goal.id, 'pause')}
-              style={styles.iconButton}
+              style={styles.pauseButton}
               title="Pause goal"
             >
-              <PauseIcon style={styles.icon} />
+              Pause
             </button>
             <button
               onClick={() => onEdit(goal)}
-              style={styles.iconButton}
+              style={styles.editButton}
               title="Edit"
             >
-              <PencilIcon style={styles.icon} />
+              Edit
             </button>
             <button
               onClick={() => onDelete(goal.id)}
-              style={styles.iconButton}
+              style={styles.deleteButton}
               title="Delete"
             >
-              <TrashIcon style={styles.icon} />
+              Delete
             </button>
           </div>
         )}
@@ -126,10 +123,10 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
           <div style={styles.actions}>
             <button
               onClick={() => onStatusChange(goal.id, 'resume')}
-              style={styles.iconButton}
+              style={styles.resumeButton}
               title="Resume goal"
             >
-              <PlayIcon style={styles.icon} />
+              Resume
             </button>
           </div>
         )}
@@ -200,7 +197,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
             <span style={styles.detailLabel}>Days Remaining:</span>
             <span style={{
               ...styles.detailValue,
-              color: goal.daysRemaining < 30 ? '#e74c3c' : '#666',
+              color: goal.daysRemaining < 30 ? '#e74c3c' : '#2c3e50',
             }}>
               {goal.daysRemaining > 0 ? goal.daysRemaining : 'Overdue'}
             </span>
@@ -262,6 +259,12 @@ const styles = {
   name: {
     margin: 0,
     fontSize: '1.25rem',
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
+  statusIcon: {
+    fontSize: '1.25rem',
+    fontWeight: 'bold',
   },
   badges: {
     display: 'flex',
@@ -289,21 +292,63 @@ const styles = {
     height: '8px',
     borderRadius: '50%',
   },
+  categoryName: {
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
   actions: {
     display: 'flex',
     gap: '0.5rem',
   },
-  iconButton: {
-    padding: '0.5rem',
-    backgroundColor: 'transparent',
-    border: '1px solid #ddd',
+  actionButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#27ae60',
+    color: 'white',
+    border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    fontSize: '0.75rem',
+    fontWeight: '500',
   },
-  icon: {
-    width: '20px',
-    height: '20px',
+  pauseButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#f39c12',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '500',
+  },
+  editButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#3498db',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '500',
+  },
+  deleteButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#e74c3c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '500',
+  },
+  resumeButton: {
+    padding: '0.5rem 0.75rem',
+    backgroundColor: '#27ae60',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '500',
   },
   description: {
     margin: '0 0 1rem 0',
@@ -321,10 +366,12 @@ const styles = {
   currentAmount: {
     fontSize: '1.5rem',
     fontWeight: 'bold',
+    color: '#2c3e50',
   },
   targetAmount: {
     fontSize: '1rem',
     color: '#666',
+    fontWeight: '600',
   },
   progressBar: {
     height: '12px',
@@ -371,6 +418,7 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+    fontWeight: '500',
   },
   details: {
     display: 'flex',
@@ -390,7 +438,8 @@ const styles = {
   },
   detailValue: {
     fontSize: '0.875rem',
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#2c3e50',
   },
   savingsRequired: {
     backgroundColor: '#e3f2fd',
@@ -401,6 +450,7 @@ const styles = {
     margin: '0 0 0.75rem 0',
     fontSize: '0.875rem',
     color: '#1976d2',
+    fontWeight: '600',
   },
   savingsGrid: {
     display: 'grid',

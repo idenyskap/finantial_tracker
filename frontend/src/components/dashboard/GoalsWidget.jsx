@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { goalService } from '../../services/goalService';
 import { Link } from 'react-router-dom';
-import { TrophyIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 function GoalsWidget() {
   const { data: goalsData } = useQuery({
@@ -23,7 +22,6 @@ function GoalsWidget() {
     return (
       <div style={styles.widget}>
         <h3 style={styles.title}>
-          <TrophyIcon style={styles.titleIcon} />
           Financial Goals
         </h3>
         <div style={styles.empty}>
@@ -38,7 +36,6 @@ function GoalsWidget() {
     <div style={styles.widget}>
       <div style={styles.header}>
         <h3 style={styles.title}>
-          <TrophyIcon style={styles.titleIcon} />
           Financial Goals
         </h3>
         <Link to="/goals" style={styles.viewAll}>View all</Link>
@@ -54,7 +51,6 @@ function GoalsWidget() {
                 <h4 style={styles.goalName}>{goal.name}</h4>
                 {goal.daysRemaining < 30 && goal.daysRemaining > 0 && (
                   <div style={styles.urgentBadge}>
-                    <ClockIcon style={styles.urgentIcon} />
                     {goal.daysRemaining}d
                   </div>
                 )}
@@ -62,7 +58,7 @@ function GoalsWidget() {
 
               <div style={styles.goalProgress}>
                 <div style={styles.progressInfo}>
-                  <span>{formatCurrency(goal.currentAmount)}</span>
+                  <span style={styles.currentAmount}>{formatCurrency(goal.currentAmount)}</span>
                   <span style={styles.targetAmount}>
                     of {formatCurrency(goal.targetAmount)}
                   </span>
@@ -125,19 +121,14 @@ const styles = {
   title: {
     margin: 0,
     fontSize: '1.25rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-  },
-  titleIcon: {
-    width: '24px',
-    height: '24px',
-    color: '#f39c12',
+    fontWeight: '600',
+    color: '#2c3e50',
   },
   viewAll: {
     color: '#3498db',
     textDecoration: 'none',
     fontSize: '0.875rem',
+    fontWeight: '500',
   },
   empty: {
     textAlign: 'center',
@@ -147,6 +138,7 @@ const styles = {
   link: {
     color: '#3498db',
     textDecoration: 'none',
+    fontWeight: '500',
   },
   goalsList: {
     display: 'flex',
@@ -167,20 +159,16 @@ const styles = {
   goalName: {
     margin: 0,
     fontSize: '1rem',
+    fontWeight: '600',
+    color: '#2c3e50',
   },
   urgentBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.25rem',
     padding: '0.25rem 0.5rem',
     backgroundColor: '#fee',
     color: '#e74c3c',
     borderRadius: '4px',
     fontSize: '0.75rem',
-  },
-  urgentIcon: {
-    width: '14px',
-    height: '14px',
+    fontWeight: '600',
   },
   goalProgress: {
     display: 'flex',
@@ -192,8 +180,13 @@ const styles = {
     justifyContent: 'space-between',
     fontSize: '0.875rem',
   },
+  currentAmount: {
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
   targetAmount: {
     color: '#666',
+    fontWeight: '500',
   },
   progressBar: {
     height: '8px',
@@ -213,7 +206,7 @@ const styles = {
   },
   monthlySaving: {
     color: '#3498db',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   quickStats: {
     display: 'grid',
@@ -236,6 +229,7 @@ const styles = {
   statLabel: {
     fontSize: '0.75rem',
     color: '#666',
+    fontWeight: '500',
   },
 };
 

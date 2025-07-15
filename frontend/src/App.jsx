@@ -1,6 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
+import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/auth/PrivateRoute';
 import RegisterPage from './pages/RegisterPage';
@@ -26,72 +28,91 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/transactions"
-              element={
-                <PrivateRoute>
-                  <TransactionsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <DashboardPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/categories"
-              element={
-                <PrivateRoute>
-                  <CategoriesPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/budgets"
-              element={
-                <PrivateRoute>
-                  <BudgetsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute>
-                  <ProfilePage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/recurring"
-              element={
-                <PrivateRoute>
-                  <RecurringTransactionsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/goals"
-              element={
-                <PrivateRoute>
-                  <GoalsPage />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-        </Layout>
-      </Router>
-      <Toaster position="top-right" richColors />
+      <AuthProvider>
+        <ThemeProvider>
+          <Router>
+            <Toaster position="top-right" richColors />
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<LoginPage />} />
+
+              {/* Protected routes with Layout */}
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <DashboardPage />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/transactions"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <TransactionsPage />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/categories"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <CategoriesPage />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/budgets"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <BudgetsPage />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <ProfilePage />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/recurring"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <RecurringTransactionsPage />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/goals"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <GoalsPage />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </Router>
+        </ThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
