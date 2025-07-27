@@ -1,450 +1,356 @@
-import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { userService } from '../services/userService';
-import { authService } from '../services/authService';
-import { transactionService } from '../services/transactionService';
-import { toast } from 'sonner';
-import { UserCircleIcon, KeyIcon, TrashIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import React, {useState, useEffect} from 'react';
+import {useAuth} from '../contexts/AuthContext';
+import {useThemedStyles} from '../hooks/useThemedStyles';
+import api from '../services/api';
+import {toast} from 'sonner';
+import PasswordChangeModal from '../components/profile/PasswordChangeModal';
+import NotificationSettings from '../components/profile/NotificationSettings';
+import ChangeEmailModal from '../components/profile/ChangeEmailModal';
 
 function ProfilePage() {
-  const [activeTab, setActiveTab] = useState('profile');
-  const [profileForm, setProfileForm] = useState({ name: '' });
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  const {user} = useAuth();
+  const styles = useThemedStyles(getStyles);
+  const [activeTab, setActiveTab] = useState('general');
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
-  const { data: userData, isLoading } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => userService.getCurrentUser(),
-    onSuccess: (response) => {
-      setProfileForm({ name: response.data.name });
-    },
-  });
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
-  const { data: statsData } = useQuery({
-    queryKey: ['userStats'],
-    queryFn: () => transactionService.getStats(),
-  });
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get('/users/profile');
+      setUserData(response.data);
+    } catch (error) {
+      toast.error('Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const updateProfileMutation = useMutation({
-    mutationFn: userService.updateProfile,
-    onSuccess: () => {
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.put('/users/profile', {
+        name: userData.name
+      });
+      setUserData(response.data);
       toast.success('Profile updated successfully');
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Error updating profile');
-    },
-  });
-
-  const changePasswordMutation = useMutation({
-    mutationFn: userService.changePassword,
-    onSuccess: () => {
-      toast.success('Password changed successfully');
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Error changing password');
-    },
-  });
-
-  const deleteAccountMutation = useMutation({
-    mutationFn: userService.deleteAccount,
-    onSuccess: () => {
-      toast.success('Account deleted successfully');
-      authService.logout();
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Error deleting account');
-    },
-  });
-
-  const user = userData?.data;
-  const stats = statsData?.data;
-
-  const handleProfileSubmit = (e) => {
-    e.preventDefault();
-    updateProfileMutation.mutate(profileForm);
-  };
-
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    if (passwordForm.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-
-    changePasswordMutation.mutate({
-      currentPassword: passwordForm.currentPassword,
-      newPassword: passwordForm.newPassword,
-    });
-  };
-
-  const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      if (window.confirm('This will permanently delete all your data. Are you absolutely sure?')) {
-        deleteAccountMutation.mutate();
-      }
+    } catch (error) {
+      toast.error('Failed to update profile');
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount || 0);
+  const resendVerification = async () => {
+    try {
+      await api.post('/auth/resend-verification', { email: userData.email });
+      toast.success('Verification email sent!');
+    } catch (error) {
+      toast.error('Failed to send verification email');
+    }
   };
 
-  if (isLoading) return <div style={styles.loading}>Loading...</div>;
+  if (loading) {
+    return <div style={styles.loading}>Loading...</div>;
+  }
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Account Settings</h1>
+      <h1 style={styles.title}>Profile Settings</h1>
+
+      <div style={styles.tabContainer}>
+        <button
+          style={{
+            ...styles.tab,
+            ...(activeTab === 'general' ? styles.activeTab : {})
+          }}
+          onClick={() => setActiveTab('general')}
+        >
+          General
+        </button>
+        <button
+          style={{
+            ...styles.tab,
+            ...(activeTab === 'notifications' ? styles.activeTab : {})
+          }}
+          onClick={() => setActiveTab('notifications')}
+        >
+          Notifications
+        </button>
+      </div>
 
       <div style={styles.content}>
-        {/* Tabs */}
-        <div style={styles.tabs}>
-          <button
-            onClick={() => setActiveTab('profile')}
-            style={{
-              ...styles.tab,
-              ...(activeTab === 'profile' ? styles.activeTab : {}),
-            }}
-          >
-            <UserCircleIcon style={styles.tabIcon} />
-            Profile
-          </button>
-          <button
-            onClick={() => setActiveTab('security')}
-            style={{
-              ...styles.tab,
-              ...(activeTab === 'security' ? styles.activeTab : {}),
-            }}
-          >
-            <KeyIcon style={styles.tabIcon} />
-            Security
-          </button>
-          <button
-            onClick={() => setActiveTab('statistics')}
-            style={{
-              ...styles.tab,
-              ...(activeTab === 'statistics' ? styles.activeTab : {}),
-            }}
-          >
-            <ChartBarIcon style={styles.tabIcon} />
-            Statistics
-          </button>
-          <button
-            onClick={() => setActiveTab('danger')}
-            style={{
-              ...styles.tab,
-              ...(activeTab === 'danger' ? styles.activeTab : {}),
-            }}
-          >
-            <TrashIcon style={styles.tabIcon} />
-            Danger Zone
-          </button>
-        </div>
+        {activeTab === 'general' && (
+          <div style={styles.card}>
+            <h2 style={styles.cardTitle}>General Information</h2>
 
-        <div style={styles.tabContent}>
-          {activeTab === 'profile' && (
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Profile Information</h2>
-              <form onSubmit={handleProfileSubmit} style={styles.form}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Email</label>
-                  <input
-                    type="email"
-                    value={user?.email || ''}
-                    disabled
-                    style={styles.inputDisabled}
-                  />
-                  <p style={styles.helper}>Email cannot be changed</p>
-                </div>
+            <form onSubmit={handleUpdateProfile} style={styles.form}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Email</label>
+                <input
+                  type="email"
+                  value={userData?.email || ''}
+                  disabled
+                  style={{...styles.input, ...styles.disabledInput}}
+                />
+                {userData && !userData.emailVerified && (
+                  <div style={styles.warningMessage}>
+                    <span>⚠️ Your email is not verified. </span>
+                    <button
+                      type="button"
+                      onClick={resendVerification}
+                      style={styles.linkButton}
+                    >
+                      Resend verification email
+                    </button>
+                  </div>
+                )}
+                {userData?.newEmail && (
+                  <div style={styles.infoMessage}>
+                    <span>📧 Pending email change to: {userData.newEmail}</span>
+                  </div>
+                )}
+              </div>
 
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Name</label>
-                  <input
-                    type="text"
-                    value={profileForm.name}
-                    onChange={(e) => setProfileForm({ name: e.target.value })}
-                    required
-                    style={styles.input}
-                  />
-                </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Name</label>
+                <input
+                  type="text"
+                  value={userData?.name || ''}
+                  onChange={(e) => setUserData({...userData, name: e.target.value})}
+                  style={styles.input}
+                  required
+                />
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={updateProfileMutation.isPending}
-                  style={styles.submitButton}
-                >
-                  {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
+              <div style={styles.formActions}>
+                <button type="submit" style={styles.primaryButton}>
+                  Update Profile
                 </button>
-              </form>
-            </div>
-          )}
-
-          {activeTab === 'security' && (
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Change Password</h2>
-              <form onSubmit={handlePasswordSubmit} style={styles.form}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Current Password</label>
-                  <input
-                    type="password"
-                    value={passwordForm.currentPassword}
-                    onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                    required
-                    style={styles.input}
-                  />
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>New Password</label>
-                  <input
-                    type="password"
-                    value={passwordForm.newPassword}
-                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                    required
-                    minLength={6}
-                    style={styles.input}
-                  />
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Confirm New Password</label>
-                  <input
-                    type="password"
-                    value={passwordForm.confirmPassword}
-                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                    required
-                    style={styles.input}
-                  />
-                </div>
-
                 <button
-                  type="submit"
-                  disabled={changePasswordMutation.isPending}
-                  style={styles.submitButton}
+                  type="button"
+                  onClick={() => setShowPasswordModal(true)}
+                  style={styles.secondaryButton}
                 >
-                  {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
+                  Change Password
                 </button>
-              </form>
-            </div>
-          )}
+                <button
+                  type="button"
+                  onClick={() => setShowEmailModal(true)}
+                  style={styles.secondaryButton}
+                >
+                  Change Email
+                </button>
+              </div>
+            </form>
 
-          {activeTab === 'statistics' && (
             <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Account Statistics</h2>
-              <div style={styles.statsGrid}>
-                <div style={styles.statCard}>
-                  <h3 style={styles.statTitle}>Total Income</h3>
-                  <p style={styles.statValue}>{formatCurrency(stats?.income)}</p>
+              <h3 style={styles.sectionTitle}>Account Information</h3>
+              <div style={styles.infoGrid}>
+                <div style={styles.infoItem}>
+                  <span style={styles.infoLabel}>Member Since</span>
+                  <span style={styles.infoValue}>
+                    {new Date(userData?.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
-                <div style={styles.statCard}>
-                  <h3 style={styles.statTitle}>Total Expenses</h3>
-                  <p style={styles.statValue}>{formatCurrency(stats?.expense)}</p>
-                </div>
-                <div style={styles.statCard}>
-                  <h3 style={styles.statTitle}>Current Balance</h3>
-                  <p style={styles.statValue}>{formatCurrency(stats?.balance)}</p>
-                </div>
-                <div style={styles.statCard}>
-                  <h3 style={styles.statTitle}>Account Created</h3>
-                  <p style={styles.statValue}>
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                  </p>
+                <div style={styles.infoItem}>
+                  <span style={styles.infoLabel}>Account Status</span>
+                  <span style={{...styles.infoValue, color: '#4CAF50'}}>Active</span>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {activeTab === 'danger' && (
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitleDanger}>Danger Zone</h2>
-              <div style={styles.dangerCard}>
-                <div>
-                  <h3 style={styles.dangerTitle}>Delete Account</h3>
-                  <p style={styles.dangerText}>
-                    Once you delete your account, there is no going back. All your data will be permanently removed.
-                  </p>
-                </div>
-                <button
-                  onClick={handleDeleteAccount}
-                  disabled={deleteAccountMutation.isPending}
-                  style={styles.deleteButton}
-                >
-                  {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete Account'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        {activeTab === 'notifications' && (
+          <NotificationSettings/>
+        )}
       </div>
+
+      {showPasswordModal && (
+        <PasswordChangeModal
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={() => {
+            setShowPasswordModal(false);
+            toast.success('Password changed successfully');
+          }}
+        />
+      )}
+
+      {showEmailModal && (
+        <ChangeEmailModal
+          currentEmail={userData?.email || ''}
+          onClose={() => setShowEmailModal(false)}
+          onSuccess={() => {
+            setShowEmailModal(false);
+            toast.info('Check your new email for confirmation link');
+          }}
+        />
+      )}
     </div>
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
   container: {
-    maxWidth: '800px',
+    maxWidth: '1000px',
     margin: '0 auto',
   },
   title: {
     fontSize: '2rem',
+    fontWeight: 'bold',
     marginBottom: '2rem',
+    color: theme.text,
   },
-  content: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    overflow: 'hidden',
-  },
-  tabs: {
+  tabContainer: {
     display: 'flex',
-    borderBottom: '1px solid #e0e0e0',
+    gap: '1rem',
+    marginBottom: '2rem',
+    borderBottom: `2px solid ${theme.border}`,
   },
   tab: {
-    flex: 1,
-    padding: '1rem',
+    padding: '0.75rem 1.5rem',
     backgroundColor: 'transparent',
     border: 'none',
-    borderBottom: '3px solid transparent',
+    color: theme.textSecondary,
+    fontSize: '1rem',
     cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5rem',
-    color: '#666',
     transition: 'all 0.2s',
+    borderBottom: '2px solid transparent',
+    marginBottom: '-2px',
   },
   activeTab: {
-    color: '#3498db',
-    borderBottomColor: '#3498db',
-    backgroundColor: '#f8f9fa',
+    color: theme.primary,
+    borderBottomColor: theme.primary,
   },
-  tabIcon: {
-    width: '20px',
-    height: '20px',
+  content: {
+    minHeight: '400px',
   },
-  tabContent: {
+  card: {
+    backgroundColor: theme.backgroundSecondary,
+    borderRadius: '8px',
     padding: '2rem',
+    boxShadow: theme.shadow,
   },
-  section: {
-    maxWidth: '500px',
-  },
-  sectionTitle: {
+  cardTitle: {
     fontSize: '1.5rem',
     marginBottom: '1.5rem',
-  },
-  sectionTitleDanger: {
-    fontSize: '1.5rem',
-    marginBottom: '1.5rem',
-    color: '#e74c3c',
+    color: theme.text,
   },
   form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
+    marginBottom: '2rem',
   },
   formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
+    marginBottom: '1.5rem',
   },
   label: {
+    display: 'block',
+    marginBottom: '0.5rem',
     fontWeight: '500',
-    color: '#333',
+    color: theme.text,
   },
   input: {
+    width: '100%',
     padding: '0.75rem',
-    border: '1px solid #ddd',
     borderRadius: '4px',
+    border: `1px solid ${theme.border}`,
+    backgroundColor: theme.background,
+    color: theme.text,
     fontSize: '1rem',
   },
-  inputDisabled: {
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    backgroundColor: '#f5f5f5',
-    color: '#666',
+  disabledInput: {
+    opacity: 0.6,
     cursor: 'not-allowed',
   },
-  helper: {
-    fontSize: '0.875rem',
-    color: '#666',
-    margin: 0,
-  },
-  submitButton: {
+  warningMessage: {
+    marginTop: '0.5rem',
     padding: '0.75rem',
-    backgroundColor: '#3498db',
+    backgroundColor: '#fff3cd',
+    border: '1px solid #ffeaa7',
+    borderRadius: '4px',
+    fontSize: '0.875rem',
+    color: '#856404',
+  },
+  infoMessage: {
+    marginTop: '0.5rem',
+    padding: '0.75rem',
+    backgroundColor: '#d1ecf1',
+    border: '1px solid #bee5eb',
+    borderRadius: '4px',
+    fontSize: '0.875rem',
+    color: '#0c5460',
+  },
+  linkButton: {
+    background: 'none',
+    border: 'none',
+    color: '#007bff',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    padding: 0,
+    font: 'inherit',
+  },
+  formActions: {
+    display: 'flex',
+    gap: '1rem',
+    marginTop: '2rem',
+  },
+  primaryButton: {
+    padding: '0.75rem 1.5rem',
+    backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     fontSize: '1rem',
     cursor: 'pointer',
-    transition: 'background-color 0.2s',
+    transition: 'opacity 0.2s',
   },
-  statsGrid: {
+  secondaryButton: {
+    padding: '0.75rem 1.5rem',
+    backgroundColor: 'transparent',
+    color: theme.primary,
+    border: `1px solid ${theme.primary}`,
+    borderRadius: '4px',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  section: {
+    marginTop: '2rem',
+    paddingTop: '2rem',
+    borderTop: `1px solid ${theme.border}`,
+  },
+  sectionTitle: {
+    fontSize: '1.25rem',
+    marginBottom: '1rem',
+    color: theme.text,
+  },
+  infoGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '1rem',
   },
-  statCard: {
-    padding: '1.5rem',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
-    textAlign: 'center',
-  },
-  statTitle: {
-    fontSize: '0.875rem',
-    color: '#666',
-    marginBottom: '0.5rem',
-  },
-  statValue: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    color: '#333',
-    margin: 0,
-  },
-  dangerCard: {
-    padding: '1.5rem',
-    border: '2px solid #e74c3c',
-    borderRadius: '8px',
+  infoItem: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff5f5',
+    flexDirection: 'column',
   },
-  dangerTitle: {
-    margin: '0 0 0.5rem 0',
-    color: '#e74c3c',
+  infoLabel: {
+    fontSize: '0.875rem',
+    color: theme.textSecondary,
+    marginBottom: '0.25rem',
   },
-  dangerText: {
-    margin: 0,
-    color: '#666',
-  },
-  deleteButton: {
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
+  infoValue: {
+    fontSize: '1rem',
     fontWeight: '500',
+    color: theme.text,
   },
   loading: {
     textAlign: 'center',
     padding: '2rem',
+    color: theme.textSecondary,
   },
-};
+});
 
 export default ProfilePage;

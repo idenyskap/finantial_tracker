@@ -31,4 +31,9 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     "CASE WHEN g.targetDate < CURRENT_DATE THEN 0 ELSE 1 END, " +
     "g.targetDate ASC")
   List<Goal> findActiveGoalsSortedByUrgency(@Param("user") User user);
+
+  @Query("SELECT g FROM Goal g WHERE g.user = :user AND g.status = 'ACTIVE'")
+  List<Goal> findActiveByUser(@Param("user") User user);
+
+  List<Goal> findByUser(User user);
 }

@@ -1,9 +1,11 @@
 package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.BudgetDTO;
-import com.example.financial_tracker.entity.*;
-import com.example.financial_tracker.exception.BusinessLogicException;
+import com.example.financial_tracker.entity.Budget;
+import com.example.financial_tracker.entity.Category;
+import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
+import com.example.financial_tracker.mapper.BudgetMapper;
 import com.example.financial_tracker.repository.BudgetRepository;
 import com.example.financial_tracker.repository.CategoryRepository;
 import com.example.financial_tracker.repository.TransactionRepository;
@@ -15,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,38 +29,22 @@ public class BudgetService {
   private final BudgetRepository budgetRepository;
   private final CategoryRepository categoryRepository;
   private final TransactionRepository transactionRepository;
+  private final BudgetMapper budgetMapper;
 
   public BudgetDTO createBudget(User user, BudgetDTO dto) {
     log.info("Creating budget '{}' for user: {}", dto.getName(), user.getEmail());
 
-    Category category = null;
+    Budget budget = budgetMapper.toEntity(dto);
+    budget.setUser(user);
+
     if (dto.getCategoryId() != null) {
-      category = categoryRepository.findById(dto.getCategoryId())
+      Category category = categoryRepository.findByIdAndUser(dto.getCategoryId(), user)
         .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-
-      if (!category.getUser().getId().equals(user.getId())) {
-        throw new BusinessLogicException("Category does not belong to user");
-      }
-
-      if (budgetRepository.existsByUserAndCategoryAndActiveTrue(user, category)) {
-        throw new BusinessLogicException("Active budget already exists for this category");
-      }
+      budget.setCategory(category);
     }
 
-    Budget budget = Budget.builder()
-      .name(dto.getName())
-      .amount(dto.getAmount())
-      .period(dto.getPeriod())
-      .category(category)
-      .user(user)
-      .active(dto.isActive())
-      .notifyThreshold(dto.getNotifyThreshold())
-      .build();
-
     Budget saved = budgetRepository.save(budget);
-    log.info("Created budget ID: {} for user: {}", saved.getId(), user.getEmail());
-
-    return mapToDto(saved);
+    return mapBudgetWithSpent(saved);
   }
 
   public List<BudgetDTO> getUserBudgets(User user) {
@@ -68,19 +53,21 @@ public class BudgetService {
     List<Budget> budgets = budgetRepository.findByUserAndActiveOrderByCreatedAtDesc(user, true);
 
     return budgets.stream()
-      .map(this::mapToDto)
+      .map(this::mapBudgetWithSpent)
       .collect(Collectors.toList());
   }
 
   public BudgetDTO getBudgetById(User user, Long id) {
+    log.info("Fetching budget {} for user: {}", id, user.getEmail());
+
     Budget budget = budgetRepository.findByIdAndUser(id, user)
       .orElseThrow(() -> new ResourceNotFoundException("Budget not found"));
 
-    return mapToDto(budget);
+    return mapBudgetWithSpent(budget);
   }
 
   public BudgetDTO updateBudget(User user, Long id, BudgetDTO dto) {
-    log.info("Updating budget ID: {} for user: {}", id, user.getEmail());
+    log.info("Updating budget {} for user: {}", id, user.getEmail());
 
     Budget budget = budgetRepository.findByIdAndUser(id, user)
       .orElseThrow(() -> new ResourceNotFoundException("Budget not found"));
@@ -88,15 +75,23 @@ public class BudgetService {
     budget.setName(dto.getName());
     budget.setAmount(dto.getAmount());
     budget.setPeriod(dto.getPeriod());
-    budget.setActive(dto.isActive());
     budget.setNotifyThreshold(dto.getNotifyThreshold());
+    budget.setActive(dto.isActive());
+
+    if (dto.getCategoryId() != null) {
+      Category category = categoryRepository.findByIdAndUser(dto.getCategoryId(), user)
+        .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+      budget.setCategory(category);
+    } else {
+      budget.setCategory(null);
+    }
 
     Budget saved = budgetRepository.save(budget);
-    return mapToDto(saved);
+    return mapBudgetWithSpent(saved);
   }
 
   public void deleteBudget(User user, Long id) {
-    log.info("Deleting budget ID: {} for user: {}", id, user.getEmail());
+    log.info("Deleting budget {} for user: {}", id, user.getEmail());
 
     Budget budget = budgetRepository.findByIdAndUser(id, user)
       .orElseThrow(() -> new ResourceNotFoundException("Budget not found"));
@@ -104,78 +99,39 @@ public class BudgetService {
     budgetRepository.delete(budget);
   }
 
-  private BudgetDTO mapToDto(Budget budget) {
-    BudgetDTO dto = BudgetDTO.builder()
-      .id(budget.getId())
-      .name(budget.getName())
-      .amount(budget.getAmount())
-      .period(budget.getPeriod())
-      .active(budget.isActive())
-      .notifyThreshold(budget.getNotifyThreshold())
-      .createdAt(budget.getCreatedAt())
-      .updatedAt(budget.getUpdatedAt())
-      .build();
-
-    if (budget.getCategory() != null) {
-      dto.setCategoryId(budget.getCategory().getId());
-      dto.setCategoryName(budget.getCategory().getName());
-      dto.setCategoryColor(budget.getCategory().getColor());
+  private BudgetDTO mapBudgetWithSpent(Budget budget) {
+    if (budget.getStartDate() == null || budget.getEndDate() == null) {
+      budget.calculateDates();
     }
 
-    LocalDate[] period = getPeriodDates(budget.getPeriod());
-    BigDecimal spent = calculateSpent(budget, period[0], period[1]);
+    BudgetDTO dto = budgetMapper.toDto(budget);
+
+    BigDecimal spent = BigDecimal.ZERO;
+    if (budget.getCategory() != null) {
+      spent = transactionRepository.getTotalExpenseByUserAndCategoryAndDateRange(
+        budget.getUser(),
+        budget.getCategory(),
+        budget.getStartDate(),
+        budget.getEndDate()
+      );
+    } else {
+      spent = transactionRepository.getTotalExpenseByUserAndDateRange(
+        budget.getUser(),
+        budget.getStartDate(),
+        budget.getEndDate()
+      );
+    }
 
     dto.setSpent(spent);
     dto.setRemaining(budget.getAmount().subtract(spent));
 
-    BigDecimal percentUsed = BigDecimal.ZERO;
-    if (budget.getAmount().compareTo(BigDecimal.ZERO) > 0) {
-      percentUsed = spent.divide(budget.getAmount(), 2, RoundingMode.HALF_UP)
-        .multiply(BigDecimal.valueOf(100));
-    }
+    BigDecimal percentUsed = budget.getAmount().compareTo(BigDecimal.ZERO) > 0
+      ? spent.multiply(new BigDecimal("100")).divide(budget.getAmount(), 2, RoundingMode.HALF_UP)
+      : BigDecimal.ZERO;
+
     dto.setPercentUsed(percentUsed);
     dto.setOverBudget(spent.compareTo(budget.getAmount()) > 0);
 
     return dto;
-  }
-
-  private LocalDate[] getPeriodDates(BudgetPeriod period) {
-    LocalDate now = LocalDate.now();
-    LocalDate start, end;
-
-    switch (period) {
-      case WEEKLY:
-        start = now.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
-        end = start.plusDays(6);
-        break;
-      case MONTHLY:
-        start = now.withDayOfMonth(1);
-        end = now.withDayOfMonth(now.lengthOfMonth());
-        break;
-      case QUARTERLY:
-        int quarter = (now.getMonthValue() - 1) / 3;
-        start = now.withMonth(quarter * 3 + 1).withDayOfMonth(1);
-        end = start.plusMonths(3).minusDays(1);
-        break;
-      case YEARLY:
-        start = now.withDayOfYear(1);
-        end = now.withDayOfYear(now.lengthOfYear());
-        break;
-      default:
-        start = now.withDayOfMonth(1);
-        end = now.withDayOfMonth(now.lengthOfMonth());
-    }
-
-    return new LocalDate[]{start, end};
-  }
-
-  private BigDecimal calculateSpent(Budget budget, LocalDate start, LocalDate end) {
-    if (budget.getCategory() != null) {
-      return transactionRepository.getTotalExpenseByUserAndCategoryAndDateRange(
-        budget.getUser(), budget.getCategory(), start, end);
-    } else {
-      return transactionRepository.getTotalExpenseByUserAndDateRange(
-        budget.getUser(), start, end);
-    }
   }
 }

@@ -1,0 +1,32 @@
+spring:
+  mail:
+    host: localhost
+    port: 1025
+    username: ""
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+            required: false
+    default-encoding: UTF-8
+
+app:
+  mail:
+    from: noreply@financetracker.com
+    from-name: Finance Tracker
+    base-url: http://localhost:3000
+    quota:
+      enabled: false
+      daily-limit: 450
+      monthly-limit: 13500
+      hourly-limit: 20
+
+logging:
+  level:
+    org.springframework.mail: DEBUG
+    com.example.financial_tracker.service: DEBUG
+    com.example.financial_tracker.controller: DEBUG
+    javax.mail: DEBUG

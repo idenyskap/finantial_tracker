@@ -26,4 +26,9 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
 
   @Query("SELECT COUNT(rt) FROM RecurringTransaction rt WHERE rt.user = :user AND rt.active = true")
   Long countActiveByUser(@Param("user") User user);
+
+  @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.user = :user AND rt.active = true AND rt.nextExecutionDate <= :date")
+  List<RecurringTransaction> findUpcomingPayments(@Param("user") User user, @Param("date") LocalDate date);
+
+  List<RecurringTransaction> findByUserAndActiveTrue(User user);
 }

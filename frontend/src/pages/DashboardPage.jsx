@@ -154,6 +154,7 @@ function DashboardPage() {
       </div>
     </div>
   );
+
 }
 
 const styles = {

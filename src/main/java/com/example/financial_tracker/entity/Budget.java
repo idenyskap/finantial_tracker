@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -43,6 +44,12 @@ public class Budget {
   @Column(name = "notify_threshold")
   private Integer notifyThreshold = 80;
 
+  @Column(name = "start_date")
+  private LocalDate startDate;
+
+  @Column(name = "end_date")
+  private LocalDate endDate;
+
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
@@ -50,4 +57,32 @@ public class Budget {
   @UpdateTimestamp
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
+
+  @PostLoad
+  @PostPersist
+  @PostUpdate
+  public void calculateDates() {
+    if (this.period != null) {
+      LocalDate now = LocalDate.now();
+      switch (this.period) {
+        case WEEKLY:
+          this.startDate = now.with(java.time.DayOfWeek.MONDAY);
+          this.endDate = this.startDate.plusDays(6);
+          break;
+        case MONTHLY:
+          this.startDate = now.withDayOfMonth(1);
+          this.endDate = now.withDayOfMonth(now.lengthOfMonth());
+          break;
+        case QUARTERLY:
+          int currentQuarter = (now.getMonthValue() - 1) / 3;
+          this.startDate = now.withMonth(currentQuarter * 3 + 1).withDayOfMonth(1);
+          this.endDate = this.startDate.plusMonths(3).minusDays(1);
+          break;
+        case YEARLY:
+          this.startDate = now.withDayOfYear(1);
+          this.endDate = now.withDayOfYear(now.lengthOfYear());
+          break;
+      }
+    }
+  }
 }

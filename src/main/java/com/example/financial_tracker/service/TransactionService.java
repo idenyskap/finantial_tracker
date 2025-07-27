@@ -27,9 +27,7 @@ import com.example.financial_tracker.dto.BudgetWarningDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.math.RoundingMode;
 
-import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -49,6 +47,7 @@ public class TransactionService {
   private final SavedSearchService savedSearchService;
   private final BudgetService budgetService;
   private final BudgetRepository budgetRepository;
+  private final EmailService emailService;
 
   public List<TransactionDTO> getTransactionsByUser(User user) {
     log.info("Fetching all transactions for user: {} (ID: {})", user.getEmail(), user.getId());
@@ -91,7 +90,6 @@ public class TransactionService {
     log.info("Creating new transaction for user: {} with data: {}", user.getEmail(),
       maskSensitiveData(dto));
 
-
     if (dto.getType() != null) {
       try {
         TransactionType.valueOf(dto.getType().toUpperCase());
@@ -123,18 +121,11 @@ public class TransactionService {
 
     Transaction saved = transactionRepository.save(transaction);
 
-    TransactionDTO responseDto = transactionMapper.toDto(saved);
-
-    if (saved.getType() == TransactionType.EXPENSE) {
-      BudgetWarningDTO warning = checkBudgetWarning(user, saved.getCategory());
-      responseDto.setBudgetWarning(warning);
-    }
-
     log.info("Successfully created transaction ID: {} for user: {} - Type: {}, Amount: {}, Category: '{}'",
       saved.getId(), user.getEmail(), saved.getType(),
       saved.getAmount(), category.getName());
 
-    return responseDto;
+    return transactionMapper.toDto(saved);
   }
 
   private BudgetWarningDTO checkBudgetWarning(User user, Category category) {

@@ -1,10 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import ThemeToggle from '../ThemeToggle';
 
 function Layout({ children }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const styles = useThemedStyles(getStyles);
 
@@ -20,13 +21,69 @@ function Layout({ children }) {
           <Link to="/dashboard" style={styles.logo}>Financial Tracker</Link>
 
           <div style={styles.navLinks}>
-            <Link to="/dashboard" style={styles.link}>Dashboard</Link>
-            <Link to="/transactions" style={styles.link}>Transactions</Link>
-            <Link to="/categories" style={styles.link}>Categories</Link>
-            <Link to="/budgets" style={styles.link}>Budgets</Link>
-            <Link to="/goals" style={styles.link}>Goals</Link>
-            <Link to="/recurring" style={styles.link}>Recurring</Link>
-            <Link to="/profile" style={styles.link}>Profile</Link>
+            <Link
+              to="/dashboard"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/dashboard' ? styles.activeLink : {})
+              }}
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/transactions"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/transactions' ? styles.activeLink : {})
+              }}
+            >
+              Transactions
+            </Link>
+            <Link
+              to="/categories"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/categories' ? styles.activeLink : {})
+              }}
+            >
+              Categories
+            </Link>
+            <Link
+              to="/budgets"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/budgets' ? styles.activeLink : {})
+              }}
+            >
+              Budgets
+            </Link>
+            <Link
+              to="/goals"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/goals' ? styles.activeLink : {})
+              }}
+            >
+              Goals
+            </Link>
+            <Link
+              to="/recurring"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/recurring' ? styles.activeLink : {})
+              }}
+            >
+              Recurring
+            </Link>
+            <Link
+              to="/profile"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/profile' ? styles.activeLink : {})
+              }}
+            >
+              Profile
+            </Link>
 
             <div style={styles.navRight}>
               <span style={styles.userEmail}>{user?.email}</span>
@@ -83,9 +140,10 @@ const getStyles = (theme) => ({
     padding: '0.5rem 1rem',
     borderRadius: '4px',
     transition: 'all 0.2s',
-    '&:hover': {
-      backgroundColor: theme.backgroundTertiary,
-    }
+  },
+  activeLink: {
+    backgroundColor: theme.primary,
+    color: 'white',
   },
   navRight: {
     display: 'flex',
@@ -107,9 +165,6 @@ const getStyles = (theme) => ({
     borderRadius: '4px',
     cursor: 'pointer',
     transition: 'opacity 0.2s',
-    '&:hover': {
-      opacity: 0.9,
-    }
   },
   main: {
     maxWidth: '1200px',

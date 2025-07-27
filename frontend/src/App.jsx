@@ -1,8 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
-import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './contexts/ThemeContext';
+import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {Toaster} from 'sonner';
+import {AuthProvider} from './contexts/AuthContext';
+import {ThemeProvider} from './contexts/ThemeContext';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/auth/PrivateRoute';
 import RegisterPage from './pages/RegisterPage';
@@ -15,6 +15,10 @@ import BudgetsPage from './pages/BudgetsPage';
 import ProfilePage from './pages/ProfilePage';
 import RecurringTransactionsPage from './pages/RecurringTransactionsPage';
 import GoalsPage from './pages/GoalsPage';
+import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
+import EmailChangeConfirmationPage from "./pages/EmailChangeConfirmationPage.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,12 +35,12 @@ function App() {
       <AuthProvider>
         <ThemeProvider>
           <Router>
-            <Toaster position="top-right" richColors />
+            <Toaster position="top-right" richColors/>
             <Routes>
               {/* Public routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/" element={<HomePage/>}/>
+              <Route path="/register" element={<RegisterPage/>}/>
+              <Route path="/login" element={<LoginPage/>}/>
 
               {/* Protected routes with Layout */}
               <Route
@@ -44,7 +48,7 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Layout>
-                      <DashboardPage />
+                      <DashboardPage/>
                     </Layout>
                   </PrivateRoute>
                 }
@@ -54,7 +58,7 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Layout>
-                      <TransactionsPage />
+                      <TransactionsPage/>
                     </Layout>
                   </PrivateRoute>
                 }
@@ -64,7 +68,7 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Layout>
-                      <CategoriesPage />
+                      <CategoriesPage/>
                     </Layout>
                   </PrivateRoute>
                 }
@@ -74,7 +78,7 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Layout>
-                      <BudgetsPage />
+                      <BudgetsPage/>
                     </Layout>
                   </PrivateRoute>
                 }
@@ -84,7 +88,7 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Layout>
-                      <ProfilePage />
+                      <ProfilePage/>
                     </Layout>
                   </PrivateRoute>
                 }
@@ -94,7 +98,7 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Layout>
-                      <RecurringTransactionsPage />
+                      <RecurringTransactionsPage/>
                     </Layout>
                   </PrivateRoute>
                 }
@@ -104,11 +108,15 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Layout>
-                      <GoalsPage />
+                      <GoalsPage/>
                     </Layout>
                   </PrivateRoute>
                 }
               />
+              <Route path="/verify-email" element={<EmailVerificationPage/>}/>
+              <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
+              <Route path="/reset-password" element={<ResetPasswordPage/>}/>
+              <Route path="/confirm-email-change" element={<EmailChangeConfirmationPage />} />
             </Routes>
           </Router>
         </ThemeProvider>

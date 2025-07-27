@@ -18,6 +18,7 @@ spring:
   logging:
     level:
       com.example.financial_tracker: DEBUG
+
       org.springframework.security: DEBUG
       org.springframework.web: DEBUG
   security:
@@ -27,6 +28,30 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    default-encoding: UTF-8
+
+app:
+  mail:
+    from: noreply@financetracker.com
+    from-name: Finance Tracker
+    base-url: http://localhost:3000
+    quota:
+      enabled: false
+      daily-limit: 450
+      monthly-limit: 13500
+      hourly-limit: 20
 
 jwt:
   secret: your_jwt_secret_which_should_be_long_enough_32_chars_minimum

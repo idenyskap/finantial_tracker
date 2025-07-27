@@ -25,7 +25,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
   Optional<Transaction> findByIdAndUser(Long id, User user);
   List<Transaction> findByUserAndCategoryNameOrderByDateDesc(User user, String categoryName);
   List<Transaction> findByUserAndTypeOrderByDateDesc(User user, TransactionType type);
-  List<Transaction> findByUserAndDateBetweenOrderByDateDesc(User user, LocalDate startDate, LocalDate endDate);
 
   @Query("SELECT t FROM Transaction t WHERE t.user = :user " +
     "AND (:type IS NULL OR t.type = :type) " +
@@ -182,4 +181,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
                                                @Param("type") TransactionType type,
                                                @Param("startDate") LocalDate startDate,
                                                @Param("endDate") LocalDate endDate);
+
+  List<Transaction> findByUser(User user);
+
+  @Query("SELECT COUNT(t) FROM Transaction t WHERE t.user = :user AND t.date = :date")
+  long countByUserAndDate(@Param("user") User user, @Param("date") LocalDate date);
+
+  @Query("SELECT t FROM Transaction t WHERE t.user = :user AND t.date BETWEEN :startDate AND :endDate ORDER BY t.date DESC")
+  List<Transaction> findByUserAndDateBetweenOrderByDateDesc(@Param("user") User user,
+                                                            @Param("startDate") LocalDate startDate,
+                                                            @Param("endDate") LocalDate endDate);
 }

@@ -5,6 +5,7 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -57,5 +58,46 @@ public class User implements UserDetails {
   @Override
   public boolean isEnabled() {
     return true;
+  }
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private NotificationSettings notificationSettings;
+
+  public NotificationSettings getNotificationSettings() {
+    return notificationSettings;
+  }
+
+  @Column(name = "email_verified")
+  private boolean emailVerified = false;
+
+  @Column(name = "verification_token")
+  private String verificationToken;
+
+  @Column(name = "verification_token_expires_at")
+  private LocalDateTime verificationTokenExpiresAt;
+
+  @Column(name = "reset_password_token")
+  private String resetPasswordToken;
+
+  @Column(name = "reset_password_token_expires_at")
+  private LocalDateTime resetPasswordTokenExpiresAt;
+
+  @Column(name = "new_email")
+  private String newEmail;
+
+  @Column(name = "new_email_token")
+  private String newEmailToken;
+
+  @Column(name = "new_email_token_expires_at")
+  private LocalDateTime newEmailTokenExpiresAt;
+
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
+
+  @PrePersist
+  protected void onCreate() {
+    if (createdAt == null) {
+      createdAt = LocalDateTime.now();
+    }
   }
 }

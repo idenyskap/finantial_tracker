@@ -20,9 +20,14 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
   @Query("SELECT b FROM Budget b WHERE b.user = :user " +
     "AND b.active = true " +
     "AND (b.category = :category OR b.category IS NULL) " +
-    "ORDER BY b.category DESC") // сначала специфичные для категории
+    "ORDER BY b.category DESC")
   List<Budget> findActiveBudgetsForCategory(@Param("user") User user,
                                             @Param("category") Category category);
 
   boolean existsByUserAndCategoryAndActiveTrue(User user, Category category);
+
+  List<Budget> findByUserAndCategory(User user, Category category);
+
+  @Query("SELECT b FROM Budget b WHERE b.user = :user AND b.active = true")
+  List<Budget> findActiveByUser(@Param("user") User user);
 }

@@ -23,7 +23,7 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableMethodSecurity(prePostEnabled = true) // Enable method-level security
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
   private final JwtAuthFilter jwtAuthFilter;
@@ -40,12 +40,16 @@ public class SecurityConfig {
         .requestMatchers("/actuator/health").permitAll()
 
         .requestMatchers("/api/users/me").authenticated()
+        .requestMatchers("/api/users/profile").authenticated()
+        .requestMatchers("/api/users/change-password").authenticated()
+        .requestMatchers("/api/users/request-email-change").authenticated()
 
         .requestMatchers("/api/users/**").hasRole("ADMIN")
         .requestMatchers("/actuator/**").hasRole("ADMIN")
 
         .requestMatchers("/api/transactions/**").authenticated()
         .requestMatchers("/api/categories/**").authenticated()
+        .requestMatchers("/api/notifications/**").authenticated()
 
         .anyRequest().authenticated()
       )

@@ -1,7 +1,6 @@
 package com.example.financial_tracker.controller;
 
-import com.example.financial_tracker.dto.ChangePasswordDTO;
-import com.example.financial_tracker.dto.UserDTO;
+import com.example.financial_tracker.dto.*;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -129,6 +129,32 @@ public class UserController {
     return ResponseEntity.ok(updated);
   }
 
+  @PutMapping("/change-password")
+  public ResponseEntity<?> changePassword(
+    @AuthenticationPrincipal User user,
+    @RequestBody @Valid ChangePasswordRequest request,
+    HttpServletRequest httpRequest) {
+
+    log.info("PUT /api/users/change-password - User: {} from IP: {} changing password",
+      user.getEmail(), getClientIpAddress(httpRequest));
+
+    try {
+      userService.changePassword(user, request);
+
+      log.info("Password successfully changed for user: {}", user.getEmail());
+
+      return ResponseEntity.ok(Map.of(
+        "message", "Password changed successfully"
+      ));
+    } catch (IllegalArgumentException e) {
+      log.warn("Failed password change attempt for user: {} - {}", user.getEmail(), e.getMessage());
+
+      return ResponseEntity.badRequest().body(Map.of(
+        "error", e.getMessage()
+      ));
+    }
+  }
+
   private String getClientIpAddress(HttpServletRequest request) {
     String xForwardedFor = request.getHeader("X-Forwarded-For");
     if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
@@ -143,16 +169,52 @@ public class UserController {
     return request.getRemoteAddr();
   }
 
-  @PutMapping("/me/password")
-  public ResponseEntity<Void> changePassword(
+  @PostMapping("/request-email-change")
+  public ResponseEntity<?> requestEmailChange(
     @AuthenticationPrincipal User user,
-    @RequestBody @Valid ChangePasswordDTO dto,
+    @RequestBody @Valid EmailChangeRequest request,
+    HttpServletRequest httpRequest) {
+
+    log.info("POST /api/users/request-email-change - User: {} from IP: {} requesting email change to {}",
+      user.getEmail(), getClientIpAddress(httpRequest), request.getNewEmail());
+
+    try {
+      userService.requestEmailChange(user, request);
+
+      return ResponseEntity.ok(Map.of(
+        "message", "Confirmation email sent to new address"
+      ));
+    } catch (IllegalArgumentException e) {
+      log.warn("Email change request failed for user {} - {}", user.getEmail(), e.getMessage());
+
+      return ResponseEntity.badRequest().body(Map.of(
+        "error", e.getMessage()
+      ));
+    }
+  }
+
+  @GetMapping("/profile")
+  public ResponseEntity<UserDTO> getProfile(
+    @AuthenticationPrincipal User user,
     HttpServletRequest request) {
 
-    log.info("PUT /api/users/me/password - User: {} from IP: {} changing password",
+    log.info("GET /api/users/profile - User: {} from IP: {}",
       user.getEmail(), getClientIpAddress(request));
 
-    userService.changePassword(user, dto);
-    return ResponseEntity.ok().build();
+    UserDTO userDTO = userService.getUserById(user.getId());
+    return ResponseEntity.ok(userDTO);
+  }
+
+  @PutMapping("/profile")
+  public ResponseEntity<UserDTO> updateProfile(
+    @RequestBody @Valid UpdateProfileRequest request,
+    @AuthenticationPrincipal User user,
+    HttpServletRequest httpRequest) {
+
+    log.info("PUT /api/users/profile - User: {} from IP: {} updating profile",
+      user.getEmail(), getClientIpAddress(httpRequest));
+
+    UserDTO updated = userService.updateProfile(user, request);
+    return ResponseEntity.ok(updated);
   }
 }

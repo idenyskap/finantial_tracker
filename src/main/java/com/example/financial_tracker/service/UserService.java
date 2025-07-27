@@ -1,20 +1,27 @@
 package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.ChangePasswordDTO;
+import com.example.financial_tracker.dto.UpdateProfileRequest;
 import com.example.financial_tracker.dto.UserDTO;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.mapper.UserMapper;
 import com.example.financial_tracker.repository.UserRepository;
+import com.example.financial_tracker.dto.ChangePasswordRequest;
+import com.example.financial_tracker.dto.EmailChangeRequest;
+import com.example.financial_tracker.entity.EmailHistory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
+import java.util.Map;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +33,11 @@ public class UserService implements UserDetailsService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
+  private final TokenService tokenService;
+  private final EmailService emailService;
+
+  @Value("${app.mail.base-url}")
+  private String baseUrl;
 
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -69,14 +81,75 @@ public class UserService implements UserDetailsService {
     return userMapper.toDto(saved);
   }
 
-  public void changePassword(User user, ChangePasswordDTO dto) {
-    if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
-      throw new BusinessLogicException("Current password is incorrect");
+  public void changePassword(User user, ChangePasswordRequest request) {
+    if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+      throw new IllegalArgumentException("Current password is incorrect");
     }
 
-    user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    userRepository.save(user);
+  }
+
+  public UserDTO updateProfile(User user, UpdateProfileRequest request) {
+    user.setName(request.getName());
+    User saved = userRepository.save(user);
+    return userMapper.toDto(saved);
+  }
+
+  @Transactional
+  public void requestEmailChange(User user, EmailChangeRequest request) {
+    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+      throw new IllegalArgumentException("Incorrect password");
+    }
+
+    if (userRepository.findByEmail(request.getNewEmail()).isPresent()) {
+      throw new IllegalArgumentException("Email is already in use");
+    }
+
+    String token = tokenService.generateToken();
+    user.setNewEmail(request.getNewEmail());
+    user.setNewEmailToken(token);
+    user.setNewEmailTokenExpiresAt(tokenService.getExpiryDate());
     userRepository.save(user);
 
-    log.info("Password changed successfully for user: {}", user.getEmail());
+    String confirmLink = baseUrl + "/confirm-email-change?token=" + token;
+
+    Map<String, Object> variables = Map.of(
+      "userName", user.getName(),
+      "oldEmail", user.getEmail(),
+      "newEmail", request.getNewEmail(),
+      "confirmLink", confirmLink,
+      "expiryHours", 24
+    );
+
+    emailService.sendEmail(
+      request.getNewEmail(),
+      "Confirm your new email address",
+      "email-change-confirmation",
+      variables,
+      EmailHistory.EmailType.EMAIL_CHANGE,
+      user
+    );
+
+    log.info("Email change request sent from {} to {}", user.getEmail(), request.getNewEmail());
+  }
+
+  @Transactional
+  public void confirmEmailChange(String token) {
+    User user = userRepository.findByNewEmailToken(token)
+      .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+    if (tokenService.isTokenExpired(user.getNewEmailTokenExpiresAt())) {
+      throw new IllegalArgumentException("Token has expired");
+    }
+
+    String oldEmail = user.getEmail();
+    user.setEmail(user.getNewEmail());
+    user.setNewEmail(null);
+    user.setNewEmailToken(null);
+    user.setNewEmailTokenExpiresAt(null);
+    userRepository.save(user);
+
+    log.info("Email changed from {} to {}", oldEmail, user.getEmail());
   }
 }
