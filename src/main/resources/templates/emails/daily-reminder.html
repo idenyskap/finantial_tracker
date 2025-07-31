@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background-color: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+    .button { display: inline-block; padding: 12px 30px; background-color: #667eea; color: white; text-decoration: none; border-radius: 25px; margin-top: 20px; }
+    .stat { background: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📝 Time to Log Your Expenses!</h1>
+  </div>
+  <div class="content">
+    <p>Hi <span th:text="${userName}">User</span>!</p>
+
+    <p>The day is coming to an end. Don't forget to log any expenses you made today.</p>
+
+    <div class="stat">
+      <strong>Transactions logged today:</strong> <span th:text="${todayCount}">0</span>
+    </div>
+
+    <p>Keeping track of your daily expenses helps you stay on top of your financial goals!</p>
+
+    <center>
+      <a th:href="${baseUrl + '/transactions/new'}" class="button">Add Transaction</a>
+    </center>
+  </div>
+</div>
+</body>
+</html>

@@ -1,12 +1,18 @@
 package com.example.financial_tracker.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "t_transaction")
 public class Transaction {
@@ -14,17 +20,31 @@ public class Transaction {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(nullable = false)
   private BigDecimal amount;
 
-  @Column(name = "transaction_type")
+  @Column(name = "transaction_type", columnDefinition = "varchar(50)")
   @Enumerated(EnumType.STRING)
-  private TransactionType type; // INCOME or EXPENSE
+  private TransactionType type;
 
-  @ManyToOne
-  @JoinColumn(name = "category_id")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
+
+  @Column(nullable = false)
   private LocalDate date;
 
   private String description;
+
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private LocalDateTime createdAt;
+
+  @UpdateTimestamp
+  @Column(name = "updated_at")
+  private LocalDateTime updatedAt;
 }

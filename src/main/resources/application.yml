@@ -15,7 +15,43 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   logging:
     level:
-      org.springframework.jdbc.datasource: DEBUG
+      com.example.financial_tracker: DEBUG
+      org.springframework.security: DEBUG
+      org.springframework.web: DEBUG
+  security:
+    method:
+      secured-annotations: enabled
+      pre-post-annotations: enabled
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    default-encoding: UTF-8
+
+app:
+  mail:
+    from: noreply@financetracker.com
+    from-name: Finance Tracker
+    base-url: http://localhost:3000
+    quota:
+      enabled: false
+      daily-limit: 450
+      monthly-limit: 13500
+      hourly-limit: 20
+
+jwt:
+  secret: ${JWT_SECRET:qW3rTy8iOp2sD4fG6hJ9kL1zX3cV5bN7mQ0wE2rT4yU6iO8pA1sD3fG5hJ7kL9zX1cV3bN5m}
+  expiration: 86400000

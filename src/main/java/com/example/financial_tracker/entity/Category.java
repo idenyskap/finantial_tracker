@@ -15,6 +15,10 @@ public class Category {
 
   private String color;
 
+  @Column(name = "category_type")
+  @Enumerated(EnumType.STRING)
+  private TransactionType type;
+
   @ManyToOne
   @JoinColumn(name = "user_id")
   private User user;
