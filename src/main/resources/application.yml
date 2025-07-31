@@ -18,7 +18,6 @@ spring:
   logging:
     level:
       com.example.financial_tracker: DEBUG
-
       org.springframework.security: DEBUG
       org.springframework.web: DEBUG
   security:
@@ -54,5 +53,5 @@ app:
       hourly-limit: 20
 
 jwt:
-  secret: your_jwt_secret_which_should_be_long_enough_32_chars_minimum
+  secret: ${JWT_SECRET:qW3rTy8iOp2sD4fG6hJ9kL1zX3cV5bN7mQ0wE2rT4yU6iO8pA1sD3fG5hJ7kL9zX1cV3bN5m}
   expiration: 86400000
