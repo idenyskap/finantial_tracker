@@ -1,5 +1,6 @@
 package com.example.financial_tracker.dto;
 
+import com.example.financial_tracker.entity.Currency;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -12,4 +13,10 @@ public class UserDTO {
   private boolean emailVerified;
   private String newEmail;
   private LocalDateTime createdAt;
+
+  private Currency defaultCurrency;
+  private boolean displaySecondaryCurrency;
+  private Currency secondaryCurrency;
+
+  private boolean twoFactorEnabled;
 }

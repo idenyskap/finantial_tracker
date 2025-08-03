@@ -35,6 +35,7 @@ public class AuthService {
   private final NotificationSettingsRepository notificationSettingsRepository;
   private final TokenService tokenService;
   private final EmailService emailService;
+  private final TwoFactorAuthService twoFactorAuthService;
 
   @Value("${app.mail.base-url}")
   private String baseUrl;
@@ -223,6 +224,21 @@ public class AuthService {
           log.error("User not found after successful authentication: {}", email);
           return new RuntimeException("User not found");
         });
+
+      // Check if 2FA is enabled
+      if (user.isTwoFactorEnabled()) {
+        // If 2FA code is not provided, return a response indicating 2FA is required
+        if (request.getTwoFactorCode() == null || request.getTwoFactorCode().isEmpty()) {
+          log.info("2FA required for user: {}", email);
+          return new AuthResponse(null, true, "2FA_REQUIRED");
+        }
+
+        // Verify 2FA code
+        if (!twoFactorAuthService.verifyTwoFactorCode(user, request.getTwoFactorCode())) {
+          log.warn("Invalid 2FA code for user: {}", email);
+          throw new BadCredentialsException("Invalid 2FA code");
+        }
+      }
 
       if (!user.isEmailVerified()) {
         log.warn("User {} logged in with unverified email", email);
