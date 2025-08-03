@@ -1,3 +1,4 @@
+// src/main/java/com/example/financial_tracker/entity/User.java
 package com.example.financial_tracker.entity;
 
 import jakarta.persistence.*;
@@ -94,10 +95,61 @@ public class User implements UserDetails {
   @Column(name = "created_at")
   private LocalDateTime createdAt;
 
+  @Column(name = "two_factor_enabled")
+  private boolean twoFactorEnabled = false;
+
+  @Column(name = "two_factor_secret")
+  private String twoFactorSecret;
+
+  @Column(name = "recovery_codes", columnDefinition = "TEXT")
+  private String recoveryCodes;
+
+  @Column(name = "last_2fa_timestamp")
+  private LocalDateTime last2faTimestamp;
+
+  // Multi-currency fields
+  @Column(name = "default_currency")
+  @Enumerated(EnumType.STRING)
+  private Currency defaultCurrency = Currency.USD;
+
+  @Column(name = "display_secondary_currency")
+  private boolean displaySecondaryCurrency = false;
+
+  @Column(name = "secondary_currency")
+  @Enumerated(EnumType.STRING)
+  private Currency secondaryCurrency;
+
   @PrePersist
   protected void onCreate() {
     if (createdAt == null) {
       createdAt = LocalDateTime.now();
     }
+    if (defaultCurrency == null) {
+      defaultCurrency = Currency.USD;
+    }
+  }
+
+  public boolean isTwoFactorEnabled() {
+    return twoFactorEnabled;
+  }
+
+  public void setTwoFactorEnabled(boolean enabled) {
+    this.twoFactorEnabled = enabled;
+  }
+
+  public String getTwoFactorSecret() {
+    return twoFactorSecret;
+  }
+
+  public void setTwoFactorSecret(String secret) {
+    this.twoFactorSecret = secret;
+  }
+
+  public String getRecoveryCodes() {
+    return recoveryCodes;
+  }
+
+  public void setRecoveryCodes(String codes) {
+    this.recoveryCodes = codes;
   }
 }

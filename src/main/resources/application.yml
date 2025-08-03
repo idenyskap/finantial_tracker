@@ -20,6 +20,8 @@ spring:
       com.example.financial_tracker: DEBUG
       org.springframework.security: DEBUG
       org.springframework.web: DEBUG
+      com.example.financial_tracker.service.TwoFactorAuthService: DEBUG
+      com.example.financial_tracker.service.CurrencyService: DEBUG
   security:
     method:
       secured-annotations: enabled
