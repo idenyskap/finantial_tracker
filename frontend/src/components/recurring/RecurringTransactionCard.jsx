@@ -1,10 +1,9 @@
+import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useCurrency } from '../../contexts/CurrencyContext';
+
 function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const styles = useThemedStyles(getStyles);
+  const { formatCurrency } = useCurrency();
 
   const getFrequencyLabel = (frequency) => {
     const labels = {
@@ -31,85 +30,84 @@ function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) 
 
   return (
     <div style={styles.card}>
-      <div style={styles.header}>
-        <div style={styles.titleSection}>
-          <h3 style={styles.name}>{transaction.name}</h3>
-          <div style={styles.badges}>
-            <span style={{
-              ...styles.typeBadge,
-              backgroundColor: transaction.type === 'INCOME' ? '#27ae60' : '#e74c3c',
-            }}>
-              {transaction.type}
-            </span>
-            <span style={{
-              ...styles.statusBadge,
-              backgroundColor: transaction.active ? '#3498db' : '#95a5a6',
-            }}>
-              {transaction.active ? 'Active' : 'Inactive'}
-            </span>
+      <div style={styles.cardHeader}>
+        <div style={styles.headerTop}>
+          <div style={styles.titleSection}>
+            <h3 style={styles.name}>{transaction.name}</h3>
+            <div style={styles.badges}>
+              <span style={{
+                ...styles.typeBadge,
+                backgroundColor: transaction.type === 'INCOME' ? '#10b981' : '#ef4444',
+              }}>
+                {transaction.type === 'INCOME' ? '💰 Income' : '💸 Expense'}
+              </span>
+              <span style={{
+                ...styles.statusBadge,
+                backgroundColor: transaction.active ? '#10b981' : '#64748b',
+              }}>
+                {transaction.active ? '✅ Active' : '⏸️ Paused'}
+              </span>
+            </div>
           </div>
-        </div>
-        <div style={styles.actions}>
-          <button
-            onClick={() => onExecute(transaction.id)}
-            style={styles.actionButton}
-            title="Execute now"
-          >
-            Run Now
-          </button>
-          <button
-            onClick={() => onEdit(transaction)}
-            style={styles.editButton}
-            title="Edit"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => onDelete(transaction.id)}
-            style={styles.deleteButton}
-            title="Delete"
-          >
-            Delete
-          </button>
+          
+          <div style={styles.quickAction}>
+            <button
+              onClick={() => onExecute(transaction.id)}
+              style={styles.executeButton}
+              title="Execute now"
+            >
+              ▶️ Run Now
+            </button>
+          </div>
         </div>
       </div>
 
-      <div style={styles.body}>
-        <div style={styles.amount}>
-          <span style={{
-            color: transaction.type === 'INCOME' ? '#27ae60' : '#e74c3c',
-          }}>
-            {transaction.type === 'INCOME' ? '+' : '-'}
-            {formatCurrency(transaction.amount)}
-          </span>
-          <span style={styles.frequency}>
-            {getFrequencyLabel(transaction.frequency)} {getDayLabel()}
-          </span>
+      <div style={styles.cardContent}>
+        <div style={styles.amountSection}>
+          <div style={styles.amountDisplay}>
+            <span style={{
+              ...styles.amount,
+              color: transaction.type === 'INCOME' ? '#10b981' : '#ef4444',
+            }}>
+              {transaction.type === 'INCOME' ? '+' : '-'}
+              {formatCurrency(transaction.amount)}
+            </span>
+            <div style={styles.frequencyInfo}>
+              <span style={styles.frequency}>
+                📅 {getFrequencyLabel(transaction.frequency)} {getDayLabel()}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div style={styles.details}>
-          <div style={styles.categoryTag}>
-            <div style={{
-              ...styles.categoryDot,
-              backgroundColor: transaction.categoryColor,
-            }} />
-            <span style={styles.categoryName}>{transaction.categoryName}</span>
+        <div style={styles.detailsSection}>
+          <div style={styles.categorySection}>
+            <div style={styles.categoryTag}>
+              <div style={{
+                ...styles.categoryIndicator,
+                backgroundColor: transaction.categoryColor,
+              }} />
+              <span style={styles.categoryName}>{transaction.categoryName}</span>
+            </div>
           </div>
+          
           {transaction.description && (
-            <p style={styles.description}>{transaction.description}</p>
+            <div style={styles.descriptionSection}>
+              <p style={styles.description}>{transaction.description}</p>
+            </div>
           )}
         </div>
 
-        <div style={styles.dates}>
-          <div>
-            <span style={styles.dateLabel}>Next execution:</span>
+        <div style={styles.datesSection}>
+          <div style={styles.dateItem}>
+            <span style={styles.dateLabel}>🚀 Next execution</span>
             <span style={styles.dateValue}>
               {new Date(transaction.nextExecutionDate).toLocaleDateString()}
             </span>
           </div>
           {transaction.lastExecutionDate && (
-            <div>
-              <span style={styles.dateLabel}>Last executed:</span>
+            <div style={styles.dateItem}>
+              <span style={styles.dateLabel}>⏰ Last executed</span>
               <span style={styles.dateValue}>
                 {new Date(transaction.lastExecutionDate).toLocaleDateString()}
               </span>
@@ -117,139 +115,231 @@ function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) 
           )}
         </div>
       </div>
+      
+      <div style={styles.cardFooter}>
+        <div style={styles.actions}>
+          <button
+            onClick={() => onEdit(transaction)}
+            style={styles.editButton}
+            title="Edit transaction"
+          >
+            ✏️ Edit
+          </button>
+          <button
+            onClick={() => onDelete(transaction.id)}
+            style={styles.deleteButton}
+            title="Delete transaction"
+          >
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
   card: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    padding: '1.5rem',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
+    borderRadius: '12px',
+    overflow: 'hidden',
+    transition: 'all 0.2s ease',
+    boxShadow: theme.shadow,
+    display: 'flex',
+    flexDirection: 'column',
   },
-  header: {
+  cardHeader: {
+    padding: '1.5rem',
+    backgroundColor: theme.backgroundSecondary,
+    borderBottom: `1px solid ${theme.border}`,
+  },
+  headerTop: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '1rem',
   },
   titleSection: {
     flex: 1,
   },
   name: {
-    margin: '0 0 0.5rem 0',
+    margin: '0 0 0.75rem 0',
     fontSize: '1.25rem',
-    fontWeight: '600',
-    color: '#2c3e50',
+    fontWeight: '700',
+    color: theme.text,
+    lineHeight: '1.2',
   },
   badges: {
     display: 'flex',
     gap: '0.5rem',
+    flexWrap: 'wrap',
   },
   typeBadge: {
     padding: '0.25rem 0.75rem',
-    borderRadius: '4px',
+    borderRadius: '6px',
     color: 'white',
     fontSize: '0.75rem',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
   statusBadge: {
     padding: '0.25rem 0.75rem',
-    borderRadius: '4px',
+    borderRadius: '6px',
     color: 'white',
     fontSize: '0.75rem',
+    fontWeight: '600',
   },
-  actions: {
+  quickAction: {
+    marginLeft: '1rem',
+  },
+  executeButton: {
     display: 'flex',
+    alignItems: 'center',
     gap: '0.5rem',
-  },
-  actionButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#27ae60',
+    padding: '0.5rem 1rem',
+    backgroundColor: '#7c3aed',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '0.75rem',
-    fontWeight: '500',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 4px rgba(124, 58, 237, 0.2)',
   },
-  editButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.75rem',
-    fontWeight: '500',
+  cardContent: {
+    padding: '1.5rem',
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
   },
-  deleteButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.75rem',
-    fontWeight: '500',
+  amountSection: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  body: {
-    borderTop: '1px solid #f0f0f0',
-    paddingTop: '1rem',
+  amountDisplay: {
+    flex: 1,
   },
   amount: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '1rem',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
+    fontSize: '2rem',
+    fontWeight: '700',
+    lineHeight: '1.2',
+    marginBottom: '0.25rem',
+    display: 'block',
+  },
+  frequencyInfo: {
+    marginTop: '0.5rem',
   },
   frequency: {
     fontSize: '0.875rem',
-    color: '#666',
-    fontWeight: 'normal',
+    color: theme.textSecondary,
+    fontWeight: '500',
   },
-  details: {
-    marginBottom: '1rem',
+  detailsSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  categorySection: {
+    display: 'flex',
+    alignItems: 'center',
   },
   categoryTag: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '0.5rem',
-    padding: '0.25rem 0.75rem',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '4px',
+    padding: '0.5rem 1rem',
+    backgroundColor: theme.backgroundSecondary,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '8px',
     fontSize: '0.875rem',
   },
-  categoryDot: {
+  categoryIndicator: {
     width: '12px',
     height: '12px',
-    borderRadius: '50%',
+    borderRadius: '3px',
+    flexShrink: 0,
   },
   categoryName: {
     fontWeight: '600',
-    color: '#2c3e50',
+    color: theme.text,
+  },
+  descriptionSection: {
+    marginTop: '0.5rem',
   },
   description: {
-    margin: '0.5rem 0 0 0',
-    color: '#666',
+    margin: 0,
+    color: theme.textSecondary,
     fontSize: '0.875rem',
+    lineHeight: '1.5',
+    fontStyle: 'italic',
   },
-  dates: {
+  datesSection: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '1rem',
+    padding: '1rem',
+    backgroundColor: theme.backgroundSecondary,
+    borderRadius: '8px',
+    border: `1px solid ${theme.border}`,
+  },
+  dateItem: {
     display: 'flex',
-    gap: '2rem',
-    fontSize: '0.875rem',
+    flexDirection: 'column',
+    gap: '0.25rem',
   },
   dateLabel: {
-    color: '#666',
-    marginRight: '0.5rem',
+    fontSize: '0.75rem',
+    color: theme.textSecondary,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
   },
   dateValue: {
-    fontWeight: '500',
-    color: '#2c3e50',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: theme.text,
   },
-};
+  cardFooter: {
+    borderTop: `1px solid ${theme.borderLight}`,
+    backgroundColor: theme.backgroundSecondary,
+    padding: '1rem 1.5rem',
+  },
+  actions: {
+    display: 'flex',
+    gap: '0.75rem',
+    justifyContent: 'flex-end',
+  },
+  editButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 1rem',
+    backgroundColor: theme.backgroundSecondary,
+    color: theme.textSecondary,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+  },
+  deleteButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 1rem',
+    backgroundColor: '#fef2f2',
+    color: '#dc2626',
+    border: '1px solid #fecaca',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+  },
+});
 
 export default RecurringTransactionCard;

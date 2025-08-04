@@ -1,6 +1,8 @@
 import { BookmarkIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 
 function SavedSearchItem({ search, onExecute, onDelete }) {
+  const styles = useThemedStyles(getStyles);
   const getFilterSummary = () => {
     const filters = [];
     const criteria = search.searchCriteria;
@@ -44,12 +46,13 @@ function SavedSearchItem({ search, onExecute, onDelete }) {
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: theme.cardBackground,
     padding: '1rem',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -68,7 +71,7 @@ const styles = {
   bookmarkIcon: {
     width: '24px',
     height: '24px',
-    color: '#3498db',
+    color: theme.primary,
   },
   info: {
     flex: 1,
@@ -77,11 +80,12 @@ const styles = {
     margin: '0 0 0.25rem 0',
     fontSize: '1rem',
     fontWeight: '500',
+    color: theme.text,
   },
   filters: {
     margin: 0,
     fontSize: '0.875rem',
-    color: '#666',
+    color: theme.textSecondary,
   },
   actions: {
     display: 'flex',
@@ -89,7 +93,7 @@ const styles = {
   },
   executeButton: {
     padding: '0.5rem',
-    backgroundColor: '#3498db',
+    backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -100,7 +104,7 @@ const styles = {
   },
   deleteButton: {
     padding: '0.5rem',
-    backgroundColor: '#e74c3c',
+    backgroundColor: theme.danger,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -113,6 +117,6 @@ const styles = {
     width: '16px',
     height: '16px',
   },
-};
+});
 
 export default SavedSearchItem;

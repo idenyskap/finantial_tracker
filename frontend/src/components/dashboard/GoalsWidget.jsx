@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { goalService } from '../../services/goalService';
 import { Link } from 'react-router-dom';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 function GoalsWidget() {
+  const { formatCurrency } = useCurrency();
   const { data: goalsData } = useQuery({
     queryKey: ['goals', true],
     queryFn: () => goalService.getAll(true),
@@ -11,12 +13,6 @@ function GoalsWidget() {
   const goals = goalsData?.data || [];
   const topGoals = goals.slice(0, 3);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
 
   if (goals.length === 0) {
     return (

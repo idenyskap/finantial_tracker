@@ -1,16 +1,14 @@
 import { useState } from 'react';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
+  const styles = useThemedStyles(getStyles);
+  const { formatCurrency } = useCurrency();
   const [showContribution, setShowContribution] = useState(false);
   const [contributionAmount, setContributionAmount] = useState('');
   const [contributionType, setContributionType] = useState('ADD');
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
 
   const getProgressColor = () => {
     if (goal.isCompleted) return '#27ae60';
@@ -86,50 +84,26 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
           </div>
         </div>
 
-        {goal.status === 'ACTIVE' && (
-          <div style={styles.actions}>
+        <div style={styles.quickActions}>
+          {goal.status === 'ACTIVE' && (
             <button
               onClick={() => setShowContribution(!showContribution)}
-              style={styles.actionButton}
+              style={styles.primaryAction}
               title="Add/Withdraw funds"
             >
-              Add Funds
+              💰 Add Funds
             </button>
-            <button
-              onClick={() => onStatusChange(goal.id, 'pause')}
-              style={styles.pauseButton}
-              title="Pause goal"
-            >
-              Pause
-            </button>
-            <button
-              onClick={() => onEdit(goal)}
-              style={styles.editButton}
-              title="Edit"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => onDelete(goal.id)}
-              style={styles.deleteButton}
-              title="Delete"
-            >
-              Delete
-            </button>
-          </div>
-        )}
-
-        {goal.status === 'PAUSED' && (
-          <div style={styles.actions}>
+          )}
+          {goal.status === 'PAUSED' && (
             <button
               onClick={() => onStatusChange(goal.id, 'resume')}
-              style={styles.resumeButton}
+              style={styles.primaryAction}
               title="Resume goal"
             >
-              Resume
+              ▶️ Resume
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {goal.description && (
@@ -197,7 +171,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
             <span style={styles.detailLabel}>Days Remaining:</span>
             <span style={{
               ...styles.detailValue,
-              color: goal.daysRemaining < 30 ? '#e74c3c' : '#2c3e50',
+              color: goal.daysRemaining < 30 ? '#e74c3c' : styles.detailValue.color,
             }}>
               {goal.daysRemaining > 0 ? goal.daysRemaining : 'Overdue'}
             </span>
@@ -207,7 +181,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
 
       {goal.status === 'ACTIVE' && goal.remainingAmount > 0 && goal.daysRemaining > 0 && (
         <div style={styles.savingsRequired}>
-          <h4 style={styles.savingsTitle}>To reach your goal, save:</h4>
+          <h4 style={styles.savingsTitle}>💡 To reach your goal, save:</h4>
           <div style={styles.savingsGrid}>
             <div style={styles.savingsItem}>
               <span style={styles.savingsAmount}>
@@ -230,22 +204,85 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
           </div>
         </div>
       )}
+
+      {/* Action Buttons Section */}
+      <div style={styles.actionSection}>
+        <div style={styles.actionButtons}>
+          {goal.status === 'ACTIVE' && (
+            <>
+              <button
+                onClick={() => onStatusChange(goal.id, 'pause')}
+                style={styles.secondaryButton}
+                title="Pause goal"
+              >
+                ⏸️ Pause
+              </button>
+              <button
+                onClick={() => onEdit(goal)}
+                style={styles.secondaryButton}
+                title="Edit goal"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => onDelete(goal.id)}
+                style={styles.dangerButton}
+                title="Delete goal"
+              >
+                🗑️ Delete
+              </button>
+            </>
+          )}
+          {goal.status === 'PAUSED' && (
+            <>
+              <button
+                onClick={() => onEdit(goal)}
+                style={styles.secondaryButton}
+                title="Edit goal"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => onDelete(goal.id)}
+                style={styles.dangerButton}
+                title="Delete goal"
+              >
+                🗑️ Delete
+              </button>
+            </>
+          )}
+          {goal.status === 'COMPLETED' && (
+            <button
+              onClick={() => onDelete(goal.id)}
+              style={styles.dangerButton}
+              title="Delete goal"
+            >
+              🗑️ Delete
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
   card: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    padding: '1.5rem',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    padding: '0',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '1rem',
+    padding: '1.5rem 1.5rem 1rem',
+    marginBottom: '0',
   },
   titleSection: {
     flex: 1,
@@ -260,7 +297,7 @@ const styles = {
     margin: 0,
     fontSize: '1.25rem',
     fontWeight: '600',
-    color: '#2c3e50',
+    color: theme.text,
   },
   statusIcon: {
     fontSize: '1.25rem',
@@ -283,7 +320,7 @@ const styles = {
     alignItems: 'center',
     gap: '0.25rem',
     padding: '0.25rem 0.75rem',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.backgroundSecondary,
     borderRadius: '4px',
     fontSize: '0.75rem',
   },
@@ -294,69 +331,77 @@ const styles = {
   },
   categoryName: {
     fontWeight: '600',
-    color: '#2c3e50',
+    color: theme.text,
   },
-  actions: {
+  quickActions: {
     display: 'flex',
+  },
+  primaryAction: {
+    display: 'flex',
+    alignItems: 'center',
     gap: '0.5rem',
-  },
-  actionButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#27ae60',
+    padding: '0.5rem 1rem',
+    backgroundColor: theme.warning,
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '0.75rem',
-    fontWeight: '500',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    boxShadow: `0 2px 4px rgba(245, 158, 11, 0.2)`,
   },
-  pauseButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#f39c12',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.75rem',
-    fontWeight: '500',
+  actionSection: {
+    borderTop: `1px solid ${theme.borderLight}`,
+    backgroundColor: theme.backgroundSecondary,
+    padding: '1rem 1.5rem',
+    marginTop: 'auto',
   },
-  editButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.75rem',
-    fontWeight: '500',
+  actionButtons: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+    gap: '0.75rem',
   },
-  deleteButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
+  secondaryButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 1rem',
+    backgroundColor: theme.backgroundSecondary,
+    color: theme.textSecondary,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '0.75rem',
+    fontSize: '0.875rem',
     fontWeight: '500',
+    transition: 'all 0.2s ease',
   },
-  resumeButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#27ae60',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
+  dangerButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 1rem',
+    backgroundColor: theme.dangerBackground,
+    color: theme.danger,
+    border: `1px solid ${theme.dangerBorder}`,
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '0.75rem',
+    fontSize: '0.875rem',
     fontWeight: '500',
+    transition: 'all 0.2s ease',
   },
   description: {
     margin: '0 0 1rem 0',
-    color: '#666',
+    padding: '0 1.5rem',
+    color: theme.textSecondary,
     fontSize: '0.875rem',
+    lineHeight: '1.5',
   },
   progressSection: {
-    marginBottom: '1rem',
+    padding: '0 1.5rem',
+    marginBottom: '1.5rem',
   },
   amounts: {
     display: 'flex',
@@ -366,16 +411,16 @@ const styles = {
   currentAmount: {
     fontSize: '1.5rem',
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: theme.text,
   },
   targetAmount: {
     fontSize: '1rem',
-    color: '#666',
+    color: theme.textSecondary,
     fontWeight: '600',
   },
   progressBar: {
     height: '12px',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: theme.borderLight,
     borderRadius: '6px',
     overflow: 'hidden',
     marginBottom: '0.5rem',
@@ -388,13 +433,14 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     fontSize: '0.875rem',
-    color: '#666',
+    color: theme.textSecondary,
   },
   contributionForm: {
+    margin: '0 1.5rem 1.5rem',
     padding: '1rem',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '4px',
-    marginBottom: '1rem',
+    backgroundColor: theme.warningBackground,
+    border: `1px solid ${theme.warning}`,
+    borderRadius: '8px',
   },
   contributionRow: {
     display: 'flex',
@@ -403,17 +449,21 @@ const styles = {
   contributionInput: {
     flex: 1,
     padding: '0.5rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   contributionSelect: {
     padding: '0.5rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   contributionButton: {
     padding: '0.5rem 1rem',
-    backgroundColor: '#3498db',
+    backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -421,11 +471,13 @@ const styles = {
     fontWeight: '500',
   },
   details: {
-    display: 'flex',
-    gap: '2rem',
-    marginBottom: '1rem',
-    paddingTop: '1rem',
-    borderTop: '1px solid #f0f0f0',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gap: '1.5rem',
+    padding: '1.5rem',
+    marginBottom: '0',
+    borderTop: `1px solid ${theme.borderLight}`,
+    backgroundColor: theme.backgroundSecondary,
   },
   detailItem: {
     display: 'flex',
@@ -434,22 +486,24 @@ const styles = {
   },
   detailLabel: {
     fontSize: '0.75rem',
-    color: '#888',
+    color: theme.textTertiary,
   },
   detailValue: {
     fontSize: '0.875rem',
     fontWeight: '600',
-    color: '#2c3e50',
+    color: theme.text,
   },
   savingsRequired: {
-    backgroundColor: '#e3f2fd',
+    margin: '0 1.5rem 1.5rem',
+    backgroundColor: theme.warningBackground,
+    border: `1px solid ${theme.warning}`,
     padding: '1rem',
-    borderRadius: '4px',
+    borderRadius: '8px',
   },
   savingsTitle: {
     margin: '0 0 0.75rem 0',
     fontSize: '0.875rem',
-    color: '#1976d2',
+    color: theme.warningText,
     fontWeight: '600',
   },
   savingsGrid: {
@@ -465,12 +519,12 @@ const styles = {
   savingsAmount: {
     fontSize: '1.125rem',
     fontWeight: 'bold',
-    color: '#1976d2',
+    color: theme.warningText,
   },
   savingsPeriod: {
     fontSize: '0.75rem',
-    color: '#666',
+    color: theme.textTertiary,
   },
-};
+});
 
 export default GoalCard;

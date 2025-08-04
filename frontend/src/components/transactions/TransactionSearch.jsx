@@ -3,8 +3,10 @@ import { MagnifyingGlassIcon, FunnelIcon, BookmarkIcon } from '@heroicons/react/
 import { savedSearchService } from '../../services/savedSearchService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 
 function TransactionSearch({ onSearch, categories }) {
+  const styles = useThemedStyles(getStyles);
   const queryClient = useQueryClient();
   const [showFilters, setShowFilters] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
@@ -204,15 +206,16 @@ function TransactionSearch({ onSearch, categories }) {
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
   container: {
     marginBottom: '2rem',
   },
   searchForm: {
-    backgroundColor: 'white',
+    backgroundColor: theme.cardBackground,
     padding: '1rem',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
   },
   searchBar: {
     display: 'flex',
@@ -221,13 +224,15 @@ const styles = {
   searchInput: {
     flex: 1,
     padding: '0.75rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
     fontSize: '1rem',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   searchButton: {
     padding: '0.75rem 1rem',
-    backgroundColor: '#3498db',
+    backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -237,7 +242,7 @@ const styles = {
   },
   filterButton: {
     padding: '0.75rem 1rem',
-    backgroundColor: '#95a5a6',
+    backgroundColor: theme.secondary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -253,7 +258,7 @@ const styles = {
   filtersPanel: {
     marginTop: '1rem',
     paddingTop: '1rem',
-    borderTop: '1px solid #eee',
+    borderTop: `1px solid ${theme.borderLight}`,
   },
   filterRow: {
     display: 'flex',
@@ -263,18 +268,22 @@ const styles = {
   select: {
     flex: 1,
     padding: '0.5rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   input: {
     flex: 1,
     padding: '0.5rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   resetButton: {
     padding: '0.5rem 1rem',
-    backgroundColor: '#e74c3c',
+    backgroundColor: theme.danger,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -282,7 +291,7 @@ const styles = {
   },
   saveButton: {
     padding: '0.75rem',
-    backgroundColor: '#9b59b6',
+    backgroundColor: theme.info,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -301,18 +310,22 @@ const styles = {
     zIndex: 1000,
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: theme.cardBackground,
     padding: '2rem',
     borderRadius: '8px',
     width: '400px',
+    border: `1px solid ${theme.cardBorder}`,
+    color: theme.text,
   },
   modalInput: {
     width: '100%',
     padding: '0.75rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
     marginTop: '1rem',
     marginBottom: '1rem',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   modalButtons: {
     display: 'flex',
@@ -321,7 +334,7 @@ const styles = {
   modalSaveButton: {
     flex: 1,
     padding: '0.75rem',
-    backgroundColor: '#27ae60',
+    backgroundColor: theme.success,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -330,12 +343,12 @@ const styles = {
   modalCancelButton: {
     flex: 1,
     padding: '0.75rem',
-    backgroundColor: '#95a5a6',
+    backgroundColor: theme.secondary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
   },
-};
+});
 
 export default TransactionSearch;

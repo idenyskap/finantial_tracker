@@ -12,18 +12,19 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [requires2FA, setRequires2FA] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in on mount
-    const token = localStorage.getItem('token');
     if (token) {
       loadUser();
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   const loadUser = async () => {
     try {
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Failed to load user:', error);
       localStorage.removeItem('token');
+      setToken(null);
     } finally {
       setLoading(false);
     }
@@ -40,10 +42,23 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await authService.login(credentials);
-      const { token, user } = response.data;
 
-      localStorage.setItem('token', token);
-      setUser(user);
+      // Проверяем, требуется ли 2FA
+      if (response.data.requiresTwoFactor) {
+        setRequires2FA(true);
+        return {
+          success: false,
+          requires2FA: true,
+          tempCredentials: credentials
+        };
+      }
+
+      const { token: newToken } = response.data;
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+
+      // Загружаем данные пользователя после успешного входа
+      await loadUser();
 
       return { success: true };
     } catch (error) {
@@ -57,10 +72,12 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await authService.register(userData);
-      const { token, user } = response.data;
+      const { token: newToken } = response.data;
 
-      localStorage.setItem('token', token);
-      setUser(user);
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+
+      await loadUser();
 
       return { success: true };
     } catch (error) {
@@ -73,16 +90,22 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    setToken(null);
     setUser(null);
+    setRequires2FA(false);
   };
 
   const value = {
     user,
+    token,
     login,
     register,
     logout,
     loading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !!token,
+    requires2FA,
+    setRequires2FA,
+    loadUser
   };
 
   return (

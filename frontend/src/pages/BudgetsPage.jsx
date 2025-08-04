@@ -4,8 +4,10 @@ import { budgetService } from '../services/budgetService';
 import { categoryService } from '../services/categoryService';
 import BudgetProgress from '../components/budgets/BudgetProgress';
 import { toast } from 'sonner';
+import { useThemedStyles } from '../hooks/useThemedStyles';
 
 function BudgetsPage() {
+  const styles = useThemedStyles(getStyles);
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
@@ -120,249 +122,451 @@ function BudgetsPage() {
   ];
 
   return (
-    <div>
+    <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        <h1>Budgets</h1>
-        <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
-          + Add Budget
+        <div style={styles.headerContent}>
+          <h1 style={styles.title}>Budget Management</h1>
+          <p style={styles.subtitle}>Track your spending limits and stay on budget</p>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          style={styles.addButton}
+        >
+          <span style={styles.addButtonIcon}>+</span>
+          Add Budget
         </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <div style={styles.formContainer}>
-          <h3>{editingBudget ? 'Edit Budget' : 'New Budget'}</h3>
+        <div style={styles.formCard}>
+          <div style={styles.formHeader}>
+            <h3 style={styles.formTitle}>
+              {editingBudget ? 'Edit Budget' : 'Create New Budget'}
+            </h3>
+            <button onClick={resetForm} style={styles.closeButton}>×</button>
+          </div>
+          
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formRow}>
-              <input
-                type="text"
-                placeholder="Budget name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-                style={styles.input}
-              />
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Budget Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter budget name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  required
+                  style={styles.input}
+                />
+              </div>
 
-              <input
-                type="number"
-                step="0.01"
-                placeholder="Amount"
-                value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                required
-                style={styles.input}
-              />
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Budget Amount</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Enter amount"
+                  value={form.amount}
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                  required
+                  style={styles.input}
+                />
+              </div>
             </div>
 
             <div style={styles.formRow}>
-              <select
-                value={form.period}
-                onChange={(e) => setForm({ ...form, period: e.target.value })}
-                style={styles.select}
-              >
-                {periods.map(period => (
-                  <option key={period.value} value={period.value}>
-                    {period.label}
-                  </option>
-                ))}
-              </select>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Budget Period</label>
+                <select
+                  value={form.period}
+                  onChange={(e) => setForm({ ...form, period: e.target.value })}
+                  style={styles.select}
+                >
+                  {periods.map(period => (
+                    <option key={period.value} value={period.value}>
+                      📅 {period.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <select
-                value={form.categoryId}
-                onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                style={styles.select}
-              >
-                <option value="">All Categories</option>
-                {expenseCategories.map(cat => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Category (Optional)</label>
+                <select
+                  value={form.categoryId}
+                  onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+                  style={styles.select}
+                >
+                  <option value="">📊 All Categories</option>
+                  {expenseCategories.map(cat => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div style={styles.thresholdContainer}>
+            <div style={styles.formGroup}>
               <label style={styles.label}>
-                Alert when spending reaches: {form.notifyThreshold}%
+                🚨 Alert Threshold: {form.notifyThreshold}%
               </label>
-              <input
-                type="range"
-                min="50"
-                max="100"
-                step="5"
-                value={form.notifyThreshold}
-                onChange={(e) => setForm({ ...form, notifyThreshold: parseInt(e.target.value) })}
-                style={styles.slider}
-              />
+              <div style={styles.sliderContainer}>
+                <input
+                  type="range"
+                  min="50"
+                  max="100"
+                  step="5"
+                  value={form.notifyThreshold}
+                  onChange={(e) => setForm({ ...form, notifyThreshold: parseInt(e.target.value) })}
+                  style={styles.slider}
+                />
+                <div style={styles.sliderLabels}>
+                  <span>50%</span>
+                  <span>75%</span>
+                  <span>100%</span>
+                </div>
+              </div>
             </div>
 
-            <div style={styles.formButtons}>
-              <button type="submit" style={styles.submitButton}>
-                {editingBudget ? 'Update' : 'Create'}
-              </button>
+            <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
                 Cancel
+              </button>
+              <button type="submit" style={styles.submitButton}>
+                {editingBudget ? 'Update Budget' : 'Create Budget'}
               </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Content */}
       {isLoading ? (
-        <div style={styles.loading}>Loading budgets...</div>
+        <div style={styles.loading}>
+          <div style={styles.loadingSpinner}></div>
+          <p>Loading budgets...</p>
+        </div>
       ) : budgets.length === 0 ? (
-        <div style={styles.empty}>
-          <p>No budgets yet. Create your first budget to start tracking your spending!</p>
+        <div style={styles.emptyState}>
+          <div style={styles.emptyIcon}>💰</div>
+          <p style={styles.emptyText}>No budgets created yet</p>
+          <p style={styles.emptySubtext}>Create your first budget to start tracking your spending limits</p>
         </div>
       ) : (
-        <div style={styles.budgetsGrid}>
-          {budgets.map(budget => (
-            <div key={budget.id} style={styles.budgetItem}>
-              <BudgetProgress budget={budget} />
-              <div style={styles.budgetActions}>
-                <button onClick={() => handleEdit(budget)} style={styles.editButton}>
-                  Edit
-                </button>
-                <button onClick={() => handleDelete(budget.id)} style={styles.deleteButton}>
-                  Delete
-                </button>
+        <div style={styles.content}>
+          <div style={styles.budgetsGrid}>
+            {budgets.map(budget => (
+              <div key={budget.id} style={styles.budgetCard}>
+                <BudgetProgress budget={budget} />
+                <div style={styles.cardFooter}>
+                  <div style={styles.budgetActions}>
+                    <button
+                      onClick={() => handleEdit(budget)}
+                      style={styles.editBtn}
+                      title="Edit budget"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(budget.id)}
+                      style={styles.deleteBtn}
+                      title="Delete budget"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
+  container: {
+    padding: '1.5rem',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    backgroundColor: theme.background,
+    minHeight: '100vh',
+  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: '2rem',
+    padding: '1.5rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  headerContent: {
+    flex: 1,
+  },
+  title: {
+    fontSize: '2rem',
+    fontWeight: '700',
+    color: theme.text,
+    marginBottom: '0.5rem',
+    margin: 0,
+  },
+  subtitle: {
+    color: theme.textSecondary,
+    fontSize: '1rem',
+    margin: 0,
   },
   addButton: {
-    padding: '0.75rem 1rem',
-    backgroundColor: '#27ae60',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.75rem 1.5rem',
+    backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '1rem',
-    fontWeight: '500',
-  },
-  formContainer: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    cursor: 'pointer',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    boxShadow: `0 2px 4px ${theme.primaryShadow}`,
+  },
+  addButtonIcon: {
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+  },
+  formCard: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadowLarge,
     marginBottom: '2rem',
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  formHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1.5rem',
+    borderBottom: `1px solid ${theme.border}`,
+    backgroundColor: theme.backgroundSecondary,
+  },
+  formTitle: {
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: theme.text,
+    margin: 0,
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    color: theme.textSecondary,
+    cursor: 'pointer',
+    padding: '0.25rem',
+    borderRadius: '4px',
+    transition: 'color 0.2s ease',
   },
   form: {
+    padding: '1.5rem',
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem',
+    gap: '1.5rem',
   },
   formRow: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '1rem',
+    gap: '1.5rem',
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+  },
+  label: {
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: theme.text,
   },
   input: {
     padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
     fontSize: '1rem',
+    transition: 'border-color 0.2s ease',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   select: {
     padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
     fontSize: '1rem',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
+    cursor: 'pointer',
   },
-  thresholdContainer: {
-    marginTop: '0.5rem',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    fontSize: '0.875rem',
-    color: '#666',
+  sliderContainer: {
+    position: 'relative',
   },
   slider: {
     width: '100%',
+    height: '6px',
+    borderRadius: '3px',
+    background: theme.borderLight,
+    outline: 'none',
     cursor: 'pointer',
+    appearance: 'none',
   },
-  formButtons: {
+  sliderLabels: {
     display: 'flex',
-    gap: '0.5rem',
+    justifyContent: 'space-between',
+    marginTop: '0.5rem',
+    fontSize: '0.75rem',
+    color: theme.textSecondary,
   },
-  submitButton: {
-    flex: 1,
-    padding: '0.75rem',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '500',
+  formActions: {
+    display: 'flex',
+    gap: '0.75rem',
+    paddingTop: '1rem',
+    borderTop: `1px solid ${theme.border}`,
   },
   cancelButton: {
     flex: 1,
-    padding: '0.75rem',
-    backgroundColor: '#95a5a6',
+    padding: '0.75rem 1.5rem',
+    backgroundColor: theme.backgroundSecondary,
+    color: theme.textSecondary,
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+  },
+  submitButton: {
+    flex: 1,
+    padding: '0.75rem 1.5rem',
+    backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
   },
   loading: {
-    textAlign: 'center',
-    padding: '2rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
+    color: theme.text,
   },
-  empty: {
+  loadingSpinner: {
+    width: '40px',
+    height: '40px',
+    border: `4px solid ${theme.borderLight}`,
+    borderTop: `4px solid ${theme.primary}`,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '1rem',
+  },
+  emptyState: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
     textAlign: 'center',
-    padding: '4rem',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    color: '#666',
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  emptyIcon: {
+    fontSize: '3rem',
+    marginBottom: '1rem',
+    opacity: 0.5,
+  },
+  emptyText: {
+    fontSize: '1.125rem',
+    fontWeight: '600',
+    color: theme.text,
+    marginBottom: '0.5rem',
+  },
+  emptySubtext: {
+    color: theme.textSecondary,
+    fontSize: '0.875rem',
+  },
+  content: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
   },
   budgetsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
     gap: '1.5rem',
+    padding: '1.5rem',
   },
-  budgetItem: {
-    position: 'relative',
+  budgetCard: {
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
+    borderRadius: '8px',
+    overflow: 'hidden',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  cardFooter: {
+    borderTop: `1px solid ${theme.borderLight}`,
+    padding: '1rem',
+    backgroundColor: theme.backgroundSecondary,
   },
   budgetActions: {
-    position: 'absolute',
-    top: '1rem',
-    right: '1rem',
     display: 'flex',
+    gap: '0.75rem',
+    justifyContent: 'flex-end',
+  },
+  editBtn: {
+    display: 'flex',
+    alignItems: 'center',
     gap: '0.5rem',
-  },
-  editButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
+    padding: '0.5rem 1rem',
+    backgroundColor: theme.backgroundSecondary,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '0.75rem',
+    fontSize: '0.875rem',
     fontWeight: '500',
+    color: theme.textSecondary,
+    transition: 'all 0.2s ease',
   },
-  deleteButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
+  deleteBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 1rem',
+    backgroundColor: theme.dangerBackground,
+    border: `1px solid ${theme.dangerBorder}`,
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '0.75rem',
+    fontSize: '0.875rem',
     fontWeight: '500',
+    color: theme.danger,
+    transition: 'all 0.2s ease',
   },
-};
+});
 
 export default BudgetsPage;

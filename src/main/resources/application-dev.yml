@@ -17,7 +17,7 @@ app:
   mail:
     from: noreply@financetracker.com
     from-name: Finance Tracker
-    base-url: http://localhost:3000
+    base-url: http://localhost:5173
     quota:
       enabled: false
       daily-limit: 450

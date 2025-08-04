@@ -214,6 +214,7 @@ public class AuthService {
     String email = request.getEmail();
     log.info("Login attempt for email: {}", email);
 
+
     try {
       authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(email, request.getPassword())
@@ -225,15 +226,12 @@ public class AuthService {
           return new RuntimeException("User not found");
         });
 
-      // Check if 2FA is enabled
       if (user.isTwoFactorEnabled()) {
-        // If 2FA code is not provided, return a response indicating 2FA is required
         if (request.getTwoFactorCode() == null || request.getTwoFactorCode().isEmpty()) {
           log.info("2FA required for user: {}", email);
           return new AuthResponse(null, true, "2FA_REQUIRED");
         }
 
-        // Verify 2FA code
         if (!twoFactorAuthService.verifyTwoFactorCode(user, request.getTwoFactorCode())) {
           log.warn("Invalid 2FA code for user: {}", email);
           throw new BadCredentialsException("Invalid 2FA code");
