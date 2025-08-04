@@ -4,9 +4,10 @@ import { recurringTransactionService } from '../services/recurringTransactionSer
 import { categoryService } from '../services/categoryService';
 import RecurringTransactionCard from '../components/recurring/RecurringTransactionCard';
 import { toast } from 'sonner';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { useThemedStyles } from '../hooks/useThemedStyles';
 
 function RecurringTransactionsPage() {
+  const styles = useThemedStyles(getStyles);
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
@@ -212,34 +213,63 @@ function RecurringTransactionsPage() {
   };
 
   return (
-    <div>
+    <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        <h1>Recurring Transactions</h1>
+        <div style={styles.headerContent}>
+          <h1 style={styles.title}>Recurring Transactions</h1>
+          <p style={styles.subtitle}>Automate your regular income and expenses</p>
+        </div>
         <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
-          <PlusIcon style={styles.icon} />
+          <span style={styles.addButtonIcon}>+</span>
           Add Recurring Transaction
         </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <div style={styles.formContainer}>
-          <h3>{editingTransaction ? 'Edit' : 'New'} Recurring Transaction</h3>
+        <div style={styles.formCard}>
+          <div style={styles.formHeader}>
+            <h3 style={styles.formTitle}>
+              {editingTransaction ? 'Edit Recurring Transaction' : 'Create New Recurring Transaction'}
+            </h3>
+            <button onClick={resetForm} style={styles.closeButton}>×</button>
+          </div>
 
           {!editingTransaction && (
-            <div style={styles.examples}>
-              <p style={styles.exampleTitle}>Quick setup templates:</p>
-              <div style={styles.presets}>
-                <button type="button" onClick={() => setFormPreset('rent')} style={styles.presetButton}>
-                  🏠 Monthly Rent (1st)
+            <div style={styles.templatesSection}>
+              <div style={styles.templatesHeader}>
+                <h4 style={styles.templatesTitle}>⚡ Quick Templates</h4>
+                <p style={styles.templatesSubtitle}>Get started faster with these common setups</p>
+              </div>
+              <div style={styles.templateGrid}>
+                <button type="button" onClick={() => setFormPreset('rent')} style={styles.templateButton}>
+                  <span style={styles.templateIcon}>🏠</span>
+                  <div style={styles.templateContent}>
+                    <span style={styles.templateName}>Monthly Rent</span>
+                    <span style={styles.templateDesc}>1st of every month</span>
+                  </div>
                 </button>
-                <button type="button" onClick={() => setFormPreset('salary')} style={styles.presetButton}>
-                  💰 Monthly Salary (25th)
+                <button type="button" onClick={() => setFormPreset('salary')} style={styles.templateButton}>
+                  <span style={styles.templateIcon}>💰</span>
+                  <div style={styles.templateContent}>
+                    <span style={styles.templateName}>Monthly Salary</span>
+                    <span style={styles.templateDesc}>25th of every month</span>
+                  </div>
                 </button>
-                <button type="button" onClick={() => setFormPreset('weekly')} style={styles.presetButton}>
-                  🛒 Weekly Shopping
+                <button type="button" onClick={() => setFormPreset('weekly')} style={styles.templateButton}>
+                  <span style={styles.templateIcon}>🛒</span>
+                  <div style={styles.templateContent}>
+                    <span style={styles.templateName}>Weekly Shopping</span>
+                    <span style={styles.templateDesc}>Every Saturday</span>
+                  </div>
                 </button>
-                <button type="button" onClick={() => setFormPreset('subscription')} style={styles.presetButton}>
-                  📺 Monthly Subscription
+                <button type="button" onClick={() => setFormPreset('subscription')} style={styles.templateButton}>
+                  <span style={styles.templateIcon}>📺</span>
+                  <div style={styles.templateContent}>
+                    <span style={styles.templateName}>Subscription</span>
+                    <span style={styles.templateDesc}>15th of every month</span>
+                  </div>
                 </button>
               </div>
             </div>
@@ -247,14 +277,11 @@ function RecurringTransactionsPage() {
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>
-                  Transaction Name *
-                  <span style={styles.hint}>e.g., "Monthly Rent", "Netflix Subscription"</span>
-                </label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Transaction Name</label>
                 <input
                   type="text"
-                  placeholder="Enter name"
+                  placeholder="e.g., Monthly Rent, Netflix Subscription"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
@@ -262,15 +289,12 @@ function RecurringTransactionsPage() {
                 />
               </div>
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>
-                  Amount *
-                  <span style={styles.hint}>How much per transaction</span>
-                </label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Amount</label>
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="0.00"
+                  placeholder="Enter amount per transaction"
                   value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   required
@@ -280,20 +304,20 @@ function RecurringTransactionsPage() {
             </div>
 
             <div style={styles.formRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Type *</label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Transaction Type</label>
                 <select
                   value={form.type}
                   onChange={(e) => setForm({ ...form, type: e.target.value, categoryId: '' })}
                   style={styles.select}
                 >
-                  <option value="EXPENSE">Expense (money out)</option>
-                  <option value="INCOME">Income (money in)</option>
+                  <option value="EXPENSE">💸 Expense (money out)</option>
+                  <option value="INCOME">💰 Income (money in)</option>
                 </select>
               </div>
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Category *</label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Category</label>
                 <select
                   value={form.categoryId}
                   onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
@@ -309,36 +333,30 @@ function RecurringTransactionsPage() {
             </div>
 
             <div style={styles.formRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>
-                  How often? *
-                  <span style={styles.hint}>Frequency of the transaction</span>
-                </label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Frequency</label>
                 <select
                   value={form.frequency}
                   onChange={(e) => setForm({ ...form, frequency: e.target.value, dayOfMonth: '', dayOfWeek: '' })}
                   style={styles.select}
                 >
-                  <option value="DAILY">Every day</option>
-                  <option value="WEEKLY">Every week</option>
-                  <option value="BIWEEKLY">Every 2 weeks</option>
-                  <option value="MONTHLY">Every month</option>
-                  <option value="QUARTERLY">Every 3 months</option>
-                  <option value="YEARLY">Every year</option>
+                  <option value="DAILY">📅 Every day</option>
+                  <option value="WEEKLY">📆 Every week</option>
+                  <option value="BIWEEKLY">📋 Every 2 weeks</option>
+                  <option value="MONTHLY">🗓️ Every month</option>
+                  <option value="QUARTERLY">📊 Every 3 months</option>
+                  <option value="YEARLY">🎯 Every year</option>
                 </select>
               </div>
 
               {form.frequency === 'MONTHLY' && (
-                <div style={styles.fieldGroup}>
-                  <label style={styles.label}>
-                    Day of month
-                    <span style={styles.hint}>Which day? (1-31)</span>
-                  </label>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Day of Month</label>
                   <input
                     type="number"
                     min="1"
                     max="31"
-                    placeholder="e.g., 1 for first day"
+                    placeholder="e.g., 1 for first day of month"
                     value={form.dayOfMonth}
                     onChange={(e) => setForm({ ...form, dayOfMonth: e.target.value })}
                     style={styles.input}
@@ -347,35 +365,29 @@ function RecurringTransactionsPage() {
               )}
 
               {form.frequency === 'WEEKLY' && (
-                <div style={styles.fieldGroup}>
-                  <label style={styles.label}>
-                    Day of week
-                    <span style={styles.hint}>Which day?</span>
-                  </label>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Day of Week</label>
                   <select
                     value={form.dayOfWeek}
                     onChange={(e) => setForm({ ...form, dayOfWeek: e.target.value })}
                     style={styles.select}
                   >
-                    <option value="">Select day</option>
-                    <option value="1">Every Monday</option>
-                    <option value="2">Every Tuesday</option>
-                    <option value="3">Every Wednesday</option>
-                    <option value="4">Every Thursday</option>
-                    <option value="5">Every Friday</option>
-                    <option value="6">Every Saturday</option>
-                    <option value="7">Every Sunday</option>
+                    <option value="">Select day of week</option>
+                    <option value="1">🗓️ Every Monday</option>
+                    <option value="2">🗓️ Every Tuesday</option>
+                    <option value="3">🗓️ Every Wednesday</option>
+                    <option value="4">🗓️ Every Thursday</option>
+                    <option value="5">🗓️ Every Friday</option>
+                    <option value="6">🗓️ Every Saturday</option>
+                    <option value="7">🗓️ Every Sunday</option>
                   </select>
                 </div>
               )}
             </div>
 
             <div style={styles.formRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>
-                  Start Date *
-                  <span style={styles.hint}>When should this begin?</span>
-                </label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Start Date</label>
                 <input
                   type="date"
                   value={form.startDate}
@@ -385,14 +397,11 @@ function RecurringTransactionsPage() {
                 />
               </div>
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>
-                  End Date
-                  <span style={styles.hint}>Optional - leave empty for ongoing</span>
-                </label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>End Date (Optional)</label>
                 <input
                   type="date"
-                  placeholder="No end date"
+                  placeholder="Leave empty for ongoing"
                   value={form.endDate}
                   onChange={(e) => setForm({ ...form, endDate: e.target.value })}
                   style={styles.input}
@@ -401,18 +410,19 @@ function RecurringTransactionsPage() {
             </div>
 
             {getNextExecutionPreview() && (
-              <div style={styles.nextExecutionHint}>
-                💡 {getNextExecutionPreview()}
+              <div style={styles.previewSection}>
+                <div style={styles.previewIcon}>💡</div>
+                <div style={styles.previewContent}>
+                  <p style={styles.previewTitle}>Schedule Preview</p>
+                  <p style={styles.previewText}>{getNextExecutionPreview()}</p>
+                </div>
               </div>
             )}
 
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>
-                Description
-                <span style={styles.hint}>Optional notes</span>
-              </label>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Description (Optional)</label>
               <textarea
-                placeholder="Add any notes here..."
+                placeholder="Add any notes or details about this recurring transaction"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 style={styles.textarea}
@@ -421,21 +431,24 @@ function RecurringTransactionsPage() {
             </div>
 
             <div style={styles.formActions}>
-              <label style={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={form.active}
-                  onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                />
-                <span>Active (uncheck to pause)</span>
-              </label>
+              <div style={styles.checkboxSection}>
+                <label style={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={form.active}
+                    onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                    style={styles.checkbox}
+                  />
+                  <span>✅ Active (uncheck to pause)</span>
+                </label>
+              </div>
 
-              <div style={styles.buttons}>
-                <button type="submit" style={styles.submitButton}>
-                  {editingTransaction ? 'Update' : 'Create'}
-                </button>
+              <div style={styles.buttonActions}>
                 <button type="button" onClick={resetForm} style={styles.cancelButton}>
                   Cancel
+                </button>
+                <button type="submit" style={styles.submitButton}>
+                  {editingTransaction ? 'Update Transaction' : 'Create Transaction'}
                 </button>
               </div>
             </div>
@@ -443,191 +456,396 @@ function RecurringTransactionsPage() {
         </div>
       )}
 
+      {/* Transactions List */}
       {isLoading ? (
-        <div style={styles.loading}>Loading recurring transactions...</div>
+        <div style={styles.loading}>
+          <div style={styles.loadingSpinner}></div>
+          <p>Loading recurring transactions...</p>
+        </div>
       ) : transactions.length === 0 ? (
-        <div style={styles.empty}>
-          <h3>No recurring transactions yet</h3>
-          <p>Create recurring transactions to automate your regular payments and income!</p>
-          <p>Perfect for rent, salary, subscriptions, and other regular transactions.</p>
+        <div style={styles.emptyState}>
+          <div style={styles.emptyIcon}>🔄</div>
+          <p style={styles.emptyText}>No recurring transactions yet</p>
+          <p style={styles.emptySubtext}>Create recurring transactions to automate your regular payments and income!</p>
+          <p style={styles.emptyDescription}>Perfect for rent, salary, subscriptions, and other regular transactions.</p>
         </div>
       ) : (
-        <div style={styles.grid}>
-          {transactions.map(transaction => (
-            <RecurringTransactionCard
-              key={transaction.id}
-              transaction={transaction}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onExecute={handleExecute}
-            />
-          ))}
+        <div style={styles.transactionsSection}>
+          <div style={styles.sectionHeader}>
+            <h3 style={styles.sectionTitle}>
+              <span style={styles.sectionIcon}>🔄</span>
+              Your Recurring Transactions
+              <span style={styles.badge}>{transactions.length}</span>
+            </h3>
+          </div>
+          
+          <div style={styles.grid}>
+            {transactions.map(transaction => (
+              <RecurringTransactionCard
+                key={transaction.id}
+                transaction={transaction}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onExecute={handleExecute}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
+  container: {
+    padding: '1.5rem',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    backgroundColor: theme.background,
+    minHeight: '100vh',
+  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: '2rem',
+    padding: '1.5rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  headerContent: {
+    flex: 1,
+  },
+  title: {
+    fontSize: '2rem',
+    fontWeight: '700',
+    color: theme.text,
+    marginBottom: '0.5rem',
+    margin: 0,
+  },
+  subtitle: {
+    color: theme.textSecondary,
+    fontSize: '1rem',
+    margin: 0,
   },
   addButton: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
-    padding: '0.75rem 1rem',
-    backgroundColor: '#27ae60',
+    padding: '0.75rem 1.5rem',
+    backgroundColor: '#7c3aed',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  icon: {
-    width: '20px',
-    height: '20px',
-  },
-  formContainer: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    marginBottom: '2rem',
-  },
-  examples: {
-    marginBottom: '1.5rem',
-    padding: '1rem',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '4px',
-  },
-  exampleTitle: {
-    margin: '0 0 0.75rem 0',
-    fontSize: '0.875rem',
-    color: '#666',
-  },
-  presets: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '0.5rem',
-  },
-  presetButton: {
-    padding: '0.5rem 1rem',
-    backgroundColor: 'white',
-    border: '1px solid #e0e0e0',
-    borderRadius: '20px',
-    fontSize: '0.875rem',
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 4px rgba(124, 58, 237, 0.2)',
   },
-  form: {
-    marginTop: '1rem',
+  addButtonIcon: {
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
   },
-  formRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '1rem',
+  formCard: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadowLarge,
+    marginBottom: '2rem',
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  formHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1.5rem',
+    borderBottom: '1px solid #e2e8f0',
+    backgroundColor: '#f8fafc',
+  },
+  formTitle: {
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: '#1e293b',
+    margin: 0,
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    color: '#64748b',
+    cursor: 'pointer',
+    padding: '0.25rem',
+    borderRadius: '4px',
+    transition: 'color 0.2s ease',
+  },
+  templatesSection: {
+    padding: '1.5rem',
+    borderBottom: '1px solid #e2e8f0',
+    backgroundColor: '#fefce8',
+  },
+  templatesHeader: {
     marginBottom: '1rem',
   },
-  fieldGroup: {
+  templatesTitle: {
+    fontSize: '1rem',
+    fontWeight: '600',
+    color: '#92400e',
+    margin: '0 0 0.25rem 0',
+  },
+  templatesSubtitle: {
+    fontSize: '0.875rem',
+    color: '#a16207',
+    margin: 0,
+  },
+  templateGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '0.75rem',
+  },
+  templateButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    padding: '1rem',
+    backgroundColor: 'white',
+    border: '1px solid #fed7aa',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    textAlign: 'left',
+  },
+  templateIcon: {
+    fontSize: '1.5rem',
+    flexShrink: 0,
+  },
+  templateContent: {
     display: 'flex',
     flexDirection: 'column',
     gap: '0.25rem',
   },
+  templateName: {
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  templateDesc: {
+    fontSize: '0.75rem',
+    color: '#64748b',
+  },
+  form: {
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+  },
+  formRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '1.5rem',
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+  },
   label: {
     fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#333',
-  },
-  hint: {
-    display: 'block',
-    fontSize: '0.75rem',
-    color: '#666',
-    fontWeight: 'normal',
-    marginTop: '0.125rem',
+    fontWeight: '600',
+    color: '#374151',
   },
   input: {
     padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '0.875rem',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    transition: 'border-color 0.2s ease',
+    backgroundColor: 'white',
   },
   select: {
     padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '0.875rem',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    backgroundColor: 'white',
+    cursor: 'pointer',
   },
   textarea: {
-    width: '100%',
     padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '0.875rem',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    fontSize: '1rem',
     resize: 'vertical',
+    backgroundColor: 'white',
+    fontFamily: 'inherit',
   },
-  nextExecutionHint: {
+  previewSection: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '1rem',
     padding: '1rem',
-    backgroundColor: '#e3f2fd',
-    borderRadius: '4px',
+    backgroundColor: '#fef3c7',
+    border: '1px solid #f59e0b',
+    borderRadius: '8px',
     marginBottom: '1rem',
+  },
+  previewIcon: {
+    fontSize: '1.5rem',
+    flexShrink: 0,
+  },
+  previewContent: {
+    flex: 1,
+  },
+  previewTitle: {
     fontSize: '0.875rem',
-    color: '#1976d2',
+    fontWeight: '600',
+    color: '#92400e',
+    margin: '0 0 0.25rem 0',
+  },
+  previewText: {
+    fontSize: '0.875rem',
+    color: '#a16207',
+    margin: 0,
   },
   formActions: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: '1.5rem',
+    paddingTop: '1rem',
+    borderTop: '1px solid #e2e8f0',
+  },
+  checkboxSection: {
+    display: 'flex',
+    alignItems: 'center',
   },
   checkboxLabel: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
     fontSize: '0.875rem',
-  },
-  buttons: {
-    display: 'flex',
-    gap: '0.5rem',
-  },
-  submitButton: {
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
+    color: '#374151',
     cursor: 'pointer',
-    fontWeight: '500',
+  },
+  checkbox: {
+    width: '1rem',
+    height: '1rem',
+  },
+  buttonActions: {
+    display: 'flex',
+    gap: '0.75rem',
   },
   cancelButton: {
     padding: '0.75rem 1.5rem',
-    backgroundColor: '#95a5a6',
+    backgroundColor: '#f1f5f9',
+    color: '#475569',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+  },
+  submitButton: {
+    padding: '0.75rem 1.5rem',
+    backgroundColor: '#7c3aed',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
   },
   loading: {
-    textAlign: 'center',
-    padding: '2rem',
-    fontSize: '1.125rem',
-    color: '#666',
-  },
-  empty: {
-    textAlign: 'center',
-    padding: '4rem 2rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
     backgroundColor: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    color: '#666',
+    borderRadius: '12px',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+  },
+  loadingSpinner: {
+    width: '40px',
+    height: '40px',
+    border: '4px solid #e2e8f0',
+    borderTop: '4px solid #7c3aed',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '1rem',
+  },
+  emptyState: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    textAlign: 'center',
+  },
+  emptyIcon: {
+    fontSize: '3rem',
+    marginBottom: '1rem',
+    opacity: 0.5,
+  },
+  emptyText: {
+    fontSize: '1.125rem',
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: '0.5rem',
+  },
+  emptySubtext: {
+    color: '#6b7280',
+    fontSize: '0.875rem',
+    marginBottom: '0.5rem',
+  },
+  emptyDescription: {
+    color: '#9ca3af',
+    fontSize: '0.875rem',
+    fontStyle: 'italic',
+  },
+  transactionsSection: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  sectionHeader: {
+    padding: '1.5rem 1.5rem 1rem',
+    borderBottom: `1px solid ${theme.border}`,
+    backgroundColor: theme.backgroundSecondary,
+  },
+  sectionTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: theme.text,
+    margin: 0,
+  },
+  sectionIcon: {
+    fontSize: '1.5rem',
+  },
+  badge: {
+    backgroundColor: theme.backgroundSecondary,
+    color: theme.textSecondary,
+    padding: '0.25rem 0.5rem',
+    borderRadius: '12px',
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    marginLeft: '0.5rem',
   },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
     gap: '1.5rem',
+    padding: '1.5rem',
   },
-};
+});
 
 export default RecurringTransactionsPage;

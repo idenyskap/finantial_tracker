@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 function BudgetCard({ budget, onEdit, onDelete }) {
+  const { formatCurrency } = useCurrency();
   const percentage = budget.spent && budget.amount
     ? (budget.spent / budget.amount) * 100
     : 0;
@@ -12,12 +14,6 @@ function BudgetCard({ budget, onEdit, onDelete }) {
     return '#27ae60';
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount || 0);
-  };
 
   const isOverBudget = percentage > 100;
   const isNearLimit = percentage >= budget.notifyThreshold;

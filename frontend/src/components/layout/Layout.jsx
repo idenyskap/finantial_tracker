@@ -76,6 +76,15 @@ function Layout({ children }) {
               Recurring
             </Link>
             <Link
+              to="/currency-converter"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/currency-converter' ? styles.activeLink : {})
+              }}
+            >
+              Converter
+            </Link>
+            <Link
               to="/profile"
               style={{
                 ...styles.link,
@@ -112,16 +121,17 @@ const getStyles = (theme) => ({
   nav: {
     backgroundColor: theme.backgroundSecondary,
     padding: '1rem 0',
-    boxShadow: theme.shadow,
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
     borderBottom: `1px solid ${theme.border}`,
   },
   navContent: {
-    maxWidth: '1200px',
+    maxWidth: '100%',
     margin: '0 auto',
-    padding: '0 1rem',
+    padding: '0 2rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   logo: {
     color: theme.primary,
@@ -131,19 +141,24 @@ const getStyles = (theme) => ({
   },
   navLinks: {
     display: 'flex',
-    gap: '1rem',
+    gap: '0.5rem',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   link: {
     color: theme.text,
     textDecoration: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '4px',
-    transition: 'all 0.2s',
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    transition: 'all 0.2s ease',
+    fontSize: '0.95rem',
+    fontWeight: '500',
+    whiteSpace: 'nowrap',
   },
   activeLink: {
     backgroundColor: theme.primary,
     color: 'white',
+    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
   },
   navRight: {
     display: 'flex',
@@ -156,20 +171,24 @@ const getStyles = (theme) => ({
   userEmail: {
     color: theme.textSecondary,
     fontSize: '0.875rem',
+    fontWeight: '500',
   },
   logoutBtn: {
-    backgroundColor: theme.danger,
+    backgroundColor: '#ef4444',
     color: 'white',
     border: 'none',
     padding: '0.5rem 1rem',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
-    transition: 'opacity 0.2s',
+    transition: 'all 0.2s ease',
+    fontSize: '0.875rem',
+    fontWeight: '500',
   },
   main: {
-    maxWidth: '1200px',
-    margin: '2rem auto',
-    padding: '0 1rem',
+    width: '100%',
+    maxWidth: 'none',
+    margin: '2rem 0',
+    padding: '0 2rem',
   },
 });
 

@@ -50,6 +50,7 @@ public class SecurityConfig {
         .requestMatchers("/api/transactions/**").authenticated()
         .requestMatchers("/api/categories/**").authenticated()
         .requestMatchers("/api/notifications/**").authenticated()
+        .requestMatchers("/api/currency/**").authenticated()
 
         .anyRequest().authenticated()
       )
@@ -66,6 +67,7 @@ public class SecurityConfig {
 
     configuration.setAllowedOrigins(List.of(
       "http://localhost:5173",
+      "http://localhost:5174",
       "http://localhost:3000",
       "https://your-domain.com"
     ));
