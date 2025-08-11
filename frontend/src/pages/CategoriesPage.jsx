@@ -3,9 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoryService } from '../services/categoryService';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../hooks/useThemedStyles';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function CategoriesPage() {
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -106,15 +108,15 @@ function CategoriesPage() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>Categories</h1>
-          <p style={styles.subtitle}>Organize your transactions with custom categories</p>
+          <h1 style={styles.title}>{t('categories.title')}</h1>
+          <p style={styles.subtitle}>{t('categories.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           style={styles.addButton}
         >
           <span style={styles.addButtonIcon}>+</span>
-          Add Category
+          {t('categories.addCategory')}
         </button>
       </div>
 
@@ -123,17 +125,17 @@ function CategoriesPage() {
         <div style={styles.formCard}>
           <div style={styles.formHeader}>
             <h3 style={styles.formTitle}>
-              {editingCategory ? 'Edit Category' : 'Create New Category'}
+              {editingCategory ? t('categories.editCategory') : t('categories.createNewCategory')}
             </h3>
             <button onClick={resetForm} style={styles.closeButton}>×</button>
           </div>
           
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formGroup}>
-              <label style={styles.label}>Category Name</label>
+              <label style={styles.label}>{t('categories.categoryName')}</label>
               <input
                 type="text"
-                placeholder="Enter category name"
+                placeholder={t('categories.namePlaceholder')}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
@@ -142,19 +144,19 @@ function CategoriesPage() {
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>Type</label>
+              <label style={styles.label}>{t('categories.type')}</label>
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
                 style={styles.select}
               >
-                <option value="EXPENSE">💸 Expense Category</option>
-                <option value="INCOME">💰 Income Category</option>
+                <option value="EXPENSE">{t('categories.expenseCategory')}</option>
+                <option value="INCOME">{t('categories.incomeCategory')}</option>
               </select>
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>Choose Color</label>
+              <label style={styles.label}>{t('categories.categoryColor')}</label>
               <div style={styles.colorSection}>
                 <div style={styles.colorGrid}>
                   {colors.map(color => (
@@ -185,10 +187,10 @@ function CategoriesPage() {
 
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingCategory ? 'Update Category' : 'Create Category'}
+                {editingCategory ? t('categories.updateCategory') : t('categories.createCategory')}
               </button>
             </div>
           </form>
@@ -208,7 +210,7 @@ function CategoriesPage() {
             <div style={styles.sectionHeader}>
               <h2 style={styles.sectionTitle}>
                 <span style={styles.sectionIcon}>💰</span>
-                Income Categories
+                {t('categories.incomeCategories')}
                 <span style={styles.badge}>{incomeCategories.length}</span>
               </h2>
             </div>
@@ -216,8 +218,8 @@ function CategoriesPage() {
             {incomeCategories.length === 0 ? (
               <div style={styles.emptyState}>
                 <div style={styles.emptyIcon}>📊</div>
-                <p style={styles.emptyText}>No income categories yet</p>
-                <p style={styles.emptySubtext}>Create your first income category to get started</p>
+                <p style={styles.emptyText}>{t('categories.noIncomeCategories')}</p>
+                <p style={styles.emptySubtext}>{t('categories.incomeCategoriesSubtext')}</p>
               </div>
             ) : (
               <div style={styles.grid}>
@@ -234,7 +236,7 @@ function CategoriesPage() {
                           />
                           <div>
                             <h4 style={styles.cardTitle}>{category.name}</h4>
-                            <p style={styles.cardType}>Income</p>
+                            <p style={styles.cardType}>{t('categories.income')}</p>
                           </div>
                         </div>
                       </div>
@@ -243,14 +245,14 @@ function CategoriesPage() {
                         <button
                           onClick={() => handleEdit(category)}
                           style={styles.editBtn}
-                          title="Edit category"
+                          title={t('categories.editTooltip')}
                         >
                           ✏️
                         </button>
                         <button
                           onClick={() => handleDelete(category.id)}
                           style={styles.deleteBtn}
-                          title="Delete category"
+                          title={t('categories.deleteTooltip')}
                         >
                           🗑️
                         </button>
@@ -267,7 +269,7 @@ function CategoriesPage() {
             <div style={styles.sectionHeader}>
               <h2 style={styles.sectionTitle}>
                 <span style={styles.sectionIcon}>💸</span>
-                Expense Categories
+                {t('categories.expenseCategories')}
                 <span style={styles.badge}>{expenseCategories.length}</span>
               </h2>
             </div>
@@ -275,8 +277,8 @@ function CategoriesPage() {
             {expenseCategories.length === 0 ? (
               <div style={styles.emptyState}>
                 <div style={styles.emptyIcon}>📊</div>
-                <p style={styles.emptyText}>No expense categories yet</p>
-                <p style={styles.emptySubtext}>Create your first expense category to get started</p>
+                <p style={styles.emptyText}>{t('categories.noExpenseCategories')}</p>
+                <p style={styles.emptySubtext}>{t('categories.expenseCategoriesSubtext')}</p>
               </div>
             ) : (
               <div style={styles.grid}>
@@ -293,7 +295,7 @@ function CategoriesPage() {
                           />
                           <div>
                             <h4 style={styles.cardTitle}>{category.name}</h4>
-                            <p style={styles.cardType}>Expense</p>
+                            <p style={styles.cardType}>{t('categories.expense')}</p>
                           </div>
                         </div>
                       </div>
@@ -302,14 +304,14 @@ function CategoriesPage() {
                         <button
                           onClick={() => handleEdit(category)}
                           style={styles.editBtn}
-                          title="Edit category"
+                          title={t('categories.editTooltip')}
                         >
                           ✏️
                         </button>
                         <button
                           onClick={() => handleDelete(category.id)}
                           style={styles.deleteBtn}
-                          title="Delete category"
+                          title={t('categories.deleteTooltip')}
                         >
                           🗑️
                         </button>

@@ -248,6 +248,53 @@ public class AnalyticsService {
     return balance != null ? balance : BigDecimal.ZERO;
   }
 
+  public List<CategoryMonthlyStatsDTO> getCategoryMonthlyStats(User user, LocalDate startDate, LocalDate endDate, int limit) {
+    log.info("Getting category monthly statistics for user: {} from {} to {} with limit {}",
+      user.getEmail(), startDate, endDate, limit);
+
+    LocalDate effectiveStartDate = startDate != null ? startDate : LocalDate.now().minusMonths(12);
+    LocalDate effectiveEndDate = endDate != null ? endDate : LocalDate.now();
+
+    List<Object[]> categoryResults = transactionRepository.getExpenseCategoryStats(user, effectiveStartDate, effectiveEndDate);
+    List<CategoryMonthlyStatsDTO> categoryMonthlyStats = new ArrayList<>();
+
+    for (int i = 0; i < Math.min(categoryResults.size(), limit); i++) {
+      Object[] result = categoryResults.get(i);
+      Long categoryId = (Long) result[0];
+      String categoryName = (String) result[1];
+      String categoryColor = (String) result[2];
+
+      List<Object[]> monthlyResults = transactionRepository.getCategoryMonthlyStats(user, categoryId, effectiveStartDate, effectiveEndDate);
+      List<CategoryMonthlyStatsDTO.MonthlyAmountDTO> monthlyData = new ArrayList<>();
+
+      for (Object[] monthlyResult : monthlyResults) {
+        String month = (String) monthlyResult[0];
+        BigDecimal amount = convertToBigDecimal(monthlyResult[1]);
+        Long transactionCount = (Long) monthlyResult[2];
+
+        YearMonth yearMonth = YearMonth.parse(month);
+        String monthName = yearMonth.format(DateTimeFormatter.ofPattern("MMM yyyy"));
+
+        monthlyData.add(CategoryMonthlyStatsDTO.MonthlyAmountDTO.builder()
+          .month(month)
+          .monthName(monthName)
+          .amount(amount)
+          .transactionCount(transactionCount != null ? transactionCount.intValue() : 0)
+          .build());
+      }
+
+      categoryMonthlyStats.add(CategoryMonthlyStatsDTO.builder()
+        .categoryId(categoryId)
+        .categoryName(categoryName)
+        .categoryColor(categoryColor)
+        .monthlyData(monthlyData)
+        .build());
+    }
+
+    log.info("Generated {} category monthly stats entries for user: {}", categoryMonthlyStats.size(), user.getEmail());
+    return categoryMonthlyStats;
+  }
+
   private BigDecimal convertToBigDecimal(Object value) {
     if (value == null) {
       return BigDecimal.ZERO;

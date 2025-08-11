@@ -1,25 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '../services/dashboardService';
+import { analyticsService } from '../services/analyticsService';
 import StatsCard from '../components/dashboard/StatsCard';
 import ExpenseIncomeChart from '../components/charts/ExpenseIncomeChart';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
+import CategoryMonthlyChart from '../components/charts/CategoryMonthlyChart';
 import GoalsWidget from '../components/dashboard/GoalsWidget';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function DashboardPage() {
   const styles = useThemedStyles(getStyles);
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => dashboardService.getDashboard(),
+  });
+
+  const { data: categoryMonthlyStats, isLoading: isCategoryStatsLoading } = useQuery({
+    queryKey: ['categoryMonthlyStats'],
+    queryFn: () => analyticsService.getCategoryMonthlyStats(5),
   });
 
   if (isLoading) {
     return (
       <div style={styles.loading}>
         <div style={styles.loadingSpinner}></div>
-        <p>Loading your dashboard...</p>
+        <p>{t('dashboard.loadingMessage')}</p>
       </div>
     );
   }
@@ -28,7 +37,7 @@ function DashboardPage() {
     return (
       <div style={styles.error}>
         <span style={styles.errorIcon}>⚠️</span>
-        <p>Error loading dashboard data</p>
+        <p>{t('dashboard.errorMessage')}</p>
       </div>
     );
   }
@@ -46,8 +55,8 @@ function DashboardPage() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>Financial Dashboard</h1>
-          <p style={styles.subtitle}>Overview of your financial health and activity</p>
+          <h1 style={styles.title}>{t('dashboard.title')}</h1>
+          <p style={styles.subtitle}>{t('dashboard.subtitle')}</p>
         </div>
       </div>
 
@@ -58,7 +67,7 @@ function DashboardPage() {
             <div style={styles.statHeader}>
               <div style={styles.statInfo}>
                 <span style={styles.statIcon}>💰</span>
-                <span style={styles.statTitle}>Current Balance</span>
+                <span style={styles.statTitle}>{t('dashboard.currentBalance')}</span>
               </div>
             </div>
             <div style={styles.statContent}>
@@ -70,13 +79,13 @@ function DashboardPage() {
             <div style={styles.statHeader}>
               <div style={styles.statInfo}>
                 <span style={styles.statIcon}>📈</span>
-                <span style={styles.statTitle}>Monthly Income</span>
+                <span style={styles.statTitle}>{t('dashboard.monthlyIncome')}</span>
               </div>
             </div>
             <div style={styles.statContent}>
               <span style={{...styles.statValue, color: '#10b981'}}>{formatCurrency(dashboard?.monthlyIncome)}</span>
               <span style={styles.statChange}>
-                {formatPercent(dashboard?.incomeChangePercent)} from last month
+                {formatPercent(dashboard?.incomeChangePercent)} {t('dashboard.fromLastMonth')}
               </span>
             </div>
           </div>
@@ -85,13 +94,13 @@ function DashboardPage() {
             <div style={styles.statHeader}>
               <div style={styles.statInfo}>
                 <span style={styles.statIcon}>📉</span>
-                <span style={styles.statTitle}>Monthly Expenses</span>
+                <span style={styles.statTitle}>{t('dashboard.monthlyExpenses')}</span>
               </div>
             </div>
             <div style={styles.statContent}>
               <span style={{...styles.statValue, color: '#ef4444'}}>{formatCurrency(dashboard?.monthlyExpense)}</span>
               <span style={styles.statChange}>
-                {formatPercent(dashboard?.expenseChangePercent)} from last month
+                {formatPercent(dashboard?.expenseChangePercent)} {t('dashboard.fromLastMonth')}
               </span>
             </div>
           </div>
@@ -100,7 +109,7 @@ function DashboardPage() {
             <div style={styles.statHeader}>
               <div style={styles.statInfo}>
                 <span style={styles.statIcon}>📊</span>
-                <span style={styles.statTitle}>Monthly Balance</span>
+                <span style={styles.statTitle}>{t('dashboard.monthlyBalance')}</span>
               </div>
             </div>
             <div style={styles.statContent}>
@@ -120,7 +129,7 @@ function DashboardPage() {
         <div style={styles.cardHeader}>
           <h3 style={styles.cardTitle}>
             <span style={styles.cardIcon}>💳</span>
-            Recent Transactions
+            {t('dashboard.recentTransactions')}
           </h3>
         </div>
         <div style={styles.cardContent}>
@@ -138,7 +147,7 @@ function DashboardPage() {
                     <div style={styles.transactionDetails}>
                       <p style={styles.transactionCategory}>{transaction.categoryName}</p>
                       <p style={styles.transactionDescription}>
-                        {transaction.description || 'No description'}
+                        {transaction.description || t('dashboard.noDescription')}
                       </p>
                       <p style={styles.transactionDate}>
                         {new Date(transaction.date).toLocaleDateString()}
@@ -165,8 +174,8 @@ function DashboardPage() {
           ) : (
             <div style={styles.emptyState}>
               <div style={styles.emptyIcon}>💳</div>
-              <p style={styles.emptyText}>No recent transactions</p>
-              <p style={styles.emptySubtext}>Your latest transactions will appear here</p>
+              <p style={styles.emptyText}>{t('dashboard.noRecentTransactions')}</p>
+              <p style={styles.emptySubtext}>{t('dashboard.recentTransactionsSubtext')}</p>
             </div>
           )}
         </div>
@@ -177,7 +186,7 @@ function DashboardPage() {
         <div style={styles.cardHeader}>
           <h3 style={styles.cardTitle}>
             <span style={styles.cardIcon}>📋</span>
-            Top Expense Categories
+            {t('dashboard.topExpenseCategories')}
           </h3>
         </div>
         <div style={styles.cardContent}>
@@ -208,8 +217,8 @@ function DashboardPage() {
           ) : (
             <div style={styles.emptyState}>
               <div style={styles.emptyIcon}>📋</div>
-              <p style={styles.emptyText}>No expense categories</p>
-              <p style={styles.emptySubtext}>Your top spending categories will appear here</p>
+              <p style={styles.emptyText}>{t('dashboard.noExpenseCategories')}</p>
+              <p style={styles.emptySubtext}>{t('dashboard.expenseCategoriesSubtext')}</p>
             </div>
           )}
         </div>
@@ -220,7 +229,7 @@ function DashboardPage() {
         <div style={styles.cardHeader}>
           <h3 style={styles.cardTitle}>
             <span style={styles.cardIcon}>📊</span>
-            Financial Analytics
+            {t('dashboard.financialAnalytics')}
           </h3>
         </div>
         <div style={styles.cardContent}>
@@ -233,14 +242,29 @@ function DashboardPage() {
           <div style={styles.cardHeader}>
             <h3 style={styles.cardTitle}>
               <span style={styles.cardIcon}>🥧</span>
-              Expense Distribution by Category
+              {t('dashboard.expenseDistribution')}
             </h3>
           </div>
           <div style={styles.cardContent}>
             <CategoryPieChart
               categories={dashboard.topExpenseCategories}
-              title="Expense Distribution by Category"
+              title={t('dashboard.expenseDistribution')}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Category Monthly Statistics Chart */}
+      {!isCategoryStatsLoading && categoryMonthlyStats?.data?.length > 0 && (
+        <div style={styles.contentCard}>
+          <div style={styles.cardHeader}>
+            <h3 style={styles.cardTitle}>
+              <span style={styles.cardIcon}>📈</span>
+              {t('analytics.categoryMonthlyTrends')}
+            </h3>
+          </div>
+          <div style={styles.cardContent}>
+            <CategoryMonthlyChart categoryStats={categoryMonthlyStats.data} />
           </div>
         </div>
       )}
@@ -250,7 +274,7 @@ function DashboardPage() {
         <div style={styles.cardHeader}>
           <h3 style={styles.cardTitle}>
             <span style={styles.cardIcon}>🎯</span>
-            Financial Goals
+            {t('dashboard.financialGoals')}
           </h3>
         </div>
         <div style={styles.cardContent}>

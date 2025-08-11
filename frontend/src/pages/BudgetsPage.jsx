@@ -5,9 +5,11 @@ import { categoryService } from '../services/categoryService';
 import BudgetProgress from '../components/budgets/BudgetProgress';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../hooks/useThemedStyles';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function BudgetsPage() {
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
@@ -115,10 +117,10 @@ function BudgetsPage() {
   };
 
   const periods = [
-    { value: 'WEEKLY', label: 'Weekly' },
-    { value: 'MONTHLY', label: 'Monthly' },
-    { value: 'QUARTERLY', label: 'Quarterly' },
-    { value: 'YEARLY', label: 'Yearly' },
+    { value: 'WEEKLY', label: t('budgets.weekly') },
+    { value: 'MONTHLY', label: t('budgets.monthly') },
+    { value: 'QUARTERLY', label: t('budgets.quarterly') },
+    { value: 'YEARLY', label: t('budgets.yearly') },
   ];
 
   return (
@@ -126,15 +128,15 @@ function BudgetsPage() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>Budget Management</h1>
-          <p style={styles.subtitle}>Track your spending limits and stay on budget</p>
+          <h1 style={styles.title}>{t('budgets.title')}</h1>
+          <p style={styles.subtitle}>{t('budgets.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           style={styles.addButton}
         >
           <span style={styles.addButtonIcon}>+</span>
-          Add Budget
+          {t('budgets.addBudget')}
         </button>
       </div>
 
@@ -143,7 +145,7 @@ function BudgetsPage() {
         <div style={styles.formCard}>
           <div style={styles.formHeader}>
             <h3 style={styles.formTitle}>
-              {editingBudget ? 'Edit Budget' : 'Create New Budget'}
+              {editingBudget ? t('budgets.editBudget') : t('budgets.createNewBudget')}
             </h3>
             <button onClick={resetForm} style={styles.closeButton}>×</button>
           </div>
@@ -151,10 +153,10 @@ function BudgetsPage() {
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Budget Name</label>
+                <label style={styles.label}>{t('budgets.budgetName')}</label>
                 <input
                   type="text"
-                  placeholder="Enter budget name"
+                  placeholder={t('budgets.namePlaceholder')}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
@@ -163,11 +165,11 @@ function BudgetsPage() {
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Budget Amount</label>
+                <label style={styles.label}>{t('budgets.budgetAmount')}</label>
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="Enter amount"
+                  placeholder={t('budgets.amountPlaceholder')}
                   value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   required
@@ -178,7 +180,7 @@ function BudgetsPage() {
 
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Budget Period</label>
+                <label style={styles.label}>{t('budgets.period')}</label>
                 <select
                   value={form.period}
                   onChange={(e) => setForm({ ...form, period: e.target.value })}
@@ -233,10 +235,10 @@ function BudgetsPage() {
 
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingBudget ? 'Update Budget' : 'Create Budget'}
+                {editingBudget ? t('budgets.updateBudget') : t('budgets.createBudget')}
               </button>
             </div>
           </form>
@@ -252,8 +254,8 @@ function BudgetsPage() {
       ) : budgets.length === 0 ? (
         <div style={styles.emptyState}>
           <div style={styles.emptyIcon}>💰</div>
-          <p style={styles.emptyText}>No budgets created yet</p>
-          <p style={styles.emptySubtext}>Create your first budget to start tracking your spending limits</p>
+          <p style={styles.emptyText}>{t('budgets.noBudgets')}</p>
+          <p style={styles.emptySubtext}>{t('budgets.noBudgetsSubtext')}</p>
         </div>
       ) : (
         <div style={styles.content}>
@@ -266,16 +268,16 @@ function BudgetsPage() {
                     <button
                       onClick={() => handleEdit(budget)}
                       style={styles.editBtn}
-                      title="Edit budget"
+                      title={t('budgets.editTooltip')}
                     >
-                      ✏️ Edit
+                      {t('budgets.editLabel')}
                     </button>
                     <button
                       onClick={() => handleDelete(budget.id)}
                       style={styles.deleteBtn}
-                      title="Delete budget"
+                      title={t('budgets.deleteTooltip')}
                     >
-                      🗑️ Delete
+                      {t('budgets.deleteLabel')}
                     </button>
                   </div>
                 </div>

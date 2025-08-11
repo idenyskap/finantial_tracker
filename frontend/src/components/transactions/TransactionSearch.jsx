@@ -4,10 +4,12 @@ import { savedSearchService } from '../../services/savedSearchService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function TransactionSearch({ onSearch, categories }) {
   const styles = useThemedStyles(getStyles);
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
   const [showFilters, setShowFilters] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [searchName, setSearchName] = useState('');
@@ -21,24 +23,24 @@ function TransactionSearch({ onSearch, categories }) {
   });
 
   const quickFilters = [
-    { value: 'TODAY', label: 'Today' },
-    { value: 'LAST_7_DAYS', label: 'Last 7 Days' },
-    { value: 'LAST_30_DAYS', label: 'Last 30 Days' },
-    { value: 'THIS_MONTH', label: 'This Month' },
-    { value: 'LAST_MONTH', label: 'Last Month' },
-    { value: 'THIS_YEAR', label: 'This Year' },
+    { value: 'TODAY', label: t('search.today') },
+    { value: 'LAST_7_DAYS', label: t('search.last7Days') },
+    { value: 'LAST_30_DAYS', label: t('search.last30Days') },
+    { value: 'THIS_MONTH', label: t('search.thisMonth') },
+    { value: 'LAST_MONTH', label: t('search.lastMonth') },
+    { value: 'THIS_YEAR', label: t('search.thisYear') },
   ];
 
   const saveMutation = useMutation({
     mutationFn: savedSearchService.create,
     onSuccess: () => {
       queryClient.invalidateQueries(['saved-searches']);
-      toast.success('Search saved successfully');
+      toast.success(t('search.savedSuccess'));
       setSaveModalOpen(false);
       setSearchName('');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Error saving search');
+      toast.error(error.response?.data?.message || t('search.saveError'));
     },
   });
 
@@ -66,7 +68,7 @@ function TransactionSearch({ onSearch, categories }) {
 
   const handleSaveSearch = () => {
     if (!searchName.trim()) {
-      toast.error('Please enter a name for the search');
+      toast.error(t('search.enterName'));
       return;
     }
 
@@ -83,7 +85,7 @@ function TransactionSearch({ onSearch, categories }) {
           <input
             type="text"
             name="searchText"
-            placeholder="Search transactions..."
+            placeholder={t('search.placeholder')}
             value={filters.searchText}
             onChange={handleChange}
             style={styles.searchInput}
@@ -97,13 +99,13 @@ function TransactionSearch({ onSearch, categories }) {
             style={styles.filterButton}
           >
             <FunnelIcon style={styles.icon} />
-            Filters
+            {t('search.filters')}
           </button>
           <button
             type="button"
             onClick={() => setSaveModalOpen(true)}
             style={styles.saveButton}
-            title="Save this search"
+            title={t('search.saveTooltip')}
           >
             <BookmarkIcon style={styles.icon} />
           </button>
@@ -131,9 +133,9 @@ function TransactionSearch({ onSearch, categories }) {
                 onChange={handleChange}
                 style={styles.select}
               >
-                <option value="">All Types</option>
-                <option value="INCOME">Income</option>
-                <option value="EXPENSE">Expense</option>
+                <option value="">{t('search.allTypes')}</option>
+                <option value="INCOME">{t('transactions.income')}</option>
+                <option value="EXPENSE">{t('transactions.expense')}</option>
               </select>
 
               <select
@@ -142,7 +144,7 @@ function TransactionSearch({ onSearch, categories }) {
                 onChange={handleChange}
                 style={styles.select}
               >
-                <option value="">All Categories</option>
+                <option value="">{t('search.allCategories')}</option>
                 {categories?.map(cat => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -155,7 +157,7 @@ function TransactionSearch({ onSearch, categories }) {
               <input
                 type="number"
                 name="minAmount"
-                placeholder="Min amount"
+                placeholder={t('search.minAmount')}
                 value={filters.minAmount}
                 onChange={handleChange}
                 style={styles.input}
@@ -163,7 +165,7 @@ function TransactionSearch({ onSearch, categories }) {
               <input
                 type="number"
                 name="maxAmount"
-                placeholder="Max amount"
+                placeholder={t('search.maxAmount')}
                 value={filters.maxAmount}
                 onChange={handleChange}
                 style={styles.input}
@@ -173,7 +175,7 @@ function TransactionSearch({ onSearch, categories }) {
                 onClick={handleReset}
                 style={styles.resetButton}
               >
-                Reset
+                {t('search.reset')}
               </button>
             </div>
           </div>
@@ -183,20 +185,20 @@ function TransactionSearch({ onSearch, categories }) {
       {saveModalOpen && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>
-            <h3>Save Search</h3>
+            <h3>{t('search.saveSearch')}</h3>
             <input
               type="text"
-              placeholder="Enter search name..."
+              placeholder={t('search.namePlaceholder')}
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               style={styles.modalInput}
             />
             <div style={styles.modalButtons}>
               <button onClick={handleSaveSearch} style={styles.modalSaveButton}>
-                Save
+                {t('search.save')}
               </button>
               <button onClick={() => setSaveModalOpen(false)} style={styles.modalCancelButton}>
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </div>

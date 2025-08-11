@@ -1,9 +1,11 @@
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function BudgetProgress({ budget }) {
   const styles = useThemedStyles(getStyles);
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const percentage = Math.min(budget.percentUsed || 0, 100);
   const isOverBudget = budget.overBudget;
   const isWarning = percentage >= budget.notifyThreshold;
@@ -22,7 +24,7 @@ function BudgetProgress({ budget }) {
         <div>
           <h3 style={styles.name}>{budget.name}</h3>
           <p style={styles.category}>
-            {budget.categoryName || 'All Categories'} • {budget.period}
+            {budget.categoryName || t('budgets.allCategories')} • {t(`budgets.${budget.period.toLowerCase()}`)}
           </p>
         </div>
         <div style={styles.amount}>
@@ -57,16 +59,16 @@ function BudgetProgress({ budget }) {
 
       <div style={styles.footer}>
         <span style={styles.remaining}>
-          {budget.remaining >= 0 ? 'Remaining: ' : 'Over budget: '}
+          {budget.remaining >= 0 ? `${t('budgets.remaining')}: ` : `${t('budgets.overBudget')}: `}
           <strong style={{ color: budget.remaining >= 0 ? '#27ae60' : '#e74c3c' }}>
             {formatCurrency(Math.abs(budget.remaining))}
           </strong>
         </span>
         {isWarning && !isOverBudget && (
-          <span style={styles.warning}>⚠️ Approaching limit</span>
+          <span style={styles.warning}>⚠️ {t('budgets.approachingLimit')}</span>
         )}
         {isOverBudget && (
-          <span style={styles.exceeded}>❌ Budget exceeded!</span>
+          <span style={styles.exceeded}>❌ {t('budgets.budgetExceeded')}</span>
         )}
       </div>
     </div>

@@ -3,9 +3,11 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const CurrencyConverter = () => {
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const [amount, setAmount] = useState('100');
   const [fromCurrency, setFromCurrency] = useState('USD');
   const [toCurrency, setToCurrency] = useState('EUR');
@@ -84,12 +86,12 @@ const CurrencyConverter = () => {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>Currency Converter</h1>
-          <p style={styles.subtitle}>Convert between different currencies with real-time exchange rates</p>
+          <h1 style={styles.title}>{t('converter.title')}</h1>
+          <p style={styles.subtitle}>{t('converter.subtitle')}</p>
         </div>
         <button onClick={() => setShowHistory(!showHistory)} style={styles.historyButton}>
           <span style={styles.buttonIcon}>📊</span>
-          {showHistory ? 'Hide History' : 'Show History'}
+          {showHistory ? t('converter.hideHistory') : t('converter.showHistory')}
         </button>
       </div>
 
@@ -99,7 +101,7 @@ const CurrencyConverter = () => {
           {/* Amount Section */}
           <div style={styles.amountSection}>
             <div style={styles.formGroup}>
-              <label style={styles.label}>Amount to Convert</label>
+              <label style={styles.label}>{t('converter.amount')}</label>
               <input
                 type="number"
                 value={amount}
@@ -112,7 +114,7 @@ const CurrencyConverter = () => {
             </div>
 
             <div style={styles.quickAmounts}>
-              <span style={styles.quickAmountsLabel}>Quick amounts:</span>
+              <span style={styles.quickAmountsLabel}>{t('converter.quickAmounts')}</span>
               <div style={styles.quickAmountsGrid}>
                 {quickAmounts.map((value) => (
                   <button
@@ -131,7 +133,7 @@ const CurrencyConverter = () => {
           <div style={styles.currencySection}>
             <div style={styles.currencySelectors}>
               <div style={styles.currencyGroup}>
-                <label style={styles.label}>From Currency</label>
+                <label style={styles.label}>{t('converter.from')}</label>
                 <select
                   value={fromCurrency}
                   onChange={(e) => setFromCurrency(e.target.value)}
@@ -162,7 +164,7 @@ const CurrencyConverter = () => {
               </div>
 
               <div style={styles.currencyGroup}>
-                <label style={styles.label}>To Currency</label>
+                <label style={styles.label}>{t('converter.to')}</label>
                 <select
                   value={toCurrency}
                   onChange={(e) => setToCurrency(e.target.value)}
@@ -203,10 +205,10 @@ const CurrencyConverter = () => {
                     })} {toCurrency}
                   </div>
                   <div style={styles.resultRate}>
-                    Exchange Rate: 1 {fromCurrency} = {result.exchangeRate.toFixed(6)} {toCurrency}
+                    {t('converter.exchangeRateLabel')} 1 {fromCurrency} = {result.exchangeRate.toFixed(6)} {toCurrency}
                   </div>
                   <div style={styles.resultTimestamp}>
-                    Last updated: {new Date(result.conversionDate).toLocaleString()}
+                    {t('converter.lastUpdatedLabel')} {new Date(result.conversionDate).toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -217,7 +219,7 @@ const CurrencyConverter = () => {
           {conversionMutation.isPending && (
             <div style={styles.loading}>
               <div style={styles.loadingSpinner}></div>
-              <p style={styles.loadingText}>Converting currencies...</p>
+              <p style={styles.loadingText}>{t('converter.convertingCurrencies')}</p>
             </div>
           )}
 
@@ -226,7 +228,7 @@ const CurrencyConverter = () => {
             <div style={styles.errorState}>
               <span style={styles.errorIcon}>⚠️</span>
               <span style={styles.errorText}>
-                {conversionMutation.error?.response?.data?.message || 'Conversion failed'}
+                {conversionMutation.error?.response?.data?.message || t('converter.conversionFailed')}
               </span>
             </div>
           )}
@@ -239,7 +241,7 @@ const CurrencyConverter = () => {
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
               <span style={styles.sectionIcon}>📈</span>
-              Recent Conversions
+              {t('converter.recentConversions')}
             </h3>
           </div>
           <div style={styles.historyList}>
@@ -272,7 +274,7 @@ const CurrencyConverter = () => {
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
               <span style={styles.sectionIcon}>💹</span>
-              Current Exchange Rates ({fromCurrency} Base)
+              {t('converter.currentExchangeRates')} ({fromCurrency} {t('converter.base')})
             </h3>
           </div>
           <div style={styles.ratesGrid}>

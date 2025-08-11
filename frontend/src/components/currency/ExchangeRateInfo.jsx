@@ -1,11 +1,13 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import api from '../../services/api';
 
 function ExchangeRateInfo() {
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const { defaultCurrency } = useCurrency();
 
   const { data: ratesData, isLoading } = useQuery({
@@ -69,7 +71,7 @@ function ExchangeRateInfo() {
     <div style={styles.container}>
       <div style={styles.header}>
         <span style={styles.icon}>📊</span>
-        <h4 style={styles.title}>Current Exchange Rate</h4>
+        <h4 style={styles.title}>{t('profile.currentExchangeRate')}</h4>
       </div>
       
       <div style={styles.rateInfo}>
@@ -81,12 +83,12 @@ function ExchangeRateInfo() {
         
         <div style={styles.metadata}>
           <div style={styles.metaItem}>
-            <span style={styles.metaLabel}>Updated:</span>
+            <span style={styles.metaLabel}>{t('profile.updated')}</span>
             <span style={styles.metaValue}>{formatDate(currentRate.validFrom)}</span>
           </div>
           
           <div style={styles.metaItem}>
-            <span style={styles.metaLabel}>Source:</span>
+            <span style={styles.metaLabel}>{t('profile.source')}</span>
             <span style={styles.metaValue}>
               {sourceInfo.url ? (
                 <a 
@@ -107,8 +109,7 @@ function ExchangeRateInfo() {
         <div style={styles.note}>
           <span style={styles.noteIcon}>ℹ️</span>
           <span style={styles.noteText}>
-            Rates update automatically every 6 hours. All existing transaction amounts 
-            are converted from USD using current rates.
+            {t('profile.rateNote')}
           </span>
         </div>
       </div>

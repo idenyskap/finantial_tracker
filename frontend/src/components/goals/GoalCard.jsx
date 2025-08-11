@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
   const styles = useThemedStyles(getStyles);
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const [showContribution, setShowContribution] = useState(false);
   const [contributionAmount, setContributionAmount] = useState('');
   const [contributionType, setContributionType] = useState('ADD');
@@ -70,7 +72,10 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
                 goal.priority === 'HIGH' ? '#f39c12' :
                   goal.priority === 'MEDIUM' ? '#3498db' : '#95a5a6'
             }}>
-              {goal.priority}
+              {goal.priority === 'HIGH' ? t('goals.highPriorityOption') :
+               goal.priority === 'MEDIUM' ? t('goals.mediumPriorityOption') :
+               goal.priority === 'LOW' ? t('goals.lowPriorityOption') :
+               goal.priority === 'CRITICAL' ? t('goals.criticalPriorityOption') : goal.priority}
             </span>
             {goal.categoryName && (
               <span style={styles.categoryBadge}>
@@ -91,7 +96,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
               style={styles.primaryAction}
               title="Add/Withdraw funds"
             >
-              💰 Add Funds
+              💰 {t('goals.addFunds')}
             </button>
           )}
           {goal.status === 'PAUSED' && (
@@ -100,7 +105,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
               style={styles.primaryAction}
               title="Resume goal"
             >
-              ▶️ Resume
+              ▶️ {t('goals.resume')}
             </button>
           )}
         </div>
@@ -113,7 +118,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
       <div style={styles.progressSection}>
         <div style={styles.amounts}>
           <span style={styles.currentAmount}>{formatCurrency(goal.currentAmount)}</span>
-          <span style={styles.targetAmount}>of {formatCurrency(goal.targetAmount)}</span>
+          <span style={styles.targetAmount}>{t('goals.of')} {formatCurrency(goal.targetAmount)}</span>
         </div>
 
         <div style={styles.progressBar}>
@@ -127,8 +132,8 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
         </div>
 
         <div style={styles.progressStats}>
-          <span>{progressPercentage.toFixed(1)}% complete</span>
-          <span>{formatCurrency(goal.remainingAmount)} to go</span>
+          <span>{progressPercentage.toFixed(1)}% {t('goals.complete')}</span>
+          <span>{formatCurrency(goal.remainingAmount)} {t('goals.toGo')}</span>
         </div>
       </div>
 
@@ -138,7 +143,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
             <input
               type="number"
               step="0.01"
-              placeholder="Amount"
+              placeholder={t('goals.amount')}
               value={contributionAmount}
               onChange={(e) => setContributionAmount(e.target.value)}
               style={styles.contributionInput}
@@ -148,11 +153,11 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
               onChange={(e) => setContributionType(e.target.value)}
               style={styles.contributionSelect}
             >
-              <option value="ADD">Add funds</option>
-              <option value="WITHDRAW">Withdraw</option>
+              <option value="ADD">{t('goals.addFundsOption')}</option>
+              <option value="WITHDRAW">{t('goals.withdraw')}</option>
             </select>
             <button onClick={handleContribute} style={styles.contributionButton}>
-              Confirm
+              {t('goals.confirm')}
             </button>
           </div>
         </div>
@@ -160,7 +165,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
 
       <div style={styles.details}>
         <div style={styles.detailItem}>
-          <span style={styles.detailLabel}>Target Date:</span>
+          <span style={styles.detailLabel}>{t('goals.targetDate')}</span>
           <span style={styles.detailValue}>
             {new Date(goal.targetDate).toLocaleDateString()}
           </span>
@@ -168,12 +173,12 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
 
         {goal.daysRemaining !== undefined && goal.status === 'ACTIVE' && (
           <div style={styles.detailItem}>
-            <span style={styles.detailLabel}>Days Remaining:</span>
+            <span style={styles.detailLabel}>{t('goals.daysRemaining')}</span>
             <span style={{
               ...styles.detailValue,
               color: goal.daysRemaining < 30 ? '#e74c3c' : styles.detailValue.color,
             }}>
-              {goal.daysRemaining > 0 ? goal.daysRemaining : 'Overdue'}
+              {goal.daysRemaining > 0 ? goal.daysRemaining : t('goals.overdue')}
             </span>
           </div>
         )}
@@ -181,25 +186,25 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
 
       {goal.status === 'ACTIVE' && goal.remainingAmount > 0 && goal.daysRemaining > 0 && (
         <div style={styles.savingsRequired}>
-          <h4 style={styles.savingsTitle}>💡 To reach your goal, save:</h4>
+          <h4 style={styles.savingsTitle}>{t('goals.toReachYourGoalSave')}</h4>
           <div style={styles.savingsGrid}>
             <div style={styles.savingsItem}>
               <span style={styles.savingsAmount}>
                 {formatCurrency(goal.requiredDailySaving)}
               </span>
-              <span style={styles.savingsPeriod}>per day</span>
+              <span style={styles.savingsPeriod}>{t('goals.perDay')}</span>
             </div>
             <div style={styles.savingsItem}>
               <span style={styles.savingsAmount}>
                 {formatCurrency(goal.requiredWeeklySaving)}
               </span>
-              <span style={styles.savingsPeriod}>per week</span>
+              <span style={styles.savingsPeriod}>{t('goals.perWeek')}</span>
             </div>
             <div style={styles.savingsItem}>
               <span style={styles.savingsAmount}>
                 {formatCurrency(goal.requiredMonthlySaving)}
               </span>
-              <span style={styles.savingsPeriod}>per month</span>
+              <span style={styles.savingsPeriod}>{t('goals.perMonth')}</span>
             </div>
           </div>
         </div>
@@ -215,21 +220,21 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
                 style={styles.secondaryButton}
                 title="Pause goal"
               >
-                ⏸️ Pause
+                ⏸️ {t('goals.pause')}
               </button>
               <button
                 onClick={() => onEdit(goal)}
                 style={styles.secondaryButton}
                 title="Edit goal"
               >
-                ✏️ Edit
+                ✏️ {t('common.edit')}
               </button>
               <button
                 onClick={() => onDelete(goal.id)}
                 style={styles.dangerButton}
                 title="Delete goal"
               >
-                🗑️ Delete
+                🗑️ {t('common.delete')}
               </button>
             </>
           )}
@@ -240,14 +245,14 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
                 style={styles.secondaryButton}
                 title="Edit goal"
               >
-                ✏️ Edit
+                ✏️ {t('common.edit')}
               </button>
               <button
                 onClick={() => onDelete(goal.id)}
                 style={styles.dangerButton}
                 title="Delete goal"
               >
-                🗑️ Delete
+                🗑️ {t('common.delete')}
               </button>
             </>
           )}
@@ -308,12 +313,17 @@ const getStyles = (theme) => ({
     gap: '0.5rem',
   },
   priorityBadge: {
-    padding: '0.25rem 0.75rem',
-    borderRadius: '4px',
+    padding: '0.375rem 0.75rem',
+    borderRadius: '6px',
     color: 'white',
-    fontSize: '0.75rem',
-    fontWeight: 'bold',
+    fontSize: '0.7rem',
+    fontWeight: '600',
     textTransform: 'uppercase',
+    letterSpacing: '0.025em',
+    lineHeight: '1',
+    display: 'inline-flex',
+    alignItems: 'center',
+    minHeight: '24px',
   },
   categoryBadge: {
     display: 'flex',
@@ -339,17 +349,19 @@ const getStyles = (theme) => ({
   primaryAction: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.5rem 1rem',
+    gap: '0.375rem',
+    padding: '0.625rem 1.125rem',
     backgroundColor: theme.warning,
     color: 'white',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '0.875rem',
+    fontSize: '0.8rem',
     fontWeight: '600',
     transition: 'all 0.2s ease',
     boxShadow: `0 2px 4px rgba(245, 158, 11, 0.2)`,
+    whiteSpace: 'nowrap',
+    minHeight: '36px',
   },
   actionSection: {
     borderTop: `1px solid ${theme.borderLight}`,
@@ -358,39 +370,48 @@ const getStyles = (theme) => ({
     marginTop: 'auto',
   },
   actionButtons: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-    gap: '0.75rem',
+    display: 'flex',
+    gap: '0.5rem',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   secondaryButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '0.5rem',
-    padding: '0.5rem 1rem',
+    gap: '0.375rem',
+    padding: '0.625rem 1rem',
     backgroundColor: theme.backgroundSecondary,
     color: theme.textSecondary,
     border: `1px solid ${theme.border}`,
-    borderRadius: '6px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '0.875rem',
+    fontSize: '0.8rem',
     fontWeight: '500',
     transition: 'all 0.2s ease',
+    minWidth: '90px',
+    flex: '1',
+    maxWidth: '120px',
+    whiteSpace: 'nowrap',
   },
   dangerButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '0.5rem',
-    padding: '0.5rem 1rem',
+    gap: '0.375rem',
+    padding: '0.625rem 1rem',
     backgroundColor: theme.dangerBackground,
     color: theme.danger,
     border: `1px solid ${theme.dangerBorder}`,
-    borderRadius: '6px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '0.875rem',
+    fontSize: '0.8rem',
     fontWeight: '500',
     transition: 'all 0.2s ease',
+    minWidth: '90px',
+    flex: '1',
+    maxWidth: '120px',
+    whiteSpace: 'nowrap',
   },
   description: {
     margin: '0 0 1rem 0',
@@ -508,22 +529,28 @@ const getStyles = (theme) => ({
   },
   savingsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
     gap: '1rem',
   },
   savingsItem: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    textAlign: 'center',
+    minWidth: 0,
   },
   savingsAmount: {
-    fontSize: '1.125rem',
+    fontSize: '1rem',
     fontWeight: 'bold',
     color: theme.warningText,
+    wordBreak: 'break-word',
+    lineHeight: '1.2',
   },
   savingsPeriod: {
     fontSize: '0.75rem',
     color: theme.textTertiary,
+    marginTop: '0.25rem',
+    whiteSpace: 'nowrap',
   },
 });
 

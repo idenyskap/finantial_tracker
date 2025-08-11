@@ -1,12 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useLanguage } from '../../contexts/LanguageContext';
 import ThemeToggle from '../ThemeToggle';
+import LanguageSelector from '../language/LanguageSelector';
 
 function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const styles = useThemedStyles(getStyles);
 
   const handleLogout = () => {
@@ -28,7 +31,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/dashboard' ? styles.activeLink : {})
               }}
             >
-              Dashboard
+              {t('navigation.dashboard')}
             </Link>
             <Link
               to="/transactions"
@@ -37,7 +40,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/transactions' ? styles.activeLink : {})
               }}
             >
-              Transactions
+              {t('navigation.transactions')}
             </Link>
             <Link
               to="/categories"
@@ -46,7 +49,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/categories' ? styles.activeLink : {})
               }}
             >
-              Categories
+              {t('navigation.categories')}
             </Link>
             <Link
               to="/budgets"
@@ -55,7 +58,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/budgets' ? styles.activeLink : {})
               }}
             >
-              Budgets
+              {t('navigation.budgets')}
             </Link>
             <Link
               to="/goals"
@@ -64,7 +67,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/goals' ? styles.activeLink : {})
               }}
             >
-              Goals
+              {t('navigation.goals')}
             </Link>
             <Link
               to="/recurring"
@@ -73,7 +76,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/recurring' ? styles.activeLink : {})
               }}
             >
-              Recurring
+              {t('navigation.recurring')}
             </Link>
             <Link
               to="/currency-converter"
@@ -82,7 +85,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/currency-converter' ? styles.activeLink : {})
               }}
             >
-              Converter
+              {t('navigation.converter')}
             </Link>
             <Link
               to="/profile"
@@ -91,14 +94,15 @@ function Layout({ children }) {
                 ...(location.pathname === '/profile' ? styles.activeLink : {})
               }}
             >
-              Profile
+              {t('navigation.profile')}
             </Link>
 
             <div style={styles.navRight}>
               <span style={styles.userEmail}>{user?.email}</span>
+              <LanguageSelector compact={true} />
               <ThemeToggle />
               <button onClick={handleLogout} style={styles.logoutBtn}>
-                Logout
+                {t('auth.logout')}
               </button>
             </div>
           </div>

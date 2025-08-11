@@ -3,12 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getTheme } from '../../styles/theme';
 import ExchangeRateInfo from '../currency/ExchangeRateInfo';
 
 const CurrencySettings = () => {
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const { theme } = useTheme();
   const themeColors = getTheme(theme);
   const queryClient = useQueryClient();
@@ -39,13 +41,13 @@ const CurrencySettings = () => {
       return response.data;
     },
     onSuccess: () => {
-      toast.success('Currency preferences updated successfully');
+      toast.success(t('profile.currencyPrefsUpdated'));
       queryClient.invalidateQueries(['currencyPreferences']);
       queryClient.invalidateQueries(['dashboard']);
       queryClient.invalidateQueries(['transactions']);
     },
     onError: () => {
-      toast.error('Failed to update currency preferences');
+      toast.error(t('profile.failedToUpdateCurrencyPrefs'));
     }
   });
 
@@ -57,7 +59,7 @@ const CurrencySettings = () => {
     return (
       <div style={styles.loading}>
         <div style={styles.loadingSpinner}></div>
-        <p style={styles.loadingText}>Loading currency settings...</p>
+        <p style={styles.loadingText}>{t('profile.loadingCurrencySettings')}</p>
       </div>
     );
   }
@@ -68,14 +70,14 @@ const CurrencySettings = () => {
         <div style={styles.sectionHeader}>
           <h3 style={styles.sectionTitle}>
             <span style={styles.sectionIcon}>💰</span>
-            Primary Currency
+            {t('profile.primaryCurrencyTitle')}
           </h3>
           <p style={styles.sectionDescription}>
-            Choose your default currency for all transactions and display
+            {t('profile.primaryCurrencyDesc')}
           </p>
         </div>
         <div style={styles.formGroup}>
-          <label style={styles.label}>Default Currency</label>
+          <label style={styles.label}>{t('profile.defaultCurrency')}</label>
           <select
             value={preferences.defaultCurrency}
             onChange={(e) => setPreferences(prev => ({ ...prev, defaultCurrency: e.target.value }))}
@@ -100,19 +102,19 @@ const CurrencySettings = () => {
         <div style={styles.sectionHeader}>
           <h3 style={styles.sectionTitle}>
             <span style={styles.sectionIcon}>🔄</span>
-            Secondary Currency Display
+            {t('profile.secondaryCurrencyTitle')}
           </h3>
           <p style={styles.sectionDescription}>
-            Show amounts in a secondary currency alongside your primary currency
+            {t('profile.secondaryCurrencyDesc')}
           </p>
         </div>
         
         <div style={styles.toggleSection}>
           <div style={styles.toggleContent}>
             <div style={styles.toggleInfo}>
-              <span style={styles.toggleLabel}>Enable Secondary Currency</span>
+              <span style={styles.toggleLabel}>{t('profile.enableSecondaryCurrency')}</span>
               <span style={styles.toggleDescription}>
-                Display converted amounts in your chosen secondary currency
+                {t('profile.enableSecondaryCurrencyDesc')}
               </span>
             </div>
             <label style={styles.toggleSwitch}>
@@ -140,7 +142,7 @@ const CurrencySettings = () => {
 
         {preferences.displaySecondary && (
           <div style={styles.formGroup}>
-            <label style={styles.label}>Secondary Currency</label>
+            <label style={styles.label}>{t('profile.secondaryCurrency')}</label>
             <select
               value={preferences.secondaryCurrency}
               onChange={(e) => setPreferences(prev => ({
@@ -178,7 +180,7 @@ const CurrencySettings = () => {
           }}
         >
           <span style={styles.saveButtonIcon}>💾</span>
-          {updateMutation.isPending ? 'Saving Changes...' : 'Save Currency Settings'}
+          {updateMutation.isPending ? t('profile.savingChanges') : t('profile.saveCurrencySettings')}
         </button>
       </div>
     </div>

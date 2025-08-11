@@ -7,10 +7,12 @@ import { toast } from 'sonner';
 import { PlusIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function GoalsPage() {
   const styles = useThemedStyles(getStyles);
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
@@ -142,7 +144,7 @@ function GoalsPage() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this goal?')) {
+    if (window.confirm(t('goals.confirmDelete'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -185,8 +187,8 @@ function GoalsPage() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>Financial Goals</h1>
-          <p style={styles.subtitle}>Track your savings targets and achieve your dreams</p>
+          <h1 style={styles.title}>{t('goals.title')}</h1>
+          <p style={styles.subtitle}>{t('goals.subtitle')}</p>
         </div>
         <div style={styles.headerActions}>
           <button
@@ -194,11 +196,11 @@ function GoalsPage() {
             style={styles.filterButton}
           >
             <span style={styles.buttonIcon}>🔍</span>
-            {activeOnly ? 'Show All' : 'Active Only'}
+            {activeOnly ? t('goals.showAll') : t('goals.activeOnly')}
           </button>
           <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
             <span style={styles.addButtonIcon}>+</span>
-            New Goal
+            {t('goals.addGoal')}
           </button>
         </div>
       </div>
@@ -210,28 +212,28 @@ function GoalsPage() {
             <div style={styles.statIcon}>🎯</div>
             <div style={styles.statContent}>
               <h3 style={styles.statValue}>{activeGoals.length}</h3>
-              <p style={styles.statLabel}>Active Goals</p>
+              <p style={styles.statLabel}>{t('goals.activeGoals')}</p>
             </div>
           </div>
           <div style={styles.statCard}>
             <div style={styles.statIcon}>✅</div>
             <div style={styles.statContent}>
               <h3 style={styles.statValue}>{completedGoals.length}</h3>
-              <p style={styles.statLabel}>Completed</p>
+              <p style={styles.statLabel}>{t('goals.completed')}</p>
             </div>
           </div>
           <div style={styles.statCard}>
             <div style={styles.statIcon}>💰</div>
             <div style={styles.statContent}>
               <h3 style={styles.statValue}>{formatCurrency(totalSaved)}</h3>
-              <p style={styles.statLabel}>Total Saved</p>
+              <p style={styles.statLabel}>{t('goals.totalSaved')}</p>
             </div>
           </div>
           <div style={styles.statCard}>
             <div style={styles.statIcon}>🎯</div>
             <div style={styles.statContent}>
               <h3 style={styles.statValue}>{formatCurrency(totalTarget)}</h3>
-              <p style={styles.statLabel}>Total Target</p>
+              <p style={styles.statLabel}>{t('goals.totalTarget')}</p>
             </div>
           </div>
         </div>
@@ -242,7 +244,7 @@ function GoalsPage() {
         <div style={styles.formCard}>
           <div style={styles.formHeader}>
             <h3 style={styles.formTitle}>
-              {editingGoal ? 'Edit Goal' : 'Create New Goal'}
+              {editingGoal ? t('goals.editGoalTitle') : t('goals.createNewGoal')}
             </h3>
             <button onClick={resetForm} style={styles.closeButton}>×</button>
           </div>
@@ -250,10 +252,10 @@ function GoalsPage() {
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Goal Name</label>
+                <label style={styles.label}>{t('goals.goalNameLabel')}</label>
                 <input
                   type="text"
-                  placeholder="e.g., Emergency Fund, New Car, Vacation"
+                  placeholder={t('goals.goalNamePlaceholder2')}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
@@ -262,11 +264,11 @@ function GoalsPage() {
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Target Amount</label>
+                <label style={styles.label}>{t('goals.targetAmount')}</label>
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="Enter target amount"
+                  placeholder={t('goals.enterTargetAmount')}
                   value={form.targetAmount}
                   onChange={(e) => setForm({ ...form, targetAmount: e.target.value })}
                   required
@@ -277,7 +279,7 @@ function GoalsPage() {
 
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Target Date</label>
+                <label style={styles.label}>{t('goals.deadline')}</label>
                 <input
                   type="date"
                   value={form.targetDate}
@@ -289,29 +291,29 @@ function GoalsPage() {
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Priority Level</label>
+                <label style={styles.label}>{t('goals.priorityLevel')}</label>
                 <select
                   value={form.priority}
                   onChange={(e) => setForm({ ...form, priority: e.target.value })}
                   style={styles.select}
                 >
-                  <option value="LOW">🟢 Low Priority</option>
-                  <option value="MEDIUM">🟡 Medium Priority</option>
-                  <option value="HIGH">🟠 High Priority</option>
-                  <option value="CRITICAL">🔴 Critical Priority</option>
+                  <option value="LOW">{t('goals.lowPriority')}</option>
+                  <option value="MEDIUM">{t('goals.mediumPriority')}</option>
+                  <option value="HIGH">{t('goals.highPriority')}</option>
+                  <option value="CRITICAL">{t('goals.criticalPriority')}</option>
                 </select>
               </div>
             </div>
 
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Category (Optional)</label>
+                <label style={styles.label}>{t('goals.categoryOptionalLabel')}</label>
                 <select
                   value={form.categoryId}
                   onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                   style={styles.select}
                 >
-                  <option value="">📂 No category</option>
+                  <option value="">{t('goals.noCategory')}</option>
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
@@ -319,7 +321,7 @@ function GoalsPage() {
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Goal Color</label>
+                <label style={styles.label}>{t('goals.goalColorLabel')}</label>
                 <input
                   type="color"
                   value={form.color}
@@ -330,9 +332,9 @@ function GoalsPage() {
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>Description (Optional)</label>
+              <label style={styles.label}>{t('goals.descriptionOptionalLabel')}</label>
               <textarea
-                placeholder="What is this goal for? Any specific plans or motivation?"
+                placeholder={t('goals.descriptionPlaceholder2')}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 style={styles.textarea}
@@ -342,7 +344,7 @@ function GoalsPage() {
 
             {form.targetAmount && form.targetDate && (
               <div style={styles.calculationHelper}>
-                <p style={styles.helperTitle}>💡 To reach your goal:</p>
+                <p style={styles.helperTitle}>{t('goals.toReachGoal')}</p>
                 {(() => {
                   const target = parseFloat(form.targetAmount) || 0;
                   const days = Math.ceil((new Date(form.targetDate) - new Date()) / (1000 * 60 * 60 * 24));
@@ -352,9 +354,9 @@ function GoalsPage() {
 
                   return (
                     <div style={styles.helperGrid}>
-                      <span>Save {formatCurrency(perDay)} per day</span>
-                      <span>Save {formatCurrency(perWeek)} per week</span>
-                      <span>Save {formatCurrency(perMonth)} per month</span>
+                      <span>{t('goals.savePerDay', { amount: formatCurrency(perDay) })}</span>
+                      <span>{t('goals.savePerWeek', { amount: formatCurrency(perWeek) })}</span>
+                      <span>{t('goals.savePerMonth', { amount: formatCurrency(perMonth) })}</span>
                     </div>
                   );
                 })()}
@@ -363,10 +365,10 @@ function GoalsPage() {
 
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingGoal ? 'Update Goal' : 'Create Goal'}
+                {editingGoal ? t('goals.updateGoal') : t('goals.createGoal')}
               </button>
             </div>
           </form>
@@ -377,14 +379,14 @@ function GoalsPage() {
       {isLoading ? (
         <div style={styles.loading}>
           <div style={styles.loadingSpinner}></div>
-          <p>Loading your goals...</p>
+          <p>{t('goals.loading')}</p>
         </div>
       ) : goals.length === 0 ? (
         <div style={styles.emptyState}>
           <div style={styles.emptyIcon}>🎯</div>
-          <p style={styles.emptyText}>No financial goals yet</p>
-          <p style={styles.emptySubtext}>Set your first goal and start your savings journey today!</p>
-          <p style={styles.emptyDescription}>Whether it's an emergency fund, a vacation, or a major purchase - every journey starts with a goal.</p>
+          <p style={styles.emptyText}>{t('goals.noGoals')}</p>
+          <p style={styles.emptySubtext}>{t('goals.noGoalsSubtext')}</p>
+          <p style={styles.emptyDescription}>{t('goals.noGoalsDescription')}</p>
         </div>
       ) : (
         <div style={styles.content}>
@@ -624,7 +626,7 @@ const getStyles = (theme) => ({
   },
   helperGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
     gap: '1rem',
     fontSize: '0.875rem',
     color: theme.text,

@@ -191,4 +191,20 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
   List<Transaction> findByUserAndDateBetweenOrderByDateDesc(@Param("user") User user,
                                                             @Param("startDate") LocalDate startDate,
                                                             @Param("endDate") LocalDate endDate);
+
+  @Query("SELECT " +
+    "TO_CHAR(t.date, 'YYYY-MM') as month, " +
+    "SUM(t.amount) as totalAmount, " +
+    "COUNT(t.id) as transactionCount " +
+    "FROM Transaction t " +
+    "WHERE t.user = :user " +
+    "AND t.category.id = :categoryId " +
+    "AND t.date >= :startDate " +
+    "AND t.date <= :endDate " +
+    "GROUP BY TO_CHAR(t.date, 'YYYY-MM') " +
+    "ORDER BY month DESC")
+  List<Object[]> getCategoryMonthlyStats(@Param("user") User user,
+                                         @Param("categoryId") Long categoryId,
+                                         @Param("startDate") LocalDate startDate,
+                                         @Param("endDate") LocalDate endDate);
 }
