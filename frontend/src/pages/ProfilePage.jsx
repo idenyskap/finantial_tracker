@@ -3,15 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../hooks/useThemedStyles';
+import { useLanguage } from '../contexts/LanguageContext';
 
 import TwoFactorSetup from '../components/auth/TwoFactorSetup';
 import CurrencySettings from '../components/settings/CurrencySettings';
 import NotificationSettings from '../components/profile/NotificationSettings';
 import ChangeEmailModal from '../components/profile/ChangeEmailModal';
 import PasswordChangeModal from '../components/profile/PasswordChangeModal';
+import LanguageSelector from '../components/language/LanguageSelector';
 
 const ProfilePage = () => {
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('profile');
   const [showTwoFactorSetup, setShowTwoFactorSetup] = useState(false);
@@ -71,17 +74,17 @@ const ProfilePage = () => {
   });
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'security', label: 'Security', icon: '🔒' },
-    { id: 'notifications', label: 'Notifications', icon: '📧' },
-    { id: 'currency', label: 'Currency', icon: '🌍' },
+    { id: 'profile', label: t('profile.tabProfile'), icon: '👤' },
+    { id: 'security', label: t('profile.tabSecurity'), icon: '🔒' },
+    { id: 'notifications', label: t('profile.tabNotifications'), icon: '📧' },
+    { id: 'currency', label: t('profile.tabCurrency'), icon: '🌍' },
   ];
 
   if (isLoading) {
     return (
       <div style={styles.loading}>
         <div style={styles.loadingSpinner}></div>
-        <p>Loading profile...</p>
+        <p>{t('profile.loadingProfile')}</p>
       </div>
     );
   }
@@ -91,8 +94,8 @@ const ProfilePage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>Account Settings</h1>
-          <p style={styles.subtitle}>Manage your profile, security, and preferences</p>
+          <h1 style={styles.title}>{t('profile.title')}</h1>
+          <p style={styles.subtitle}>{t('profile.profileSubtitle')}</p>
         </div>
       </div>
 
@@ -120,31 +123,31 @@ const ProfilePage = () => {
           <div style={styles.cardHeader}>
             <h3 style={styles.cardTitle}>
               <span style={styles.cardIcon}>👤</span>
-              Profile Information
+              {t('profile.profileInformation')}
             </h3>
           </div>
           <div style={styles.cardContent}>
             <div style={styles.formGroup}>
-              <label style={styles.label}>Full Name</label>
+              <label style={styles.label}>{t('profile.fullName')}</label>
               <input
                 type="text"
                 value={profile?.name || ''}
                 onChange={(e) => queryClient.setQueryData(['profile'], (old) => ({ ...old, name: e.target.value }))}
                 style={styles.input}
-                placeholder="Enter your full name"
+                placeholder={t('profile.fullNamePlaceholder')}
               />
             </div>
             <div style={styles.formGroup}>
-              <label style={styles.label}>Email Address</label>
+              <label style={styles.label}>{t('profile.emailAddress')}</label>
               <input
                 type="email"
                 value={profile?.email || ''}
                 readOnly
                 style={{...styles.input, ...styles.inputReadonly}}
-                placeholder="your.email@example.com"
+                placeholder={t('profile.emailPlaceholder')}
               />
               {!profile?.emailVerified && (
-                <div style={styles.warningText}>⚠️ Email not verified</div>
+                <div style={styles.warningText}>{t('profile.emailNotVerified')}</div>
               )}
             </div>
             <div style={styles.buttonGroup}>
@@ -153,13 +156,13 @@ const ProfilePage = () => {
                 style={styles.primaryButton}
                 disabled={updateProfile.isPending}
               >
-                {updateProfile.isPending ? 'Updating...' : 'Update Profile'}
+                {updateProfile.isPending ? t('profile.updatingProfile') : t('profile.updateProfile')}
               </button>
               <button
                 onClick={() => setShowEmailModal(true)}
                 style={styles.secondaryButton}
               >
-                Change Email
+                {t('profile.changeEmail')}
               </button>
             </div>
           </div>
@@ -171,7 +174,7 @@ const ProfilePage = () => {
           <div style={styles.cardHeader}>
             <h3 style={styles.cardTitle}>
               <span style={styles.cardIcon}>📧</span>
-              Notification Settings
+              {t('profile.notificationSettings')}
             </h3>
           </div>
           <div style={styles.cardContent}>
@@ -181,17 +184,31 @@ const ProfilePage = () => {
       )}
 
       {activeTab === 'currency' && (
-        <div style={styles.contentCard}>
-          <div style={styles.cardHeader}>
-            <h3 style={styles.cardTitle}>
-              <span style={styles.cardIcon}>🌍</span>
-              Currency Settings
-            </h3>
+        <>
+          <div style={styles.contentCard}>
+            <div style={styles.cardHeader}>
+              <h3 style={styles.cardTitle}>
+                <span style={styles.cardIcon}>🌍</span>
+                {t('profile.currencySettings')}
+              </h3>
+            </div>
+            <div style={styles.cardContent}>
+              <CurrencySettings />
+            </div>
           </div>
-          <div style={styles.cardContent}>
-            <CurrencySettings />
+
+          <div style={styles.contentCard}>
+            <div style={styles.cardHeader}>
+              <h3 style={styles.cardTitle}>
+                <span style={styles.cardIcon}>🌐</span>
+                {t('profile.languageSettings')}
+              </h3>
+            </div>
+            <div style={styles.cardContent}>
+              <LanguageSelector />
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {activeTab === 'security' && (
@@ -201,25 +218,25 @@ const ProfilePage = () => {
               <div style={styles.cardTitleSection}>
                 <h3 style={styles.cardTitle}>
                   <span style={styles.cardIcon}>🛡️</span>
-                  Two-Factor Authentication
+                  {t('profile.twoFactorAuth')}
                 </h3>
                 <p style={styles.cardSubtitle}>
-                  Add an extra layer of security to your account
+                  {t('profile.twoFactorSubtext')}
                 </p>
               </div>
               <div style={styles.statusSection}>
                 {twoFactorStatus?.enabled ? (
                   <div>
                     <span style={styles.statusBadgeEnabled}>
-                      ✅ Enabled
+                      {t('profile.twoFactorEnabled')}
                     </span>
                     <p style={styles.recoveryText}>
-                      {twoFactorStatus.recoveryCodesRemaining} recovery codes remaining
+                      {t('profile.recoveryCodesRemaining', { count: twoFactorStatus.recoveryCodesRemaining })}
                     </p>
                   </div>
                 ) : (
                   <span style={styles.statusBadgeDisabled}>
-                    ❌ Disabled
+                    {t('profile.twoFactorDisabledStatus')}
                   </span>
                 )}
               </div>
@@ -230,14 +247,14 @@ const ProfilePage = () => {
                   onClick={() => setShowDisable2FA(true)}
                   style={styles.dangerButton}
                 >
-                  Disable 2FA
+                  {t('profile.disable2FA')}
                 </button>
               ) : (
                 <button
                   onClick={() => setShowTwoFactorSetup(true)}
                   style={styles.primaryButton}
                 >
-                  Enable 2FA
+                  {t('profile.enable2FA')}
                 </button>
               )}
             </div>
@@ -247,10 +264,10 @@ const ProfilePage = () => {
             <div style={styles.cardHeader}>
               <h3 style={styles.cardTitle}>
                 <span style={styles.cardIcon}>🔑</span>
-                Password Management
+                {t('profile.passwordManagement')}
               </h3>
               <p style={styles.cardSubtitle}>
-                Keep your account secure with a strong password
+                {t('profile.passwordSubtext')}
               </p>
             </div>
             <div style={styles.cardContent}>
@@ -258,7 +275,7 @@ const ProfilePage = () => {
                 onClick={() => setShowPasswordModal(true)}
                 style={styles.secondaryButton}
               >
-                Change Password
+                {t('profile.changePassword')}
               </button>
             </div>
           </div>
@@ -270,7 +287,7 @@ const ProfilePage = () => {
           onClose={() => setShowPasswordModal(false)}
           onSuccess={() => {
             setShowPasswordModal(false);
-            toast.success('Password changed successfully');
+            toast.success(t('profile.passwordChangedSuccess'));
           }}
         />
       )}
@@ -281,7 +298,7 @@ const ProfilePage = () => {
           onClose={() => setShowEmailModal(false)}
           onSuccess={() => {
             setShowEmailModal(false);
-            toast.info('Check your new email for confirmation link');
+            toast.info(t('profile.emailChangeInfo'));
             refetch();
           }}
         />
@@ -300,15 +317,15 @@ const ProfilePage = () => {
       {showDisable2FA && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
-            <h3 style={styles.modalTitle}>Disable Two-Factor Authentication</h3>
+            <h3 style={styles.modalTitle}>{t('profile.disable2FATitle')}</h3>
             <p style={styles.modalDescription}>
-              Enter your password to disable two-factor authentication. This will make your account less secure.
+              {t('profile.disable2FADescription')}
             </p>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t('profile.passwordPlaceholder2')}
               style={styles.modalInput}
             />
             <div style={styles.modalActions}>
@@ -319,7 +336,7 @@ const ProfilePage = () => {
                 }}
                 style={styles.modalCancelButton}
               >
-                Cancel
+                {t('profile.cancel')}
               </button>
               <button
                 onClick={() => disable2FAMutation.mutate(password)}
@@ -329,7 +346,7 @@ const ProfilePage = () => {
                   opacity: (!password || disable2FAMutation.isPending) ? 0.5 : 1
                 }}
               >
-                {disable2FAMutation.isPending ? 'Disabling...' : 'Disable 2FA'}
+                {disable2FAMutation.isPending ? t('profile.disabling2FA') : t('profile.disable2FAButton')}
               </button>
             </div>
           </div>

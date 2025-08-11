@@ -1,28 +1,30 @@
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) {
   const styles = useThemedStyles(getStyles);
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
 
   const getFrequencyLabel = (frequency) => {
     const labels = {
-      DAILY: 'Daily',
-      WEEKLY: 'Weekly',
-      BIWEEKLY: 'Bi-weekly',
-      MONTHLY: 'Monthly',
-      QUARTERLY: 'Quarterly',
-      YEARLY: 'Yearly',
+      DAILY: t('recurring.frequencyDaily'),
+      WEEKLY: t('recurring.frequencyWeekly'),
+      BIWEEKLY: t('recurring.frequencyBiweekly'),
+      MONTHLY: t('recurring.frequencyMonthly'),
+      QUARTERLY: t('recurring.frequencyQuarterly'),
+      YEARLY: t('recurring.frequencyYearly'),
     };
     return labels[frequency] || frequency;
   };
 
   const getDayLabel = () => {
     if (transaction.frequency === 'MONTHLY' && transaction.dayOfMonth) {
-      return `on day ${transaction.dayOfMonth}`;
+      return `${t('recurring.onDay')} ${transaction.dayOfMonth}`;
     }
     if (transaction.frequency === 'WEEKLY' && transaction.dayOfWeek) {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const days = [t('recurring.dayMon'), t('recurring.dayTue'), t('recurring.dayWed'), t('recurring.dayThu'), t('recurring.dayFri'), t('recurring.daySat'), t('recurring.daySun')];
       return `on ${days[transaction.dayOfWeek - 1]}`;
     }
     return '';
@@ -39,13 +41,13 @@ function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) 
                 ...styles.typeBadge,
                 backgroundColor: transaction.type === 'INCOME' ? '#10b981' : '#ef4444',
               }}>
-                {transaction.type === 'INCOME' ? '💰 Income' : '💸 Expense'}
+                {transaction.type === 'INCOME' ? t('recurring.incomeLabel') : t('recurring.expenseLabel')}
               </span>
               <span style={{
                 ...styles.statusBadge,
                 backgroundColor: transaction.active ? '#10b981' : '#64748b',
               }}>
-                {transaction.active ? '✅ Active' : '⏸️ Paused'}
+                {transaction.active ? t('recurring.activeLabel') : t('recurring.pausedLabel')}
               </span>
             </div>
           </div>
@@ -56,7 +58,7 @@ function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) 
               style={styles.executeButton}
               title="Execute now"
             >
-              ▶️ Run Now
+              {t('recurring.runNow')}
             </button>
           </div>
         </div>
@@ -100,14 +102,14 @@ function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) 
 
         <div style={styles.datesSection}>
           <div style={styles.dateItem}>
-            <span style={styles.dateLabel}>🚀 Next execution</span>
+            <span style={styles.dateLabel}>{t('recurring.nextExecutionLabel')}</span>
             <span style={styles.dateValue}>
               {new Date(transaction.nextExecutionDate).toLocaleDateString()}
             </span>
           </div>
           {transaction.lastExecutionDate && (
             <div style={styles.dateItem}>
-              <span style={styles.dateLabel}>⏰ Last executed</span>
+              <span style={styles.dateLabel}>{t('recurring.lastExecutedLabel')}</span>
               <span style={styles.dateValue}>
                 {new Date(transaction.lastExecutionDate).toLocaleDateString()}
               </span>
@@ -123,14 +125,14 @@ function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) 
             style={styles.editButton}
             title="Edit transaction"
           >
-            ✏️ Edit
+            ✏️ {t('common.edit')}
           </button>
           <button
             onClick={() => onDelete(transaction.id)}
             style={styles.deleteButton}
             title="Delete transaction"
           >
-            🗑️ Delete
+            🗑️ {t('common.delete')}
           </button>
         </div>
       </div>

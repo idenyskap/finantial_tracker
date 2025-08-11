@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { ArrowUpTrayIcon, DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import api from '../../services/api';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function ImportCSV({ onImportComplete }) {
+  const { t } = useLanguage();
   const [showModal, setShowModal] = useState(false);
   const [file, setFile] = useState(null);
   const [importing, setImporting] = useState(false);
@@ -14,14 +16,14 @@ function ImportCSV({ onImportComplete }) {
     if (selectedFile && selectedFile.type === 'text/csv') {
       setFile(selectedFile);
     } else {
-      toast.error('Please select a CSV file');
+      toast.error(t('import.selectCSVFile'));
       e.target.value = '';
     }
   };
 
   const handleImport = async () => {
     if (!file) {
-      toast.error('Please select a file');
+      toast.error(t('import.selectFile'));
       return;
     }
 
@@ -39,15 +41,15 @@ function ImportCSV({ onImportComplete }) {
       setImportResult(response.data);
 
       if (response.data.successfulImports > 0) {
-        toast.success(`Successfully imported ${response.data.successfulImports} transactions`);
+        toast.success(t('import.successfullyImported', { count: response.data.successfulImports }));
         onImportComplete();
       }
 
       if (response.data.failedImports > 0) {
-        toast.warning(`Failed to import ${response.data.failedImports} transactions`);
+        toast.warning(t('import.failedToImport', { count: response.data.failedImports }));
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Import failed');
+      toast.error(error.response?.data?.message || t('import.importFailed'));
     } finally {
       setImporting(false);
     }
@@ -81,14 +83,14 @@ function ImportCSV({ onImportComplete }) {
         style={styles.importButton}
       >
         <ArrowUpTrayIcon style={styles.icon} />
-        Import CSV
+        {t('import.importCSV')}
       </button>
 
       {showModal && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>
             <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Import Transactions from CSV</h2>
+              <h2 style={styles.modalTitle}>{t('import.modalTitle')}</h2>
               <button onClick={handleClose} style={styles.closeButton}>
                 <XMarkIcon style={styles.closeIcon} />
               </button>
@@ -98,17 +100,17 @@ function ImportCSV({ onImportComplete }) {
               {!importResult ? (
                 <>
                   <div style={styles.instructions}>
-                    <h3>CSV Format Requirements:</h3>
+                    <h3>{t('import.formatRequirements')}</h3>
                     <ul style={styles.list}>
-                      <li>Column order: date, amount, type, category, description</li>
-                      <li>Date format: YYYY-MM-DD</li>
-                      <li>Type: INCOME or EXPENSE</li>
-                      <li>Category must exist in your account</li>
-                      <li>Description is optional</li>
+                      <li>{t('import.formatList.0')}</li>
+                      <li>{t('import.formatList.1')}</li>
+                      <li>{t('import.formatList.2')}</li>
+                      <li>{t('import.formatList.3')}</li>
+                      <li>{t('import.formatList.4')}</li>
                     </ul>
                     <button onClick={downloadTemplate} style={styles.templateButton}>
                       <DocumentTextIcon style={styles.smallIcon} />
-                      Download Template
+                      {t('import.downloadTemplate')}
                     </button>
                   </div>
 
@@ -121,7 +123,7 @@ function ImportCSV({ onImportComplete }) {
                       id="csv-file"
                     />
                     <label htmlFor="csv-file" style={styles.fileLabel}>
-                      {file ? file.name : 'Choose CSV file...'}
+                      {file ? file.name : t('import.chooseFile')}
                     </label>
                   </div>
 
@@ -131,30 +133,30 @@ function ImportCSV({ onImportComplete }) {
                       disabled={!file || importing}
                       style={styles.importConfirmButton}
                     >
-                      {importing ? 'Importing...' : 'Import'}
+                      {importing ? t('import.importing') : t('import.import')}
                     </button>
                     <button onClick={handleClose} style={styles.cancelButton}>
-                      Cancel
+                      {t('import.cancel')}
                     </button>
                   </div>
                 </>
               ) : (
                 <>
                   <div style={styles.results}>
-                    <h3>Import Results</h3>
+                    <h3>{t('import.results')}</h3>
                     <div style={styles.resultStats}>
                       <div style={styles.statItem}>
-                        <span style={styles.statLabel}>Total Rows:</span>
+                        <span style={styles.statLabel}>{t('import.totalRows')}</span>
                         <span style={styles.statValue}>{importResult.totalRows}</span>
                       </div>
                       <div style={styles.statItem}>
-                        <span style={styles.statLabel}>Successful:</span>
+                        <span style={styles.statLabel}>{t('import.successful')}</span>
                         <span style={{ ...styles.statValue, color: '#27ae60' }}>
                           {importResult.successfulImports}
                         </span>
                       </div>
                       <div style={styles.statItem}>
-                        <span style={styles.statLabel}>Failed:</span>
+                        <span style={styles.statLabel}>{t('import.failed')}</span>
                         <span style={{ ...styles.statValue, color: '#e74c3c' }}>
                           {importResult.failedImports}
                         </span>
@@ -163,7 +165,7 @@ function ImportCSV({ onImportComplete }) {
 
                     {importResult.errors.length > 0 && (
                       <div style={styles.errors}>
-                        <h4>Errors:</h4>
+                        <h4>{t('import.errors')}</h4>
                         <ul style={styles.errorList}>
                           {importResult.errors.map((error, index) => (
                             <li key={index} style={styles.errorItem}>{error}</li>
@@ -175,7 +177,7 @@ function ImportCSV({ onImportComplete }) {
 
                   <div style={styles.modalFooter}>
                     <button onClick={handleClose} style={styles.doneButton}>
-                      Done
+                      {t('import.done')}
                     </button>
                   </div>
                 </>

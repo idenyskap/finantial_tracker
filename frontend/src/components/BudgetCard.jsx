@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function BudgetCard({ budget, onEdit, onDelete }) {
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const percentage = budget.spent && budget.amount
     ? (budget.spent / budget.amount) * 100
     : 0;
@@ -33,10 +35,10 @@ function BudgetCard({ budget, onEdit, onDelete }) {
 
         <div style={styles.actions}>
           <button onClick={() => onEdit(budget)} style={styles.actionButton}>
-            Edit
+            {t('common.edit')}
           </button>
           <button onClick={() => onDelete(budget.id)} style={{...styles.actionButton, ...styles.deleteButton}}>
-            Delete
+            {t('common.delete')}
           </button>
         </div>
       </div>
@@ -49,19 +51,19 @@ function BudgetCard({ budget, onEdit, onDelete }) {
         }}>
           <ExclamationTriangleIcon style={styles.alertIcon} />
           {isOverBudget
-            ? 'Budget exceeded!'
-            : `${percentage.toFixed(0)}% of budget used`}
+            ? t('budgets.budgetExceeded')
+            : `${percentage.toFixed(0)}% ${t('budgets.budgetUsed')}`}
         </div>
       )}
 
       <div style={styles.amounts}>
         <div>
           <span style={styles.spent}>{formatCurrency(budget.spent)}</span>
-          <span style={styles.of}> of </span>
+          <span style={styles.of}> {t('budgets.of')} </span>
           <span style={styles.limit}>{formatCurrency(budget.amount)}</span>
         </div>
         <span style={styles.remaining}>
-          {formatCurrency(budget.amount - budget.spent)} left
+          {formatCurrency(budget.amount - budget.spent)} {t('budgets.remaining')}
         </span>
       </div>
 
@@ -79,8 +81,8 @@ function BudgetCard({ budget, onEdit, onDelete }) {
       </div>
 
       <div style={styles.period}>
-        <span style={styles.periodLabel}>Period:</span>
-        <span style={styles.periodValue}>{budget.period}</span>
+        <span style={styles.periodLabel}>{t('budgets.period')}:</span>
+        <span style={styles.periodValue}>{t(`budgets.${budget.period.toLowerCase()}`)}</span>
       </div>
     </div>
   );

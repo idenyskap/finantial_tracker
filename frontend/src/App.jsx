@@ -4,6 +4,8 @@ import {Toaster} from 'sonner';
 import {AuthProvider} from './contexts/AuthContext';
 import {ThemeProvider} from './contexts/ThemeContext';
 import {CurrencyProvider} from './contexts/CurrencyContext';
+import {LanguageProvider} from './contexts/LanguageContext';
+import './i18n';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/auth/PrivateRoute';
 import RegisterPage from './pages/RegisterPage';
@@ -35,8 +37,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <CurrencyProvider>
-          <ThemeProvider>
+        <LanguageProvider>
+          <CurrencyProvider>
+            <ThemeProvider>
             <Router>
             <Toaster position="top-right" richColors/>
             <Routes>
@@ -132,8 +135,9 @@ function App() {
               <Route path="/confirm-email-change" element={<EmailChangeConfirmationPage />} />
             </Routes>
             </Router>
-          </ThemeProvider>
-        </CurrencyProvider>
+            </ThemeProvider>
+          </CurrencyProvider>
+        </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

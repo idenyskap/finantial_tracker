@@ -9,10 +9,12 @@ import { toast } from 'sonner';
 import ImportCSV from '../components/transactions/ImportCSV';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function TransactionsPage() {
   const styles = useThemedStyles(getStyles);
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useState({});
   const [showForm, setShowForm] = useState(false);
@@ -154,18 +156,18 @@ function TransactionsPage() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>Transactions</h1>
-          <p style={styles.subtitle}>Track all your income and expenses</p>
+          <h1 style={styles.title}>{t('transactions.title')}</h1>
+          <p style={styles.subtitle}>{t('transactions.subtitle')}</p>
         </div>
         <div style={styles.headerButtons}>
           <ImportCSV onImportComplete={() => queryClient.invalidateQueries(['transactions'])} />
           <button onClick={handleExportCSV} style={styles.exportButton}>
             <span style={styles.buttonIcon}>📥</span>
-            Export CSV
+            {t('transactions.exportCSV')}
           </button>
           <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
             <span style={styles.addButtonIcon}>+</span>
-            Add Transaction
+            {t('transactions.addTransaction')}
           </button>
         </div>
       </div>
@@ -181,7 +183,7 @@ function TransactionsPage() {
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
               <span style={styles.sectionIcon}>🔖</span>
-              Saved Searches
+              {t('transactions.savedSearches')}
             </h3>
           </div>
           <div style={styles.savedSearchesGrid}>
@@ -201,19 +203,19 @@ function TransactionsPage() {
       {showForm && (
         <div style={styles.formCard}>
           <div style={styles.formHeader}>
-            <h3 style={styles.formTitle}>Add New Transaction</h3>
+            <h3 style={styles.formTitle}>{t('transactions.addNewTransaction')}</h3>
             <button onClick={() => setShowForm(false)} style={styles.closeButton}>×</button>
           </div>
           
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Amount</label>
+                <label style={styles.label}>{t('transactions.amount')}</label>
                 <input
                   name="amount"
                   type="number"
                   step="0.01"
-                  placeholder="Enter amount"
+                  placeholder={t('transactions.enterAmount')}
                   value={form.amount}
                   onChange={handleChange}
                   required
@@ -222,15 +224,15 @@ function TransactionsPage() {
               </div>
               
               <div style={styles.formGroup}>
-                <label style={styles.label}>Transaction Type</label>
+                <label style={styles.label}>{t('transactions.transactionType')}</label>
                 <select
                   name="type"
                   value={form.type}
                   onChange={handleChange}
                   style={styles.select}
                 >
-                  <option value="EXPENSE">💸 Expense</option>
-                  <option value="INCOME">💰 Income</option>
+                  <option value="EXPENSE">💸 {t('transactions.expense')}</option>
+                  <option value="INCOME">💰 {t('transactions.income')}</option>
                 </select>
               </div>
             </div>
@@ -245,7 +247,7 @@ function TransactionsPage() {
                   required
                   style={styles.select}
                 >
-                  <option value="">Select {form.type === 'INCOME' ? 'Income' : 'Expense'} Category</option>
+                  <option value="">Select {form.type === 'INCOME' ? t('transactions.income') : t('transactions.expense')} {t('transactions.category')}</option>
                   {filteredCategories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
@@ -253,7 +255,7 @@ function TransactionsPage() {
               </div>
               
               <div style={styles.formGroup}>
-                <label style={styles.label}>Date</label>
+                <label style={styles.label}>{t('transactions.date')}</label>
                 <input
                   name="date"
                   type="date"
@@ -266,7 +268,7 @@ function TransactionsPage() {
             </div>
             
             <div style={styles.formGroup}>
-              <label style={styles.label}>Description (Optional)</label>
+              <label style={styles.label}>{t('transactions.description')} {t('transactions.optional')}</label>
               <input
                 name="description"
                 type="text"
@@ -279,10 +281,10 @@ function TransactionsPage() {
             
             <div style={styles.formActions}>
               <button type="button" onClick={() => setShowForm(false)} style={styles.cancelButton}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" disabled={createMutation.isPending} style={styles.submitButton}>
-                {createMutation.isPending ? 'Creating...' : 'Create Transaction'}
+                {createMutation.isPending ? t('common.loading') : t('transactions.addTransaction')}
               </button>
             </div>
           </form>
@@ -293,14 +295,14 @@ function TransactionsPage() {
       {isLoading ? (
         <div style={styles.loading}>
           <div style={styles.loadingSpinner}></div>
-          <p>Loading transactions...</p>
+          <p>{t('common.loading')}</p>
         </div>
       ) : (
         <div style={styles.transactionsSection}>
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
               <span style={styles.sectionIcon}>📊</span>
-              Recent Transactions
+              {t('dashboard.recentTransactions')}
               <span style={styles.badge}>{transactions.length}</span>
             </h3>
           </div>
@@ -308,8 +310,8 @@ function TransactionsPage() {
           {transactions.length === 0 ? (
             <div style={styles.emptyState}>
               <div style={styles.emptyIcon}>💳</div>
-              <p style={styles.emptyText}>No transactions found</p>
-              <p style={styles.emptySubtext}>Add your first transaction or adjust your search filters</p>
+              <p style={styles.emptyText}>{t('transactions.noTransactionsFound')}</p>
+              <p style={styles.emptySubtext}>{t('transactions.noTransactionsSubtext')}</p>
             </div>
           ) : (
             <div style={styles.transactionsList}>
@@ -324,7 +326,7 @@ function TransactionsPage() {
                     />
                     <div style={styles.transactionDetails}>
                       <p style={styles.transactionCategory}>{tx.categoryName}</p>
-                      <p style={styles.transactionDescription}>{tx.description || 'No description'}</p>
+                      <p style={styles.transactionDescription}>{tx.description || t('transactions.noDescription')}</p>
                       <p style={styles.transactionDate}>{new Date(tx.date).toLocaleDateString()}</p>
                     </div>
                   </div>

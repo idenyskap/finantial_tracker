@@ -5,9 +5,11 @@ import { categoryService } from '../services/categoryService';
 import RecurringTransactionCard from '../components/recurring/RecurringTransactionCard';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../hooks/useThemedStyles';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function RecurringTransactionsPage() {
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
@@ -126,13 +128,13 @@ function RecurringTransactionsPage() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this recurring transaction?')) {
+    if (window.confirm(t('recurring.confirmDelete'))) {
       deleteMutation.mutate(id);
     }
   };
 
   const handleExecute = (id) => {
-    if (window.confirm('Execute this transaction now?')) {
+    if (window.confirm(t('recurring.confirmExecute'))) {
       executeMutation.mutate(id);
     }
   };
@@ -200,13 +202,13 @@ function RecurringTransactionsPage() {
     if (!form.startDate || !form.frequency) return null;
 
     const startDate = new Date(form.startDate);
-    let previewText = `First transaction: ${startDate.toLocaleDateString()}`;
+    let previewText = `${t('recurring.firstTransaction')} ${startDate.toLocaleDateString()}`;
 
     if (form.frequency === 'MONTHLY' && form.dayOfMonth) {
-      previewText = `First transaction: Day ${form.dayOfMonth} of ${startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+      previewText = `${t('recurring.firstTransaction')} Day ${form.dayOfMonth} of ${startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
     } else if (form.frequency === 'WEEKLY' && form.dayOfWeek) {
       const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-      previewText = `First transaction: Next ${days[form.dayOfWeek - 1]} after ${startDate.toLocaleDateString()}`;
+      previewText = `${t('recurring.firstTransaction')} Next ${days[form.dayOfWeek - 1]} after ${startDate.toLocaleDateString()}`;
     }
 
     return previewText;
@@ -217,12 +219,12 @@ function RecurringTransactionsPage() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>Recurring Transactions</h1>
-          <p style={styles.subtitle}>Automate your regular income and expenses</p>
+          <h1 style={styles.title}>{t('recurring.title')}</h1>
+          <p style={styles.subtitle}>{t('recurring.automateSubtitle')}</p>
         </div>
         <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
           <span style={styles.addButtonIcon}>+</span>
-          Add Recurring Transaction
+          {t('recurring.addRecurring')}
         </button>
       </div>
 
@@ -231,7 +233,7 @@ function RecurringTransactionsPage() {
         <div style={styles.formCard}>
           <div style={styles.formHeader}>
             <h3 style={styles.formTitle}>
-              {editingTransaction ? 'Edit Recurring Transaction' : 'Create New Recurring Transaction'}
+              {editingTransaction ? t('recurring.editTransactionTitle') : t('recurring.createNewTransaction')}
             </h3>
             <button onClick={resetForm} style={styles.closeButton}>×</button>
           </div>
@@ -239,36 +241,36 @@ function RecurringTransactionsPage() {
           {!editingTransaction && (
             <div style={styles.templatesSection}>
               <div style={styles.templatesHeader}>
-                <h4 style={styles.templatesTitle}>⚡ Quick Templates</h4>
-                <p style={styles.templatesSubtitle}>Get started faster with these common setups</p>
+                <h4 style={styles.templatesTitle}>{t('recurring.quickTemplates')}</h4>
+                <p style={styles.templatesSubtitle}>{t('recurring.quickTemplatesSubtext')}</p>
               </div>
               <div style={styles.templateGrid}>
                 <button type="button" onClick={() => setFormPreset('rent')} style={styles.templateButton}>
                   <span style={styles.templateIcon}>🏠</span>
                   <div style={styles.templateContent}>
-                    <span style={styles.templateName}>Monthly Rent</span>
-                    <span style={styles.templateDesc}>1st of every month</span>
+                    <span style={styles.templateName}>{t('recurring.monthlyRent')}</span>
+                    <span style={styles.templateDesc}>{t('recurring.firstOfMonth')}</span>
                   </div>
                 </button>
                 <button type="button" onClick={() => setFormPreset('salary')} style={styles.templateButton}>
                   <span style={styles.templateIcon}>💰</span>
                   <div style={styles.templateContent}>
-                    <span style={styles.templateName}>Monthly Salary</span>
-                    <span style={styles.templateDesc}>25th of every month</span>
+                    <span style={styles.templateName}>{t('recurring.monthlySalary')}</span>
+                    <span style={styles.templateDesc}>{t('recurring.twentyFifthOfMonth')}</span>
                   </div>
                 </button>
                 <button type="button" onClick={() => setFormPreset('weekly')} style={styles.templateButton}>
                   <span style={styles.templateIcon}>🛒</span>
                   <div style={styles.templateContent}>
-                    <span style={styles.templateName}>Weekly Shopping</span>
-                    <span style={styles.templateDesc}>Every Saturday</span>
+                    <span style={styles.templateName}>{t('recurring.weeklyShopping')}</span>
+                    <span style={styles.templateDesc}>{t('recurring.everySaturday')}</span>
                   </div>
                 </button>
                 <button type="button" onClick={() => setFormPreset('subscription')} style={styles.templateButton}>
                   <span style={styles.templateIcon}>📺</span>
                   <div style={styles.templateContent}>
-                    <span style={styles.templateName}>Subscription</span>
-                    <span style={styles.templateDesc}>15th of every month</span>
+                    <span style={styles.templateName}>{t('recurring.subscription')}</span>
+                    <span style={styles.templateDesc}>{t('recurring.fifteenthOfMonth')}</span>
                   </div>
                 </button>
               </div>
@@ -278,10 +280,10 @@ function RecurringTransactionsPage() {
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Transaction Name</label>
+                <label style={styles.label}>{t('recurring.transactionName')}</label>
                 <input
                   type="text"
-                  placeholder="e.g., Monthly Rent, Netflix Subscription"
+                  placeholder={t('recurring.transactionNamePlaceholder')}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
@@ -290,11 +292,11 @@ function RecurringTransactionsPage() {
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Amount</label>
+                <label style={styles.label}>{t('recurring.amount')}</label>
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="Enter amount per transaction"
+                  placeholder={t('recurring.amountPlaceholder')}
                   value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   required
@@ -305,26 +307,26 @@ function RecurringTransactionsPage() {
 
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Transaction Type</label>
+                <label style={styles.label}>{t('recurring.transactionType')}</label>
                 <select
                   value={form.type}
                   onChange={(e) => setForm({ ...form, type: e.target.value, categoryId: '' })}
                   style={styles.select}
                 >
-                  <option value="EXPENSE">💸 Expense (money out)</option>
-                  <option value="INCOME">💰 Income (money in)</option>
+                  <option value="EXPENSE">{t('recurring.expenseOption')}</option>
+                  <option value="INCOME">{t('recurring.incomeOption')}</option>
                 </select>
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Category</label>
+                <label style={styles.label}>{t('recurring.category')}</label>
                 <select
                   value={form.categoryId}
                   onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                   required
                   style={styles.select}
                 >
-                  <option value="">Select Category</option>
+                  <option value="">{t('recurring.selectCategory')}</option>
                   {filteredCategories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
@@ -334,29 +336,29 @@ function RecurringTransactionsPage() {
 
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Frequency</label>
+                <label style={styles.label}>{t('recurring.frequency')}</label>
                 <select
                   value={form.frequency}
                   onChange={(e) => setForm({ ...form, frequency: e.target.value, dayOfMonth: '', dayOfWeek: '' })}
                   style={styles.select}
                 >
-                  <option value="DAILY">📅 Every day</option>
-                  <option value="WEEKLY">📆 Every week</option>
-                  <option value="BIWEEKLY">📋 Every 2 weeks</option>
-                  <option value="MONTHLY">🗓️ Every month</option>
-                  <option value="QUARTERLY">📊 Every 3 months</option>
-                  <option value="YEARLY">🎯 Every year</option>
+                  <option value="DAILY">{t('recurring.everyDay')}</option>
+                  <option value="WEEKLY">{t('recurring.everyWeek')}</option>
+                  <option value="BIWEEKLY">{t('recurring.everyTwoWeeks')}</option>
+                  <option value="MONTHLY">{t('recurring.everyMonth')}</option>
+                  <option value="QUARTERLY">{t('recurring.everyThreeMonths')}</option>
+                  <option value="YEARLY">{t('recurring.everyYear')}</option>
                 </select>
               </div>
 
               {form.frequency === 'MONTHLY' && (
                 <div style={styles.formGroup}>
-                  <label style={styles.label}>Day of Month</label>
+                  <label style={styles.label}>{t('recurring.dayOfMonth')}</label>
                   <input
                     type="number"
                     min="1"
                     max="31"
-                    placeholder="e.g., 1 for first day of month"
+                    placeholder={t('recurring.dayOfMonthPlaceholder')}
                     value={form.dayOfMonth}
                     onChange={(e) => setForm({ ...form, dayOfMonth: e.target.value })}
                     style={styles.input}
@@ -366,20 +368,20 @@ function RecurringTransactionsPage() {
 
               {form.frequency === 'WEEKLY' && (
                 <div style={styles.formGroup}>
-                  <label style={styles.label}>Day of Week</label>
+                  <label style={styles.label}>{t('recurring.dayOfWeek')}</label>
                   <select
                     value={form.dayOfWeek}
                     onChange={(e) => setForm({ ...form, dayOfWeek: e.target.value })}
                     style={styles.select}
                   >
-                    <option value="">Select day of week</option>
-                    <option value="1">🗓️ Every Monday</option>
-                    <option value="2">🗓️ Every Tuesday</option>
-                    <option value="3">🗓️ Every Wednesday</option>
-                    <option value="4">🗓️ Every Thursday</option>
-                    <option value="5">🗓️ Every Friday</option>
-                    <option value="6">🗓️ Every Saturday</option>
-                    <option value="7">🗓️ Every Sunday</option>
+                    <option value="">{t('recurring.selectDayOfWeek')}</option>
+                    <option value="1">{t('recurring.everyMonday')}</option>
+                    <option value="2">{t('recurring.everyTuesday')}</option>
+                    <option value="3">{t('recurring.everyWednesday')}</option>
+                    <option value="4">{t('recurring.everyThursday')}</option>
+                    <option value="5">{t('recurring.everyFriday')}</option>
+                    <option value="6">{t('recurring.everySaturdayOption')}</option>
+                    <option value="7">{t('recurring.everySunday')}</option>
                   </select>
                 </div>
               )}
@@ -387,7 +389,7 @@ function RecurringTransactionsPage() {
 
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Start Date</label>
+                <label style={styles.label}>{t('recurring.startDate')}</label>
                 <input
                   type="date"
                   value={form.startDate}
@@ -398,7 +400,7 @@ function RecurringTransactionsPage() {
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>End Date (Optional)</label>
+                <label style={styles.label}>{t('recurring.endDateOptional')}</label>
                 <input
                   type="date"
                   placeholder="Leave empty for ongoing"
@@ -413,16 +415,16 @@ function RecurringTransactionsPage() {
               <div style={styles.previewSection}>
                 <div style={styles.previewIcon}>💡</div>
                 <div style={styles.previewContent}>
-                  <p style={styles.previewTitle}>Schedule Preview</p>
+                  <p style={styles.previewTitle}>{t('recurring.schedulePreview')}</p>
                   <p style={styles.previewText}>{getNextExecutionPreview()}</p>
                 </div>
               </div>
             )}
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>Description (Optional)</label>
+              <label style={styles.label}>{t('recurring.descriptionOptional')}</label>
               <textarea
-                placeholder="Add any notes or details about this recurring transaction"
+                placeholder={t('recurring.descriptionPlaceholder')}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 style={styles.textarea}
@@ -439,16 +441,16 @@ function RecurringTransactionsPage() {
                     onChange={(e) => setForm({ ...form, active: e.target.checked })}
                     style={styles.checkbox}
                   />
-                  <span>✅ Active (uncheck to pause)</span>
+                  <span>{t('recurring.activeCheckbox')}</span>
                 </label>
               </div>
 
               <div style={styles.buttonActions}>
                 <button type="button" onClick={resetForm} style={styles.cancelButton}>
-                  Cancel
+                  {t('recurring.cancel')}
                 </button>
                 <button type="submit" style={styles.submitButton}>
-                  {editingTransaction ? 'Update Transaction' : 'Create Transaction'}
+                  {editingTransaction ? t('recurring.updateTransaction') : t('recurring.createTransaction')}
                 </button>
               </div>
             </div>
@@ -460,21 +462,21 @@ function RecurringTransactionsPage() {
       {isLoading ? (
         <div style={styles.loading}>
           <div style={styles.loadingSpinner}></div>
-          <p>Loading recurring transactions...</p>
+          <p>{t('recurring.loading')}</p>
         </div>
       ) : transactions.length === 0 ? (
         <div style={styles.emptyState}>
           <div style={styles.emptyIcon}>🔄</div>
-          <p style={styles.emptyText}>No recurring transactions yet</p>
-          <p style={styles.emptySubtext}>Create recurring transactions to automate your regular payments and income!</p>
-          <p style={styles.emptyDescription}>Perfect for rent, salary, subscriptions, and other regular transactions.</p>
+          <p style={styles.emptyText}>{t('recurring.noTransactions')}</p>
+          <p style={styles.emptySubtext}>{t('recurring.noTransactionsSubtext')}</p>
+          <p style={styles.emptyDescription}>{t('recurring.noTransactionsDescription')}</p>
         </div>
       ) : (
         <div style={styles.transactionsSection}>
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
               <span style={styles.sectionIcon}>🔄</span>
-              Your Recurring Transactions
+              {t('recurring.title')}
               <span style={styles.badge}>{transactions.length}</span>
             </h3>
           </div>

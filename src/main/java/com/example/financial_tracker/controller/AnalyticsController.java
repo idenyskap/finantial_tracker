@@ -110,6 +110,21 @@ public class AnalyticsController {
     return ResponseEntity.ok(comparison);
   }
 
+  @GetMapping("/categories/monthly")
+  public ResponseEntity<List<CategoryMonthlyStatsDTO>> getCategoryMonthlyStats(
+    @AuthenticationPrincipal User user,
+    @RequestParam(defaultValue = "10") int limit,
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+    HttpServletRequest request) {
+
+    log.info("GET /api/analytics/categories/monthly - User: {} from IP: {} - Limit: {}",
+      user.getEmail(), getClientIpAddress(request), limit);
+
+    List<CategoryMonthlyStatsDTO> categoryStats = analyticsService.getCategoryMonthlyStats(user, startDate, endDate, limit);
+    return ResponseEntity.ok(categoryStats);
+  }
+
   private String getClientIpAddress(HttpServletRequest request) {
     String xForwardedFor = request.getHeader("X-Forwarded-For");
     if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
