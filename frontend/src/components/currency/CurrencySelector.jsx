@@ -34,9 +34,8 @@ const CurrencySelector = ({ value, onChange, label = "Currency" }) => {
     }
   }, [isOpen]);
 
-  // Ensure currencies is always an array
   const currencyList = Array.isArray(currencies) ? currencies : [];
-  
+
   const filteredCurrencies = currencyList.filter(currency =>
     currency.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     currency.name?.toLowerCase().includes(searchTerm.toLowerCase())

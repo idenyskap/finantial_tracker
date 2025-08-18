@@ -13,19 +13,18 @@ function ExchangeRateInfo() {
   const { data: ratesData, isLoading } = useQuery({
     queryKey: ['exchangeRates', defaultCurrency],
     queryFn: async () => {
-      if (defaultCurrency === 'USD') return []; // No conversion needed
+      if (defaultCurrency === 'USD') return [];
       const response = await api.get(`/currency/rates/USD`);
       return response.data;
     },
     enabled: !!defaultCurrency && defaultCurrency !== 'USD',
-    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    staleTime: 10 * 60 * 1000,
   });
 
   if (isLoading || !ratesData || ratesData.length === 0) {
     return null;
   }
 
-  // Find the rate for the user's default currency
   const currentRate = ratesData.find(rate => rate.toCurrency === defaultCurrency);
 
   if (!currentRate) {
@@ -73,27 +72,27 @@ function ExchangeRateInfo() {
         <span style={styles.icon}>📊</span>
         <h4 style={styles.title}>{t('profile.currentExchangeRate')}</h4>
       </div>
-      
+
       <div style={styles.rateInfo}>
         <div style={styles.rate}>
           <span style={styles.rateText}>
             1 USD = {currentRate.rate} {defaultCurrency}
           </span>
         </div>
-        
+
         <div style={styles.metadata}>
           <div style={styles.metaItem}>
             <span style={styles.metaLabel}>{t('profile.updated')}</span>
             <span style={styles.metaValue}>{formatDate(currentRate.validFrom)}</span>
           </div>
-          
+
           <div style={styles.metaItem}>
             <span style={styles.metaLabel}>{t('profile.source')}</span>
             <span style={styles.metaValue}>
               {sourceInfo.url ? (
-                <a 
-                  href={sourceInfo.url} 
-                  target="_blank" 
+                <a
+                  href={sourceInfo.url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   style={styles.link}
                 >
@@ -105,7 +104,7 @@ function ExchangeRateInfo() {
             </span>
           </div>
         </div>
-        
+
         <div style={styles.note}>
           <span style={styles.noteIcon}>ℹ️</span>
           <span style={styles.noteText}>

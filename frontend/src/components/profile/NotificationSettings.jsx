@@ -25,7 +25,7 @@ function NotificationSettings() {
         try {
           const initResponse = await api.post('/notifications/settings/init');
           setSettings(initResponse.data);
-        } catch (initError) {
+        } catch (_initError) {
           toast.error(t('profile.failedToInitNotificationSettings'));
         }
       } else {
@@ -35,6 +35,7 @@ function NotificationSettings() {
       setLoading(false);
     }
   };
+
 
   const handleToggle = (field) => {
     setSettings(prev => ({
