@@ -18,12 +18,10 @@ const TwoFactorInput = ({ onSubmit, isLoading, error }) => {
     newCode[index] = value;
     setCode(newCode);
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all digits are entered
     if (newCode.every(digit => digit) && index === 5) {
       onSubmit(newCode.join(''));
     }
@@ -148,7 +146,7 @@ const getStyles = (theme) => ({
     display: 'flex',
     justifyContent: 'center',
     gap: '0.5rem',
-    flexWrap: 'nowrap', // Ensure inputs stay in one row
+    flexWrap: 'nowrap',
   },
   input: {
     width: '3rem',

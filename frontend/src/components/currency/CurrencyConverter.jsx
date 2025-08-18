@@ -23,7 +23,6 @@ const CurrencyConverter = () => {
     onSuccess: (data) => {
       setResult(data);
 
-      // Add to history
       const historyItem = {
         id: Date.now(),
         ...data,
@@ -37,15 +36,13 @@ const CurrencyConverter = () => {
     }
   });
 
-  // Get exchange rates for display (optional feature)
-  const { data: exchangeRates, error: exchangeRatesError } = useQuery({
+  const { data: exchangeRates } = useQuery({
     queryKey: ['exchangeRates', fromCurrency],
     queryFn: async () => {
       try {
         const response = await api.get(`/currency/rates/${fromCurrency}`);
         return response.data;
       } catch (error) {
-        // If no rates are available, return empty array instead of throwing
         if (error.response?.status === 404 || error.response?.status === 400) {
           return [];
         }
@@ -68,7 +65,7 @@ const CurrencyConverter = () => {
       }, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [amount, fromCurrency, toCurrency]);
+  }, [amount, fromCurrency, toCurrency, conversionMutation]);
 
   const handleSwapCurrencies = () => {
     setFromCurrency(toCurrency);
