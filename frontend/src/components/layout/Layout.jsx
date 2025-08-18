@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 import ThemeToggle from '../ThemeToggle';
 import LanguageSelector from '../language/LanguageSelector';
 

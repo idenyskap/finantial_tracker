@@ -29,14 +29,14 @@ public class CategoryControllerIT {
 
   @Test
   void testGetCategoriesByUserId() throws Exception {
-    mockMvc.perform(get("/api/categories?userId=1"))
+    mockMvc.perform(get("/api/v1/categories?userId=1"))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void testGetCategoryById() throws Exception {
-    mockMvc.perform(get("/api/categories/1"))
+    mockMvc.perform(get("/api/v1/categories/1"))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
@@ -48,7 +48,7 @@ public class CategoryControllerIT {
     categoryDTO.setColor("Test Color");
     categoryDTO.setUserId(1L);
 
-    mockMvc.perform(post("/api/categories")
+    mockMvc.perform(post("/api/v1/categories")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(categoryDTO)))
       .andExpect(status().isCreated())
@@ -64,7 +64,7 @@ public class CategoryControllerIT {
     categoryDTO.setColor("Updated Color");
     categoryDTO.setUserId(1L);
 
-    mockMvc.perform(put("/api/categories/1")
+    mockMvc.perform(put("/api/v1/categories/1")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(categoryDTO)))
       .andExpect(status().isOk())
@@ -75,7 +75,7 @@ public class CategoryControllerIT {
 
   @Test
   void testDeleteCategory() throws Exception {
-    mockMvc.perform(delete("/api/categories/1"))
+    mockMvc.perform(delete("/api/v1/categories/1"))
       .andExpect(status().isNoContent());
   }
 }

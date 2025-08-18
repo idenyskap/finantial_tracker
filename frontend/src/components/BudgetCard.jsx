@@ -1,7 +1,7 @@
 import React from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 function BudgetCard({ budget, onEdit, onDelete }) {
   const { formatCurrency } = useCurrency();

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 
 function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
   const styles = useThemedStyles(getStyles);

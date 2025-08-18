@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoryService } from '../services/categoryService';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../hooks/useThemedStyles';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 function CategoriesPage() {
   const styles = useThemedStyles(getStyles);

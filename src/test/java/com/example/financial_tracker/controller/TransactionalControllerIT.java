@@ -32,14 +32,14 @@ public class TransactionalControllerIT {
 
   @Test
   void testGetAllTransactions() throws Exception {
-    mockMvc.perform(get("/api/transactions"))
+    mockMvc.perform(get("/api/v1/transactions"))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void testGetTransactionById() throws Exception {
-    mockMvc.perform(get("/api/transactions/1"))
+    mockMvc.perform(get("/api/v1/transactions/1"))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
@@ -54,7 +54,7 @@ public class TransactionalControllerIT {
     transactionDTO.setDate(LocalDate.of(2025, 6, 18));
     transactionDTO.setDescription("Phone");
 
-    mockMvc.perform(post("/api/transactions")
+    mockMvc.perform(post("/api/v1/transactions")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(transactionDTO)))
       .andExpect(status().isCreated())
@@ -76,7 +76,7 @@ public class TransactionalControllerIT {
     transactionDTO.setDate(LocalDate.of(2025, 6, 20));
     transactionDTO.setDescription("Updated description");
 
-    mockMvc.perform(put("/api/transactions/1") // предполагается, что транзакция с ID 1 существует
+    mockMvc.perform(put("/api/v1/transactions/1") // предполагается, что транзакция с ID 1 существует
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(transactionDTO)))
       .andExpect(status().isOk())
@@ -90,13 +90,13 @@ public class TransactionalControllerIT {
 
   @Test
   void testDeleteTransaction() throws Exception {
-    mockMvc.perform(delete("/api/transactions/2"))
+    mockMvc.perform(delete("/api/v1/transactions/2"))
       .andExpect(status().isNoContent());
   }
 
   @Test
   void testGetBalance() throws Exception {
-    mockMvc.perform(get("/api/transactions/balance"))
+    mockMvc.perform(get("/api/v1/transactions/balance"))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }

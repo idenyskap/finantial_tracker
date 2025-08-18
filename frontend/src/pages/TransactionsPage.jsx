@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import ImportCSV from '../components/transactions/ImportCSV';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 function TransactionsPage() {
   const styles = useThemedStyles(getStyles);

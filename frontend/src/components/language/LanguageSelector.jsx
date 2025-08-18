@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 

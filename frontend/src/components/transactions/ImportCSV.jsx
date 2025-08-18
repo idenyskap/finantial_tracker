@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowUpTrayIcon, DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import api from '../../services/api';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 
 function ImportCSV({ onImportComplete }) {
   const { t } = useLanguage();

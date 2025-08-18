@@ -29,7 +29,7 @@ class UserControllerIT {
 
   @Test
   void testGetAllUsers() throws Exception {
-    mockMvc.perform(get("/api/users")
+    mockMvc.perform(get("/api/v1/users")
         .accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
@@ -37,7 +37,7 @@ class UserControllerIT {
 
   @Test
   void testGetUserById() throws Exception {
-    mockMvc.perform(get("/api/users/1"))
+    mockMvc.perform(get("/api/v1/users/1"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.id").value(1));
   }
@@ -47,7 +47,7 @@ class UserControllerIT {
     UserDTO userDTO = new UserDTO();
     userDTO.setName("Test User");
 
-    mockMvc.perform(post("/api/users")
+    mockMvc.perform(post("/api/v1/users")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(userDTO)))
       .andExpect(status().isOk())
@@ -59,7 +59,7 @@ class UserControllerIT {
     UserDTO userDTO = new UserDTO();
     userDTO.setName("Updated Name");
 
-    mockMvc.perform(put("/api/users/1")
+    mockMvc.perform(put("/api/v1/users/1")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(userDTO)))
       .andExpect(status().isOk())
@@ -68,7 +68,7 @@ class UserControllerIT {
 
   @Test
   void testDeleteUser() throws Exception {
-    mockMvc.perform(delete("/api/users/7"))
+    mockMvc.perform(delete("/api/v1/users/7"))
       .andExpect(status().isNoContent());
   }
 }

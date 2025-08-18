@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import api from '../../services/api';
 

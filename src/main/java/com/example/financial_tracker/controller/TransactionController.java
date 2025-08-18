@@ -34,7 +34,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/transactions")
+@RequestMapping("/api/v1/transactions")
 @Validated
 public class TransactionController {
 

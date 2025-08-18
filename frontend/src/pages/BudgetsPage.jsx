@@ -5,7 +5,7 @@ import { categoryService } from '../services/categoryService';
 import BudgetProgress from '../components/budgets/BudgetProgress';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../hooks/useThemedStyles';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 function BudgetsPage() {
   const styles = useThemedStyles(getStyles);
