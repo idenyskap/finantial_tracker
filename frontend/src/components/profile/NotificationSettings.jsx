@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 import api from '../../services/api';
 import { toast } from 'sonner';
 import './NotificationSettings.css';

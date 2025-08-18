@@ -16,7 +16,7 @@ import java.util.Set;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/auth/2fa")
+@RequestMapping("/api/v1/auth/2fa")
 @RequiredArgsConstructor
 public class TwoFactorAuthController {
 

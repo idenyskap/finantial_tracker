@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const CurrencyConverter = () => {
   const styles = useThemedStyles(getStyles);

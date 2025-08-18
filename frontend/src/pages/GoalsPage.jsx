@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { PlusIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 function GoalsPage() {
   const styles = useThemedStyles(getStyles);

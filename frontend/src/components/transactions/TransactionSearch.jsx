@@ -4,7 +4,7 @@ import { savedSearchService } from '../../services/savedSearchService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 
 function TransactionSearch({ onSearch, categories }) {
   const styles = useThemedStyles(getStyles);

@@ -1,6 +1,6 @@
 import { BookmarkIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 import { useCurrency } from '../../contexts/CurrencyContext';
 
 function SavedSearchItem({ search, onExecute, onDelete }) {

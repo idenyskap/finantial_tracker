@@ -6,7 +6,7 @@ const TransactionList = ({ transactions }) => {
   const { data: currencyPrefs } = useQuery({
     queryKey: ['currencyPreferences'],
     queryFn: async () => {
-      const response = await axios.get('/api/currency/preferences');
+      const response = await axios.get('/api/v1/currency/preferences');
       return response.data;
     }
   });

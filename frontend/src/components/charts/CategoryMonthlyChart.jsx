@@ -10,7 +10,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 import { useCurrency } from '../../contexts/CurrencyContext';
 
 ChartJS.register(

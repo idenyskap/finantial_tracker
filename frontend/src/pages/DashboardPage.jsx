@@ -8,7 +8,7 @@ import CategoryMonthlyChart from '../components/charts/CategoryMonthlyChart';
 import GoalsWidget from '../components/dashboard/GoalsWidget';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 function DashboardPage() {
   const styles = useThemedStyles(getStyles);

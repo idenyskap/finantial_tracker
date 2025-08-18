@@ -5,7 +5,7 @@ import { categoryService } from '../services/categoryService';
 import RecurringTransactionCard from '../components/recurring/RecurringTransactionCard';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../hooks/useThemedStyles';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 function RecurringTransactionsPage() {
   const styles = useThemedStyles(getStyles);

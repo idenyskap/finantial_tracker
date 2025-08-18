@@ -1,6 +1,6 @@
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 
 function RecurringTransactionCard({ transaction, onEdit, onDelete, onExecute }) {
   const styles = useThemedStyles(getStyles);

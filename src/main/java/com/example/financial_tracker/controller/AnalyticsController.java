@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/analytics")
+@RequestMapping("/api/v1/analytics")
 public class AnalyticsController {
 
   private final AnalyticsService analyticsService;
