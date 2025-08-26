@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuthContext';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import TwoFactorInput from '../components/auth/TwoFactorInput';
 
@@ -32,6 +32,7 @@ const LoginPage = () => {
         toast.error(result.error || 'Invalid 2FA code');
       }
     } catch (error) {
+      console.error('2FA verification error:', error);
       toast.error('An error occurred');
     } finally {
       setLoading(false);
@@ -56,6 +57,7 @@ const LoginPage = () => {
         toast.error(result.error || 'Invalid email or password');
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast.error('An error occurred during login');
     } finally {
       setLoading(false);

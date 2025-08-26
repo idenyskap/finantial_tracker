@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useThemedStyles } from '../hooks/useThemedStyles';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuthContext';
 import api from '../services/api';
 
 function EmailChangeConfirmationPage() {
@@ -20,9 +20,9 @@ function EmailChangeConfirmationPage() {
       setStatus('error');
       setMessage('Invalid confirmation link');
     }
-  }, [searchParams]);
+  }, [searchParams, confirmEmailChange]);
 
-  const confirmEmailChange = async (token) => {
+  const confirmEmailChange = useCallback(async (token) => {
     try {
       await api.post('/auth/confirm-email-change', null, { params: { token } });
       setStatus('success');
@@ -37,7 +37,7 @@ function EmailChangeConfirmationPage() {
       setStatus('error');
       setMessage(error.response?.data?.error || 'Failed to confirm email change.');
     }
-  };
+  }, [logout, navigate]);
 
   return (
     <div style={styles.container}>

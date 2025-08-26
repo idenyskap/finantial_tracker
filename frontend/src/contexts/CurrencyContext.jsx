@@ -1,16 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
-
-const CurrencyContext = createContext();
-
-export const useCurrency = () => {
-  const context = useContext(CurrencyContext);
-  if (!context) {
-    throw new Error('useCurrency must be used within a CurrencyProvider');
-  }
-  return context;
-};
+import { CurrencyContext } from './contexts';
 
 export const CurrencyProvider = ({ children }) => {
   const [preferences, setPreferences] = useState({

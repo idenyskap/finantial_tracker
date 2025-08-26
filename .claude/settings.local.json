@@ -5,7 +5,9 @@
       "Bash(npm install:*)",
       "Bash(rm:*)",
       "Bash(mvn:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(npm run lint)",
+      "Bash(git log:*)"
     ],
     "deny": []
   }

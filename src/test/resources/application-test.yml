@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  sql:
+    init:
+      mode: never
+  mail:
+    host: localhost
+    port: 1025
+    username: ""
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+  security:
+    method:
+      secured-annotations: enabled
+      pre-post-annotations: enabled
+
+jwt:
+  secret: test-secret-key-for-unit-tests-only-minimum-256-bits
+  expiration: 86400000
+
+app:
+  mail:
+    from: noreply@test.com
+    from-name: Test App
+    base-url: http://localhost:3000
+    quota:
+      enabled: false
+
+logging:
+  level:
+    com.example.financial_tracker: WARN
+    org.springframework: WARN
+    org.hibernate: WARN
