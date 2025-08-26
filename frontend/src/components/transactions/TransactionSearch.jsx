@@ -3,9 +3,13 @@ import { MagnifyingGlassIcon, FunnelIcon, BookmarkIcon } from '@heroicons/react/
 import { savedSearchService } from '../../services/savedSearchService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useLanguage } from '../../hooks/useLanguage';
 
 function TransactionSearch({ onSearch, categories }) {
+  const styles = useThemedStyles(getStyles);
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
   const [showFilters, setShowFilters] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [searchName, setSearchName] = useState('');
@@ -19,24 +23,24 @@ function TransactionSearch({ onSearch, categories }) {
   });
 
   const quickFilters = [
-    { value: 'TODAY', label: 'Today' },
-    { value: 'LAST_7_DAYS', label: 'Last 7 Days' },
-    { value: 'LAST_30_DAYS', label: 'Last 30 Days' },
-    { value: 'THIS_MONTH', label: 'This Month' },
-    { value: 'LAST_MONTH', label: 'Last Month' },
-    { value: 'THIS_YEAR', label: 'This Year' },
+    { value: 'TODAY', label: t('search.today') },
+    { value: 'LAST_7_DAYS', label: t('search.last7Days') },
+    { value: 'LAST_30_DAYS', label: t('search.last30Days') },
+    { value: 'THIS_MONTH', label: t('search.thisMonth') },
+    { value: 'LAST_MONTH', label: t('search.lastMonth') },
+    { value: 'THIS_YEAR', label: t('search.thisYear') },
   ];
 
   const saveMutation = useMutation({
     mutationFn: savedSearchService.create,
     onSuccess: () => {
       queryClient.invalidateQueries(['saved-searches']);
-      toast.success('Search saved successfully');
+      toast.success(t('search.savedSuccess'));
       setSaveModalOpen(false);
       setSearchName('');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Error saving search');
+      toast.error(error.response?.data?.message || t('search.saveError'));
     },
   });
 
@@ -64,7 +68,7 @@ function TransactionSearch({ onSearch, categories }) {
 
   const handleSaveSearch = () => {
     if (!searchName.trim()) {
-      toast.error('Please enter a name for the search');
+      toast.error(t('search.enterName'));
       return;
     }
 
@@ -81,7 +85,7 @@ function TransactionSearch({ onSearch, categories }) {
           <input
             type="text"
             name="searchText"
-            placeholder="Search transactions..."
+            placeholder={t('search.placeholder')}
             value={filters.searchText}
             onChange={handleChange}
             style={styles.searchInput}
@@ -95,13 +99,13 @@ function TransactionSearch({ onSearch, categories }) {
             style={styles.filterButton}
           >
             <FunnelIcon style={styles.icon} />
-            Filters
+            {t('search.filters')}
           </button>
           <button
             type="button"
             onClick={() => setSaveModalOpen(true)}
             style={styles.saveButton}
-            title="Save this search"
+            title={t('search.saveTooltip')}
           >
             <BookmarkIcon style={styles.icon} />
           </button>
@@ -129,9 +133,9 @@ function TransactionSearch({ onSearch, categories }) {
                 onChange={handleChange}
                 style={styles.select}
               >
-                <option value="">All Types</option>
-                <option value="INCOME">Income</option>
-                <option value="EXPENSE">Expense</option>
+                <option value="">{t('search.allTypes')}</option>
+                <option value="INCOME">{t('transactions.income')}</option>
+                <option value="EXPENSE">{t('transactions.expense')}</option>
               </select>
 
               <select
@@ -140,7 +144,7 @@ function TransactionSearch({ onSearch, categories }) {
                 onChange={handleChange}
                 style={styles.select}
               >
-                <option value="">All Categories</option>
+                <option value="">{t('search.allCategories')}</option>
                 {categories?.map(cat => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -153,7 +157,7 @@ function TransactionSearch({ onSearch, categories }) {
               <input
                 type="number"
                 name="minAmount"
-                placeholder="Min amount"
+                placeholder={t('search.minAmount')}
                 value={filters.minAmount}
                 onChange={handleChange}
                 style={styles.input}
@@ -161,7 +165,7 @@ function TransactionSearch({ onSearch, categories }) {
               <input
                 type="number"
                 name="maxAmount"
-                placeholder="Max amount"
+                placeholder={t('search.maxAmount')}
                 value={filters.maxAmount}
                 onChange={handleChange}
                 style={styles.input}
@@ -171,7 +175,7 @@ function TransactionSearch({ onSearch, categories }) {
                 onClick={handleReset}
                 style={styles.resetButton}
               >
-                Reset
+                {t('search.reset')}
               </button>
             </div>
           </div>
@@ -181,20 +185,20 @@ function TransactionSearch({ onSearch, categories }) {
       {saveModalOpen && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>
-            <h3>Save Search</h3>
+            <h3>{t('search.saveSearch')}</h3>
             <input
               type="text"
-              placeholder="Enter search name..."
+              placeholder={t('search.namePlaceholder')}
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               style={styles.modalInput}
             />
             <div style={styles.modalButtons}>
               <button onClick={handleSaveSearch} style={styles.modalSaveButton}>
-                Save
+                {t('search.save')}
               </button>
               <button onClick={() => setSaveModalOpen(false)} style={styles.modalCancelButton}>
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </div>
@@ -204,15 +208,16 @@ function TransactionSearch({ onSearch, categories }) {
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
   container: {
     marginBottom: '2rem',
   },
   searchForm: {
-    backgroundColor: 'white',
+    backgroundColor: theme.cardBackground,
     padding: '1rem',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
   },
   searchBar: {
     display: 'flex',
@@ -221,13 +226,15 @@ const styles = {
   searchInput: {
     flex: 1,
     padding: '0.75rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
     fontSize: '1rem',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   searchButton: {
     padding: '0.75rem 1rem',
-    backgroundColor: '#3498db',
+    backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -237,7 +244,7 @@ const styles = {
   },
   filterButton: {
     padding: '0.75rem 1rem',
-    backgroundColor: '#95a5a6',
+    backgroundColor: theme.secondary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -253,7 +260,7 @@ const styles = {
   filtersPanel: {
     marginTop: '1rem',
     paddingTop: '1rem',
-    borderTop: '1px solid #eee',
+    borderTop: `1px solid ${theme.borderLight}`,
   },
   filterRow: {
     display: 'flex',
@@ -263,18 +270,22 @@ const styles = {
   select: {
     flex: 1,
     padding: '0.5rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   input: {
     flex: 1,
     padding: '0.5rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   resetButton: {
     padding: '0.5rem 1rem',
-    backgroundColor: '#e74c3c',
+    backgroundColor: theme.danger,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -282,7 +293,7 @@ const styles = {
   },
   saveButton: {
     padding: '0.75rem',
-    backgroundColor: '#9b59b6',
+    backgroundColor: theme.info,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -301,18 +312,22 @@ const styles = {
     zIndex: 1000,
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: theme.cardBackground,
     padding: '2rem',
     borderRadius: '8px',
     width: '400px',
+    border: `1px solid ${theme.cardBorder}`,
+    color: theme.text,
   },
   modalInput: {
     width: '100%',
     padding: '0.75rem',
-    border: '1px solid #ddd',
+    border: `1px solid ${theme.inputBorder}`,
     borderRadius: '4px',
     marginTop: '1rem',
     marginBottom: '1rem',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   modalButtons: {
     display: 'flex',
@@ -321,7 +336,7 @@ const styles = {
   modalSaveButton: {
     flex: 1,
     padding: '0.75rem',
-    backgroundColor: '#27ae60',
+    backgroundColor: theme.success,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -330,12 +345,12 @@ const styles = {
   modalCancelButton: {
     flex: 1,
     padding: '0.75rem',
-    backgroundColor: '#95a5a6',
+    backgroundColor: theme.secondary,
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
   },
-};
+});
 
 export default TransactionSearch;

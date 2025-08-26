@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/saved-searches")
+@RequestMapping("/api/v1/saved-searches")
 @RequiredArgsConstructor
 public class SavedSearchController {
 

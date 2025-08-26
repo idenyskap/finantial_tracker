@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/currency")
+@RequestMapping("/api/v1/currency")
 @RequiredArgsConstructor
 public class CurrencyController {
 
@@ -100,8 +100,7 @@ public class CurrencyController {
     user.setDisplaySecondaryCurrency(preferences.isDisplaySecondary());
     user.setSecondaryCurrency(preferences.getSecondaryCurrency());
 
-    // Save through service to ensure proper handling
-    userService.updateUser(user.getId(), userService.getUserById(user.getId()));
+    userService.saveUser(user);
 
     return ResponseEntity.ok(preferences);
   }

@@ -17,7 +17,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/goals")
+@RequestMapping("/api/v1/goals")
 @RequiredArgsConstructor
 public class GoalController {
 

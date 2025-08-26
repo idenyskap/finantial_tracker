@@ -2,8 +2,12 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoryService } from '../services/categoryService';
 import { toast } from 'sonner';
+import { useThemedStyles } from '../hooks/useThemedStyles';
+import { useLanguage } from '../hooks/useLanguage';
 
 function CategoriesPage() {
+  const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -100,326 +104,558 @@ function CategoriesPage() {
   ];
 
   return (
-    <div>
+    <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        <h1>Categories</h1>
+        <div style={styles.headerContent}>
+          <h1 style={styles.title}>{t('categories.title')}</h1>
+          <p style={styles.subtitle}>{t('categories.subtitle')}</p>
+        </div>
         <button
           onClick={() => setShowForm(!showForm)}
           style={styles.addButton}
         >
-          + Add Category
+          <span style={styles.addButtonIcon}>+</span>
+          {t('categories.addCategory')}
         </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <div style={styles.formContainer}>
-          <h3>{editingCategory ? 'Edit Category' : 'New Category'}</h3>
+        <div style={styles.formCard}>
+          <div style={styles.formHeader}>
+            <h3 style={styles.formTitle}>
+              {editingCategory ? t('categories.editCategory') : t('categories.createNewCategory')}
+            </h3>
+            <button onClick={resetForm} style={styles.closeButton}>×</button>
+          </div>
+          
           <form onSubmit={handleSubmit} style={styles.form}>
-            <input
-              type="text"
-              placeholder="Category name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              required
-              style={styles.input}
-            />
-
-            <select
-              value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value })}
-              style={styles.select}
-            >
-              <option value="EXPENSE">Expense Category</option>
-              <option value="INCOME">Income Category</option>
-            </select>
-
-            <div style={styles.colorSection}>
-              <label style={styles.label}>Color:</label>
-              <div style={styles.colorGrid}>
-                {colors.map(color => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setForm({ ...form, color })}
-                    style={{
-                      ...styles.colorButton,
-                      backgroundColor: color,
-                      border: form.color === color ? '3px solid #333' : 'none',
-                    }}
-                  />
-                ))}
-              </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>{t('categories.categoryName')}</label>
               <input
-                type="color"
-                value={form.color}
-                onChange={(e) => setForm({ ...form, color: e.target.value })}
-                style={styles.colorPicker}
+                type="text"
+                placeholder={t('categories.namePlaceholder')}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+                style={styles.input}
               />
             </div>
 
-            <div style={styles.formButtons}>
-              <button type="submit" style={styles.submitButton}>
-                {editingCategory ? 'Update' : 'Create'}
-              </button>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>{t('categories.type')}</label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm({ ...form, type: e.target.value })}
+                style={styles.select}
+              >
+                <option value="EXPENSE">{t('categories.expenseCategory')}</option>
+                <option value="INCOME">{t('categories.incomeCategory')}</option>
+              </select>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>{t('categories.categoryColor')}</label>
+              <div style={styles.colorSection}>
+                <div style={styles.colorGrid}>
+                  {colors.map(color => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setForm({ ...form, color })}
+                      style={{
+                        ...styles.colorButton,
+                        backgroundColor: color,
+                        transform: form.color === color ? 'scale(1.1)' : 'scale(1)',
+                        boxShadow: form.color === color 
+                          ? '0 0 0 3px rgba(59, 130, 246, 0.4)' 
+                          : '0 2px 4px rgba(0,0,0,0.1)',
+                      }}
+                      title={color}
+                    />
+                  ))}
+                </div>
+                <input
+                  type="color"
+                  value={form.color}
+                  onChange={(e) => setForm({ ...form, color: e.target.value })}
+                  style={styles.colorPicker}
+                />
+              </div>
+            </div>
+
+            <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
-                Cancel
+                {t('common.cancel')}
+              </button>
+              <button type="submit" style={styles.submitButton}>
+                {editingCategory ? t('categories.updateCategory') : t('categories.createCategory')}
               </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Content */}
       {isLoading ? (
-        <div style={styles.loading}>Loading categories...</div>
+        <div style={styles.loading}>
+          <div style={styles.loadingSpinner}></div>
+          <p>Loading categories...</p>
+        </div>
       ) : (
-        <>
+        <div style={styles.content}>
+          {/* Income Categories */}
           <div style={styles.section}>
-            <h2 style={styles.sectionTitle}>Income Categories</h2>
-            <div style={styles.categoriesGrid}>
-              {incomeCategories.length === 0 ? (
-                <p style={styles.empty}>No income categories yet</p>
-              ) : (
-                incomeCategories.map(category => (
-                  <div key={category.id} style={styles.categoryCard}>
-                    <div style={styles.categoryHeader}>
-                      <div style={styles.categoryInfo}>
-                        <div
-                          style={{
-                            ...styles.colorDot,
-                            backgroundColor: category.color,
-                          }}
-                        />
-                        <span style={styles.categoryName}>{category.name}</span>
+            <div style={styles.sectionHeader}>
+              <h2 style={styles.sectionTitle}>
+                <span style={styles.sectionIcon}>💰</span>
+                {t('categories.incomeCategories')}
+                <span style={styles.badge}>{incomeCategories.length}</span>
+              </h2>
+            </div>
+            
+            {incomeCategories.length === 0 ? (
+              <div style={styles.emptyState}>
+                <div style={styles.emptyIcon}>📊</div>
+                <p style={styles.emptyText}>{t('categories.noIncomeCategories')}</p>
+                <p style={styles.emptySubtext}>{t('categories.incomeCategoriesSubtext')}</p>
+              </div>
+            ) : (
+              <div style={styles.grid}>
+                {incomeCategories.map(category => (
+                  <div key={category.id} style={styles.card}>
+                    <div style={styles.cardContent}>
+                      <div style={styles.cardHeader}>
+                        <div style={styles.cardInfo}>
+                          <div
+                            style={{
+                              ...styles.colorIndicator,
+                              backgroundColor: category.color,
+                            }}
+                          />
+                          <div>
+                            <h4 style={styles.cardTitle}>{category.name}</h4>
+                            <p style={styles.cardType}>{t('categories.income')}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div style={styles.categoryActions}>
+                      
+                      <div style={styles.cardActions}>
                         <button
                           onClick={() => handleEdit(category)}
-                          style={styles.editButton}
+                          style={styles.editBtn}
+                          title={t('categories.editTooltip')}
                         >
-                          Edit
+                          ✏️
                         </button>
                         <button
                           onClick={() => handleDelete(category.id)}
-                          style={styles.deleteButton}
+                          style={styles.deleteBtn}
+                          title={t('categories.deleteTooltip')}
                         >
-                          Delete
+                          🗑️
                         </button>
                       </div>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Expense Categories */}
           <div style={styles.section}>
-            <h2 style={styles.sectionTitle}>Expense Categories</h2>
-            <div style={styles.categoriesGrid}>
-              {expenseCategories.length === 0 ? (
-                <p style={styles.empty}>No expense categories yet</p>
-              ) : (
-                expenseCategories.map(category => (
-                  <div key={category.id} style={styles.categoryCard}>
-                    <div style={styles.categoryHeader}>
-                      <div style={styles.categoryInfo}>
-                        <div
-                          style={{
-                            ...styles.colorDot,
-                            backgroundColor: category.color,
-                          }}
-                        />
-                        <span style={styles.categoryName}>{category.name}</span>
+            <div style={styles.sectionHeader}>
+              <h2 style={styles.sectionTitle}>
+                <span style={styles.sectionIcon}>💸</span>
+                {t('categories.expenseCategories')}
+                <span style={styles.badge}>{expenseCategories.length}</span>
+              </h2>
+            </div>
+            
+            {expenseCategories.length === 0 ? (
+              <div style={styles.emptyState}>
+                <div style={styles.emptyIcon}>📊</div>
+                <p style={styles.emptyText}>{t('categories.noExpenseCategories')}</p>
+                <p style={styles.emptySubtext}>{t('categories.expenseCategoriesSubtext')}</p>
+              </div>
+            ) : (
+              <div style={styles.grid}>
+                {expenseCategories.map(category => (
+                  <div key={category.id} style={styles.card}>
+                    <div style={styles.cardContent}>
+                      <div style={styles.cardHeader}>
+                        <div style={styles.cardInfo}>
+                          <div
+                            style={{
+                              ...styles.colorIndicator,
+                              backgroundColor: category.color,
+                            }}
+                          />
+                          <div>
+                            <h4 style={styles.cardTitle}>{category.name}</h4>
+                            <p style={styles.cardType}>{t('categories.expense')}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div style={styles.categoryActions}>
+                      
+                      <div style={styles.cardActions}>
                         <button
                           onClick={() => handleEdit(category)}
-                          style={styles.editButton}
+                          style={styles.editBtn}
+                          title={t('categories.editTooltip')}
                         >
-                          Edit
+                          ✏️
                         </button>
                         <button
                           onClick={() => handleDelete(category.id)}
-                          style={styles.deleteButton}
+                          style={styles.deleteBtn}
+                          title={t('categories.deleteTooltip')}
                         >
-                          Delete
+                          🗑️
                         </button>
                       </div>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
+  container: {
+    padding: '1.5rem',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    backgroundColor: theme.background,
+    minHeight: '100vh',
+  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: '2rem',
+    padding: '1.5rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  headerContent: {
+    flex: 1,
+  },
+  title: {
+    fontSize: '2rem',
+    fontWeight: '700',
+    color: theme.text,
+    marginBottom: '0.5rem',
+    margin: 0,
+  },
+  subtitle: {
+    color: theme.textSecondary,
+    fontSize: '1rem',
+    margin: 0,
   },
   addButton: {
-    padding: '0.75rem 1rem',
-    backgroundColor: '#27ae60',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.75rem 1.5rem',
+    backgroundColor: theme.success,
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '1rem',
-    fontWeight: '500',
-  },
-  formContainer: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    cursor: 'pointer',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    boxShadow: `0 2px 4px rgba(39, 174, 96, 0.2)`,
+  },
+  addButtonIcon: {
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+  },
+  formCard: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadowLarge,
     marginBottom: '2rem',
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  formHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1.5rem',
+    borderBottom: `1px solid ${theme.border}`,
+    backgroundColor: theme.backgroundSecondary,
+  },
+  formTitle: {
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: theme.text,
+    margin: 0,
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    color: theme.textSecondary,
+    cursor: 'pointer',
+    padding: '0.25rem',
+    borderRadius: '4px',
+    transition: 'color 0.2s ease',
   },
   form: {
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+  },
+  label: {
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: theme.text,
+  },
+  input: {
+    padding: '0.75rem',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
+    fontSize: '1rem',
+    transition: 'border-color 0.2s ease',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
+  },
+  select: {
+    padding: '0.75rem',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
+    fontSize: '1rem',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
+    cursor: 'pointer',
+  },
+  colorSection: {
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
   },
-  input: {
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '1rem',
-  },
-  select: {
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '1rem',
-  },
-  colorSection: {
-    marginBottom: '1rem',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    fontWeight: '500',
-  },
   colorGrid: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(32px, 1fr))',
     gap: '0.5rem',
-    marginBottom: '0.5rem',
-    flexWrap: 'wrap',
+    maxWidth: '400px',
   },
   colorButton: {
     width: '32px',
     height: '32px',
-    borderRadius: '4px',
+    border: 'none',
+    borderRadius: '6px',
     cursor: 'pointer',
-    transition: 'transform 0.2s',
+    transition: 'all 0.2s ease',
   },
   colorPicker: {
-    width: '100%',
     height: '40px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
     cursor: 'pointer',
+    backgroundColor: theme.inputBackground,
   },
-  formButtons: {
+  formActions: {
     display: 'flex',
-    gap: '0.5rem',
-  },
-  submitButton: {
-    flex: 1,
-    padding: '0.75rem',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '500',
+    gap: '0.75rem',
+    paddingTop: '1rem',
+    borderTop: `1px solid ${theme.border}`,
   },
   cancelButton: {
     flex: 1,
-    padding: '0.75rem',
-    backgroundColor: '#95a5a6',
+    padding: '0.75rem 1.5rem',
+    backgroundColor: theme.backgroundSecondary,
+    color: theme.textSecondary,
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+  },
+  submitButton: {
+    flex: 1,
+    padding: '0.75rem 1.5rem',
+    backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
   },
   loading: {
-    textAlign: 'center',
-    padding: '2rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
+    color: theme.text,
+  },
+  loadingSpinner: {
+    width: '40px',
+    height: '40px',
+    border: `4px solid ${theme.borderLight}`,
+    borderTop: `4px solid ${theme.primary}`,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '1rem',
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2rem',
   },
   section: {
-    marginBottom: '2rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  sectionHeader: {
+    padding: '1.5rem',
+    borderBottom: `1px solid ${theme.border}`,
+    backgroundColor: theme.backgroundSecondary,
   },
   sectionTitle: {
-    fontSize: '1.5rem',
-    marginBottom: '1rem',
-    color: '#2c3e50',
-    fontWeight: '600',
-  },
-  categoriesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-    gap: '1rem',
-  },
-  empty: {
-    color: '#666',
-    fontStyle: 'italic',
-  },
-  categoryCard: {
-    backgroundColor: 'white',
-    padding: '1rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-  },
-  categoryHeader: {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: '0.75rem',
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: theme.text,
+    margin: 0,
   },
-  categoryInfo: {
+  sectionIcon: {
+    fontSize: '1.5rem',
+  },
+  badge: {
+    backgroundColor: theme.backgroundSecondary,
+    color: theme.textSecondary,
+    padding: '0.25rem 0.5rem',
+    borderRadius: '12px',
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    marginLeft: '0.5rem',
+  },
+  emptyState: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
+    textAlign: 'center',
+  },
+  emptyIcon: {
+    fontSize: '3rem',
+    marginBottom: '1rem',
+    opacity: 0.5,
+  },
+  emptyText: {
+    fontSize: '1.125rem',
+    fontWeight: '600',
+    color: theme.text,
+    marginBottom: '0.5rem',
+  },
+  emptySubtext: {
+    color: theme.textSecondary,
+    fontSize: '0.875rem',
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '1rem',
+    padding: '1.5rem',
+  },
+  card: {
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
+    borderRadius: '8px',
+    transition: 'all 0.2s ease',
+    overflow: 'hidden',
+  },
+  cardContent: {
+    padding: '1rem',
+  },
+  cardHeader: {
+    marginBottom: '1rem',
+  },
+  cardInfo: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
   },
-  colorDot: {
-    width: '24px',
-    height: '24px',
-    borderRadius: '50%',
+  colorIndicator: {
+    width: '12px',
+    height: '12px',
+    borderRadius: '3px',
+    flexShrink: 0,
   },
-  categoryName: {
-    fontWeight: '600',
-    color: '#2c3e50',
+  cardTitle: {
     fontSize: '1rem',
+    fontWeight: '600',
+    color: theme.text,
+    marginBottom: '0.25rem',
   },
-  categoryActions: {
+  cardType: {
+    fontSize: '0.75rem',
+    color: theme.textSecondary,
+    textTransform: 'uppercase',
+    fontWeight: '500',
+    letterSpacing: '0.05em',
+  },
+  cardActions: {
     display: 'flex',
     gap: '0.5rem',
+    paddingTop: '1rem',
+    borderTop: `1px solid ${theme.borderLight}`,
   },
-  editButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
+  editBtn: {
+    padding: '0.5rem',
+    backgroundColor: theme.backgroundSecondary,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '0.75rem',
-    fontWeight: '500',
+    fontSize: '0.875rem',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  deleteButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
+  deleteBtn: {
+    padding: '0.5rem',
+    backgroundColor: '#fef2f2',
+    border: '1px solid #fecaca',
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '0.75rem',
-    fontWeight: '500',
+    fontSize: '0.875rem',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-};
+});
 
 export default CategoriesPage;

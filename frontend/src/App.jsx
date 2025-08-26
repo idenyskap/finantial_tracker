@@ -3,6 +3,9 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {Toaster} from 'sonner';
 import {AuthProvider} from './contexts/AuthContext';
 import {ThemeProvider} from './contexts/ThemeContext';
+import {CurrencyProvider} from './contexts/CurrencyContext';
+import {LanguageProvider} from './contexts/LanguageContext';
+import './i18n';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/auth/PrivateRoute';
 import RegisterPage from './pages/RegisterPage';
@@ -19,6 +22,7 @@ import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import EmailChangeConfirmationPage from "./pages/EmailChangeConfirmationPage.jsx";
+import CurrencyConverter from './components/currency/CurrencyConverter';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,8 +37,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider>
-          <Router>
+        <LanguageProvider>
+          <CurrencyProvider>
+            <ThemeProvider>
+            <Router>
             <Toaster position="top-right" richColors/>
             <Routes>
               {/* Public routes */}
@@ -113,13 +119,25 @@ function App() {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/currency-converter"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <CurrencyConverter />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
               <Route path="/verify-email" element={<EmailVerificationPage/>}/>
               <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
               <Route path="/reset-password" element={<ResetPasswordPage/>}/>
               <Route path="/confirm-email-change" element={<EmailChangeConfirmationPage />} />
             </Routes>
-          </Router>
-        </ThemeProvider>
+            </Router>
+            </ThemeProvider>
+          </CurrencyProvider>
+        </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

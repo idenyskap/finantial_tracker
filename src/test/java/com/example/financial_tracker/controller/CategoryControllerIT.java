@@ -1,25 +1,36 @@
 package com.example.financial_tracker.controller;
 
 import com.example.financial_tracker.dto.CategoryDTO;
+import com.example.financial_tracker.entity.Category;
+import com.example.financial_tracker.entity.User;
+import com.example.financial_tracker.entity.Role;
+import com.example.financial_tracker.entity.TransactionType;
+import com.example.financial_tracker.mapper.CategoryMapper;
+import com.example.financial_tracker.service.CategoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class CategoryControllerIT {
+class CategoryControllerIT {
 
   @Autowired
   private MockMvc mockMvc;
@@ -27,55 +38,183 @@ public class CategoryControllerIT {
   @Autowired
   private ObjectMapper objectMapper;
 
-  @Test
-  void testGetCategoriesByUserId() throws Exception {
-    mockMvc.perform(get("/api/categories?userId=1"))
-      .andExpect(status().isOk())
-      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+  @MockBean
+  private CategoryService categoryService;
+
+  @MockBean
+  private CategoryMapper categoryMapper;
+
+  private User createTestUser() {
+    User user = new User();
+    user.setId(1L);
+    user.setEmail("test@example.com");
+    user.setName("Test User");
+    user.setRole(Role.USER);
+    return user;
+  }
+
+  private CategoryDTO createTestCategoryDTO() {
+    CategoryDTO dto = new CategoryDTO();
+    dto.setId(1L);
+    dto.setName("Food & Dining");
+    dto.setColor("#FF5733");
+    dto.setType(TransactionType.EXPENSE);
+    dto.setUserId(1L);
+    return dto;
+  }
+
+  private Category createTestCategory() {
+    Category category = new Category();
+    category.setId(1L);
+    category.setName("Food & Dining");
+    category.setColor("#FF5733");
+    return category;
   }
 
   @Test
-  void testGetCategoryById() throws Exception {
-    mockMvc.perform(get("/api/categories/1"))
-      .andExpect(status().isOk())
-      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+  void testGetCategoriesByCurrentUser_Unauthorized() throws Exception {
+    mockMvc.perform(get("/api/v1/categories")
+        .accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isForbidden());
   }
 
   @Test
-  void testCreateCategory() throws Exception {
-    CategoryDTO categoryDTO = new CategoryDTO();
-    categoryDTO.setName("Test Category");
-    categoryDTO.setColor("Test Color");
-    categoryDTO.setUserId(1L);
+  @WithMockUser(username = "test@example.com")
+  void testGetCategoriesByCurrentUser_Success() throws Exception {
+    User user = createTestUser();
+    List<Category> categories = List.of(createTestCategory());
+    List<CategoryDTO> categoryDTOs = List.of(createTestCategoryDTO());
+    
+    when(categoryService.getAllCategories(any(User.class)))
+        .thenReturn(categories);
+    when(categoryMapper.toDtoList(categories))
+        .thenReturn(categoryDTOs);
 
-    mockMvc.perform(post("/api/categories")
+    mockMvc.perform(get("/api/v1/categories")
+        .with(user(user))
+        .accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$").isArray())
+      .andExpect(jsonPath("$[0].id").value(1))
+      .andExpect(jsonPath("$[0].name").value("Food & Dining"))
+      .andExpect(jsonPath("$[0].color").value("#FF5733"));
+  }
+
+  @Test
+  @WithMockUser(username = "test@example.com")
+  void testGetCategoryById_Success() throws Exception {
+    User user = createTestUser();
+    CategoryDTO category = createTestCategoryDTO();
+    
+    when(categoryService.getCategoryById(eq(1L), any(User.class)))
+        .thenReturn(category);
+
+    mockMvc.perform(get("/api/v1/categories/1")
+        .with(user(user)))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.id").value(1))
+      .andExpect(jsonPath("$.name").value("Food & Dining"));
+  }
+
+  @Test
+  @WithMockUser(username = "test@example.com")
+  void testGetCategoryById_InvalidId() throws Exception {
+    User user = createTestUser();
+
+    mockMvc.perform(get("/api/v1/categories/0")
+        .with(user(user)))
+      .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  @WithMockUser(username = "test@example.com")
+  void testCreateCategory_Success() throws Exception {
+    User user = createTestUser();
+    CategoryDTO inputDto = createTestCategoryDTO();
+    inputDto.setId(null);
+    
+    CategoryDTO createdDto = createTestCategoryDTO();
+    
+    when(categoryService.createCategory(any(CategoryDTO.class), any(User.class)))
+        .thenReturn(createdDto);
+
+    mockMvc.perform(post("/api/v1/categories")
+        .with(user(user))
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(categoryDTO)))
+        .content(objectMapper.writeValueAsString(inputDto)))
       .andExpect(status().isCreated())
-      .andExpect(jsonPath("$.name").value("Test Category"))
-      .andExpect(jsonPath("$.color").value("Test Color"))
-      .andExpect(jsonPath("$.userId").value(1L));
+      .andExpect(jsonPath("$.id").value(1))
+      .andExpect(jsonPath("$.name").value("Food & Dining"));
   }
 
   @Test
-  void testUpdateCategory() throws Exception {
-    CategoryDTO categoryDTO = new CategoryDTO();
-    categoryDTO.setName("Updated Category");
-    categoryDTO.setColor("Updated Color");
-    categoryDTO.setUserId(1L);
+  @WithMockUser(username = "test@example.com")
+  void testCreateCategory_InvalidData() throws Exception {
+    User user = createTestUser();
+    CategoryDTO invalidDto = new CategoryDTO();
+    // Missing required fields
 
-    mockMvc.perform(put("/api/categories/1")
+    mockMvc.perform(post("/api/v1/categories")
+        .with(user(user))
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(categoryDTO)))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.name").value("Updated Category"))
-      .andExpect(jsonPath("$.color").value("Updated Color"))
-      .andExpect(jsonPath("$.userId").value(1L));
+        .content(objectMapper.writeValueAsString(invalidDto)))
+      .andExpect(status().isBadRequest());
   }
 
   @Test
-  void testDeleteCategory() throws Exception {
-    mockMvc.perform(delete("/api/categories/1"))
+  @WithMockUser(username = "test@example.com")
+  void testUpdateCategory_Success() throws Exception {
+    User user = createTestUser();
+    CategoryDTO inputDto = createTestCategoryDTO();
+    inputDto.setName("Updated Food Category");
+    
+    CategoryDTO updatedDto = createTestCategoryDTO();
+    updatedDto.setName("Updated Food Category");
+    
+    when(categoryService.updateCategory(eq(1L), any(CategoryDTO.class), any(User.class)))
+        .thenReturn(updatedDto);
+
+    mockMvc.perform(put("/api/v1/categories/1")
+        .with(user(user))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(inputDto)))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.name").value("Updated Food Category"));
+  }
+
+  @Test
+  @WithMockUser(username = "test@example.com")
+  void testUpdateCategory_InvalidId() throws Exception {
+    User user = createTestUser();
+    CategoryDTO inputDto = createTestCategoryDTO();
+
+    mockMvc.perform(put("/api/v1/categories/0")
+        .with(user(user))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(inputDto)))
+      .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  @WithMockUser(username = "test@example.com")
+  void testDeleteCategory_Success() throws Exception {
+    User user = createTestUser();
+
+    doNothing().when(categoryService).deleteById(eq(1L), any(User.class));
+
+    mockMvc.perform(delete("/api/v1/categories/1")
+        .with(user(user)))
       .andExpect(status().isNoContent());
+  }
+
+  @Test
+  @WithMockUser(username = "test@example.com")
+  void testDeleteCategory_InvalidId() throws Exception {
+    User user = createTestUser();
+
+    mockMvc.perform(delete("/api/v1/categories/0")
+        .with(user(user)))
+      .andExpect(status().isInternalServerError());
   }
 }

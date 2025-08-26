@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useLanguage } from '../../hooks/useLanguage';
 import api from '../../services/api';
 import { toast } from 'sonner';
 import './NotificationSettings.css';
 
 function NotificationSettings() {
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+  }, [fetchSettings]);
 
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       const response = await api.get('/notifications/settings');
       setSettings(response.data);
@@ -24,15 +26,17 @@ function NotificationSettings() {
           const initResponse = await api.post('/notifications/settings/init');
           setSettings(initResponse.data);
         } catch (initError) {
-          toast.error('Failed to initialize notification settings');
+          console.error('Failed to initialize notification settings:', initError);
+          toast.error(t('profile.failedToInitNotificationSettings'));
         }
       } else {
-        toast.error('Failed to load notification settings');
+        toast.error(t('profile.failedToLoadNotificationSettings'));
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
 
   const handleToggle = (field) => {
     setSettings(prev => ({
@@ -62,21 +66,22 @@ function NotificationSettings() {
     setSaving(true);
     try {
       await api.put('/notifications/settings', settings);
-      toast.success('Notification settings saved successfully');
+      toast.success(t('profile.notificationSettingsSaved'));
     } catch (error) {
-      toast.error('Failed to save notification settings');
+      console.error('Failed to save notification settings:', error);
+      toast.error(t('profile.failedToSaveNotificationSettings'));
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div style={styles.loading}>Loading notification settings...</div>;
+    return <div style={styles.loading}>{t('profile.loadingNotificationSettings')}</div>;
   }
 
   return (
     <div style={styles.card}>
-      <h2 style={styles.cardTitle}>Email Notifications</h2>
+      <h2 style={styles.cardTitle}>{t('profile.emailNotificationsTitle')}</h2>
 
       <div style={styles.settingsContainer}>
         {/* Master toggle */}
@@ -89,9 +94,9 @@ function NotificationSettings() {
             />
             <span className="toggle-slider"></span>
             <div style={styles.toggleContent}>
-              <span style={styles.toggleLabel}>Email Notifications</span>
+              <span style={styles.toggleLabel}>{t('profile.emailNotifications')}</span>
               <span style={styles.toggleDescription}>
-                Master switch for all email notifications
+                {t('profile.masterSwitch')}
               </span>
             </div>
           </label>
@@ -103,7 +108,7 @@ function NotificationSettings() {
         <div style={{ opacity: settings?.emailEnabled ? 1 : 0.5 }}>
           {/* Analytics Reports */}
           <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>📊 Analytics & Reports</h3>
+            <h3 style={styles.sectionTitle}>{t('profile.analyticsReports')}</h3>
 
             <div style={styles.settingGroup}>
               <label className="notification-toggle">
@@ -115,9 +120,9 @@ function NotificationSettings() {
                 />
                 <span className="toggle-slider"></span>
                 <div style={styles.toggleContent}>
-                  <span style={styles.toggleLabel}>Weekly Reports</span>
+                  <span style={styles.toggleLabel}>{t('profile.weeklyReports')}</span>
                   <span style={styles.toggleDescription}>
-                    Receive a summary of your finances every Monday
+                    {t('profile.weeklyReportsDesc')}
                   </span>
                 </div>
               </label>
@@ -133,9 +138,9 @@ function NotificationSettings() {
                 />
                 <span className="toggle-slider"></span>
                 <div style={styles.toggleContent}>
-                  <span style={styles.toggleLabel}>Monthly Reports</span>
+                  <span style={styles.toggleLabel}>{t('profile.monthlyReports')}</span>
                   <span style={styles.toggleDescription}>
-                    Comprehensive monthly financial analysis on the 1st of each month
+                    {t('profile.monthlyReportsDesc')}
                   </span>
                 </div>
               </label>
@@ -144,7 +149,7 @@ function NotificationSettings() {
 
           {/* Reminders */}
           <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>🔔 Reminders</h3>
+            <h3 style={styles.sectionTitle}>{t('profile.reminders')}</h3>
 
             <div style={styles.settingGroup}>
               <label className="notification-toggle">
@@ -156,16 +161,16 @@ function NotificationSettings() {
                 />
                 <span className="toggle-slider"></span>
                 <div style={styles.toggleContent}>
-                  <span style={styles.toggleLabel}>Daily Expense Reminder</span>
+                  <span style={styles.toggleLabel}>{t('profile.dailyExpenseReminder')}</span>
                   <span style={styles.toggleDescription}>
-                    Remind me to log my daily expenses
+                    {t('profile.dailyExpenseReminderDesc')}
                   </span>
                 </div>
               </label>
 
               {settings?.dailyReminder && settings?.emailEnabled && (
                 <div style={styles.subSetting}>
-                  <label style={styles.subLabel}>Reminder Time</label>
+                  <label style={styles.subLabel}>{t('profile.reminderTime')}</label>
                   <input
                     type="time"
                     value={settings?.dailyReminderTime || '21:00'}
@@ -186,16 +191,16 @@ function NotificationSettings() {
                 />
                 <span className="toggle-slider"></span>
                 <div style={styles.toggleContent}>
-                  <span style={styles.toggleLabel}>Payment Reminders</span>
+                  <span style={styles.toggleLabel}>{t('profile.paymentReminders')}</span>
                   <span style={styles.toggleDescription}>
-                    Notify me about upcoming recurring payments
+                    {t('profile.paymentRemindersDesc')}
                   </span>
                 </div>
               </label>
 
               {settings?.paymentReminders && settings?.emailEnabled && (
                 <div style={styles.subSetting}>
-                  <label style={styles.subLabel}>Days in advance</label>
+                  <label style={styles.subLabel}>{t('profile.daysInAdvance')}</label>
                   <input
                     type="number"
                     min="0"
@@ -217,7 +222,7 @@ function NotificationSettings() {
           disabled={saving}
           style={styles.saveButton}
         >
-          {saving ? 'Saving...' : 'Save Settings'}
+          {saving ? t('profile.saving') : t('profile.saveSettings')}
         </button>
       </div>
     </div>

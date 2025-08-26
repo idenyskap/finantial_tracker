@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/recurring-transactions")
+@RequestMapping("/api/v1/recurring-transactions")
 @RequiredArgsConstructor
 public class RecurringTransactionController {
 

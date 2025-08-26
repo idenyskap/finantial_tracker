@@ -10,6 +10,8 @@ import {
   Legend,
   Filler
 } from 'chart.js';
+import { useLanguage } from '../../hooks/useLanguage';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 ChartJS.register(
   CategoryScale,
@@ -23,14 +25,16 @@ ChartJS.register(
 );
 
 function ExpenseIncomeChart({ dailyStats }) {
+  const { t, formatDate } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const data = {
     labels: dailyStats.map(stat => {
       const date = new Date(stat.date);
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return formatDate(date, { month: 'short', day: 'numeric' });
     }),
     datasets: [
       {
-        label: 'Income',
+        label: t('transactions.income'),
         data: dailyStats.map(stat => stat.income),
         borderColor: '#27ae60',
         backgroundColor: 'rgba(39, 174, 96, 0.1)',
@@ -38,7 +42,7 @@ function ExpenseIncomeChart({ dailyStats }) {
         fill: true,
       },
       {
-        label: 'Expenses',
+        label: t('transactions.expense'),
         data: dailyStats.map(stat => stat.expense),
         borderColor: '#e74c3c',
         backgroundColor: 'rgba(231, 76, 60, 0.1)',
@@ -57,7 +61,7 @@ function ExpenseIncomeChart({ dailyStats }) {
       },
       title: {
         display: true,
-        text: 'Income vs Expenses (Last 30 Days)',
+        text: `${t('transactions.income')} vs ${t('transactions.expense')} (${t('search.last30Days')})`,
         font: {
           size: 16,
         },
@@ -72,10 +76,7 @@ function ExpenseIncomeChart({ dailyStats }) {
               label += ': ';
             }
             if (context.parsed.y !== null) {
-              label += new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD'
-              }).format(context.parsed.y);
+              label += formatCurrency(context.parsed.y);
             }
             return label;
           }
@@ -87,7 +88,7 @@ function ExpenseIncomeChart({ dailyStats }) {
         beginAtZero: true,
         ticks: {
           callback: function(value) {
-            return '$' + value.toLocaleString();
+            return formatCurrency(value);
           }
         }
       },

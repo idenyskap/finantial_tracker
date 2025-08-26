@@ -35,21 +35,28 @@ public class SecurityConfig {
       .cors(cors -> cors.configurationSource(corsConfigurationSource()))
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/auth/**").permitAll()
+        .requestMatchers("/api/v1/auth/**").permitAll()
         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
         .requestMatchers("/actuator/health").permitAll()
 
-        .requestMatchers("/api/users/me").authenticated()
-        .requestMatchers("/api/users/profile").authenticated()
-        .requestMatchers("/api/users/change-password").authenticated()
-        .requestMatchers("/api/users/request-email-change").authenticated()
+        .requestMatchers("/api/v1/users/me").authenticated()
+        .requestMatchers("/api/v1/users/profile").authenticated()
+        .requestMatchers("/api/v1/users/change-password").authenticated()
+        .requestMatchers("/api/v1/users/request-email-change").authenticated()
 
-        .requestMatchers("/api/users/**").hasRole("ADMIN")
+        .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
         .requestMatchers("/actuator/**").hasRole("ADMIN")
 
-        .requestMatchers("/api/transactions/**").authenticated()
-        .requestMatchers("/api/categories/**").authenticated()
-        .requestMatchers("/api/notifications/**").authenticated()
+        .requestMatchers("/api/v1/transactions/**").authenticated()
+        .requestMatchers("/api/v1/categories/**").authenticated()
+        .requestMatchers("/api/v1/notifications/**").authenticated()
+        .requestMatchers("/api/v1/currency/**").authenticated()
+        .requestMatchers("/api/v1/budgets/**").authenticated()
+        .requestMatchers("/api/v1/analytics/**").authenticated()
+        .requestMatchers("/api/v1/dashboard/**").authenticated()
+        .requestMatchers("/api/v1/recurring-transactions/**").authenticated()
+        .requestMatchers("/api/v1/goals/**").authenticated()
+        .requestMatchers("/api/v1/saved-searches/**").authenticated()
 
         .anyRequest().authenticated()
       )
@@ -66,6 +73,7 @@ public class SecurityConfig {
 
     configuration.setAllowedOrigins(List.of(
       "http://localhost:5173",
+      "http://localhost:5174",
       "http://localhost:3000",
       "https://your-domain.com"
     ));

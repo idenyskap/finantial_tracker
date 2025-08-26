@@ -5,8 +5,14 @@ import { categoryService } from '../services/categoryService';
 import GoalCard from '../components/goals/GoalCard';
 import { toast } from 'sonner';
 import { PlusIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { useThemedStyles } from '../hooks/useThemedStyles';
+import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 function GoalsPage() {
+  const styles = useThemedStyles(getStyles);
+  const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
@@ -138,7 +144,7 @@ function GoalsPage() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this goal?')) {
+    if (window.confirm(t('goals.confirmDelete'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -171,66 +177,85 @@ function GoalsPage() {
   const totalSaved = goals.reduce((sum, g) => sum + (g.currentAmount || 0), 0);
   const totalTarget = activeGoals.reduce((sum, g) => sum + (g.targetAmount || 0), 0);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
 
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split('T')[0];
 
   return (
-    <div>
+    <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        <h1>Financial Goals</h1>
+        <div style={styles.headerContent}>
+          <h1 style={styles.title}>{t('goals.title')}</h1>
+          <p style={styles.subtitle}>{t('goals.subtitle')}</p>
+        </div>
         <div style={styles.headerActions}>
           <button
             onClick={() => setActiveOnly(!activeOnly)}
             style={styles.filterButton}
           >
-            <FunnelIcon style={styles.icon} />
-            {activeOnly ? 'Show All' : 'Active Only'}
+            <span style={styles.buttonIcon}>🔍</span>
+            {activeOnly ? t('goals.showAll') : t('goals.activeOnly')}
           </button>
           <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
-            <PlusIcon style={styles.icon} />
-            New Goal
+            <span style={styles.addButtonIcon}>+</span>
+            {t('goals.addGoal')}
           </button>
         </div>
       </div>
 
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <h3 style={styles.statValue}>{activeGoals.length}</h3>
-          <p style={styles.statLabel}>Active Goals</p>
-        </div>
-        <div style={styles.statCard}>
-          <h3 style={styles.statValue}>{completedGoals.length}</h3>
-          <p style={styles.statLabel}>Completed</p>
-        </div>
-        <div style={styles.statCard}>
-          <h3 style={styles.statValue}>{formatCurrency(totalSaved)}</h3>
-          <p style={styles.statLabel}>Total Saved</p>
-        </div>
-        <div style={styles.statCard}>
-          <h3 style={styles.statValue}>{formatCurrency(totalTarget)}</h3>
-          <p style={styles.statLabel}>Total Target</p>
+      {/* Stats Overview */}
+      <div style={styles.statsSection}>
+        <div style={styles.statsGrid}>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon}>🎯</div>
+            <div style={styles.statContent}>
+              <h3 style={styles.statValue}>{activeGoals.length}</h3>
+              <p style={styles.statLabel}>{t('goals.activeGoals')}</p>
+            </div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon}>✅</div>
+            <div style={styles.statContent}>
+              <h3 style={styles.statValue}>{completedGoals.length}</h3>
+              <p style={styles.statLabel}>{t('goals.completed')}</p>
+            </div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon}>💰</div>
+            <div style={styles.statContent}>
+              <h3 style={styles.statValue}>{formatCurrency(totalSaved)}</h3>
+              <p style={styles.statLabel}>{t('goals.totalSaved')}</p>
+            </div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon}>🎯</div>
+            <div style={styles.statContent}>
+              <h3 style={styles.statValue}>{formatCurrency(totalTarget)}</h3>
+              <p style={styles.statLabel}>{t('goals.totalTarget')}</p>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <div style={styles.formContainer}>
-          <h3>{editingGoal ? 'Edit' : 'New'} Goal</h3>
-
+        <div style={styles.formCard}>
+          <div style={styles.formHeader}>
+            <h3 style={styles.formTitle}>
+              {editingGoal ? t('goals.editGoalTitle') : t('goals.createNewGoal')}
+            </h3>
+            <button onClick={resetForm} style={styles.closeButton}>×</button>
+          </div>
+          
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Goal Name *</label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>{t('goals.goalNameLabel')}</label>
                 <input
                   type="text"
-                  placeholder="e.g., Emergency Fund, New Car, Vacation"
+                  placeholder={t('goals.goalNamePlaceholder2')}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
@@ -238,12 +263,12 @@ function GoalsPage() {
                 />
               </div>
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Target Amount *</label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>{t('goals.targetAmount')}</label>
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="0.00"
+                  placeholder={t('goals.enterTargetAmount')}
                   value={form.targetAmount}
                   onChange={(e) => setForm({ ...form, targetAmount: e.target.value })}
                   required
@@ -253,8 +278,8 @@ function GoalsPage() {
             </div>
 
             <div style={styles.formRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Target Date *</label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>{t('goals.deadline')}</label>
                 <input
                   type="date"
                   value={form.targetDate}
@@ -265,38 +290,38 @@ function GoalsPage() {
                 />
               </div>
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Priority</label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>{t('goals.priorityLevel')}</label>
                 <select
                   value={form.priority}
                   onChange={(e) => setForm({ ...form, priority: e.target.value })}
                   style={styles.select}
                 >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                  <option value="CRITICAL">Critical</option>
+                  <option value="LOW">{t('goals.lowPriority')}</option>
+                  <option value="MEDIUM">{t('goals.mediumPriority')}</option>
+                  <option value="HIGH">{t('goals.highPriority')}</option>
+                  <option value="CRITICAL">{t('goals.criticalPriority')}</option>
                 </select>
               </div>
             </div>
 
             <div style={styles.formRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Link to Category (optional)</label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>{t('goals.categoryOptionalLabel')}</label>
                 <select
                   value={form.categoryId}
                   onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                   style={styles.select}
                 >
-                  <option value="">No category</option>
+                  <option value="">{t('goals.noCategory')}</option>
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
               </div>
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Color</label>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>{t('goals.goalColorLabel')}</label>
                 <input
                   type="color"
                   value={form.color}
@@ -306,10 +331,10 @@ function GoalsPage() {
               </div>
             </div>
 
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>Description</label>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>{t('goals.descriptionOptionalLabel')}</label>
               <textarea
-                placeholder="What is this goal for? Any specific plans?"
+                placeholder={t('goals.descriptionPlaceholder2')}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 style={styles.textarea}
@@ -319,7 +344,7 @@ function GoalsPage() {
 
             {form.targetAmount && form.targetDate && (
               <div style={styles.calculationHelper}>
-                <p style={styles.helperTitle}>💡 To reach your goal:</p>
+                <p style={styles.helperTitle}>{t('goals.toReachGoal')}</p>
                 {(() => {
                   const target = parseFloat(form.targetAmount) || 0;
                   const days = Math.ceil((new Date(form.targetDate) - new Date()) / (1000 * 60 * 60 * 24));
@@ -329,9 +354,9 @@ function GoalsPage() {
 
                   return (
                     <div style={styles.helperGrid}>
-                      <span>Save {formatCurrency(perDay)} per day</span>
-                      <span>Save {formatCurrency(perWeek)} per week</span>
-                      <span>Save {formatCurrency(perMonth)} per month</span>
+                      <span>{t('goals.savePerDay', { amount: formatCurrency(perDay) })}</span>
+                      <span>{t('goals.savePerWeek', { amount: formatCurrency(perWeek) })}</span>
+                      <span>{t('goals.savePerMonth', { amount: formatCurrency(perMonth) })}</span>
                     </div>
                   );
                 })()}
@@ -339,217 +364,369 @@ function GoalsPage() {
             )}
 
             <div style={styles.formActions}>
-              <button type="submit" style={styles.submitButton}>
-                {editingGoal ? 'Update Goal' : 'Create Goal'}
-              </button>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
-                Cancel
+                {t('common.cancel')}
+              </button>
+              <button type="submit" style={styles.submitButton}>
+                {editingGoal ? t('goals.updateGoal') : t('goals.createGoal')}
               </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Content */}
       {isLoading ? (
-        <div style={styles.loading}>Loading goals...</div>
+        <div style={styles.loading}>
+          <div style={styles.loadingSpinner}></div>
+          <p>{t('goals.loading')}</p>
+        </div>
       ) : goals.length === 0 ? (
-        <div style={styles.empty}>
-          <h3>No goals yet</h3>
-          <p>Set your first financial goal and start saving!</p>
-          <p>Whether it's an emergency fund, a vacation, or a major purchase - every journey starts with a goal.</p>
+        <div style={styles.emptyState}>
+          <div style={styles.emptyIcon}>🎯</div>
+          <p style={styles.emptyText}>{t('goals.noGoals')}</p>
+          <p style={styles.emptySubtext}>{t('goals.noGoalsSubtext')}</p>
+          <p style={styles.emptyDescription}>{t('goals.noGoalsDescription')}</p>
         </div>
       ) : (
-        <div style={styles.grid}>
-          {goals.map(goal => (
-            <GoalCard
-              key={goal.id}
-              goal={goal}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onContribute={handleContribute}
-              onStatusChange={handleStatusChange}
-            />
-          ))}
+        <div style={styles.content}>
+          <div style={styles.grid}>
+            {goals.map(goal => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onContribute={handleContribute}
+                onStatusChange={handleStatusChange}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
+  container: {
+    padding: '1.5rem',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    backgroundColor: theme.background,
+    minHeight: '100vh',
+  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: '2rem',
+    padding: '1.5rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  headerContent: {
+    flex: 1,
+  },
+  title: {
+    fontSize: '2rem',
+    fontWeight: '700',
+    color: theme.text,
+    marginBottom: '0.5rem',
+    margin: 0,
+  },
+  subtitle: {
+    color: theme.textSecondary,
+    fontSize: '1rem',
+    margin: 0,
   },
   headerActions: {
     display: 'flex',
-    gap: '1rem',
+    gap: '0.75rem',
   },
   filterButton: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
     padding: '0.75rem 1rem',
-    backgroundColor: '#95a5a6',
+    backgroundColor: '#64748b',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
   },
   addButton: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
-    padding: '0.75rem 1rem',
-    backgroundColor: '#27ae60',
+    padding: '0.75rem 1.5rem',
+    backgroundColor: '#f59e0b',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)',
   },
-  icon: {
-    width: '20px',
-    height: '20px',
+  buttonIcon: {
+    fontSize: '1rem',
+  },
+  addButtonIcon: {
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+  },
+  statsSection: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    marginBottom: '2rem',
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
   },
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '1rem',
-    marginBottom: '2rem',
+    gap: '0',
   },
   statCard: {
-    backgroundColor: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
     padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    textAlign: 'center',
+    borderRight: `1px solid ${theme.border}`,
+    transition: 'background-color 0.2s ease',
+  },
+  statIcon: {
+    fontSize: '2rem',
+    opacity: 0.8,
+  },
+  statContent: {
+    flex: 1,
   },
   statValue: {
-    margin: '0 0 0.5rem 0',
-    fontSize: '2rem',
-    color: '#2c3e50',
+    margin: '0 0 0.25rem 0',
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    color: theme.text,
   },
   statLabel: {
     margin: 0,
-    color: '#666',
+    color: theme.textSecondary,
     fontSize: '0.875rem',
+    fontWeight: '500',
   },
-  formContainer: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  formCard: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadowLarge,
     marginBottom: '2rem',
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  formHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1.5rem',
+    borderBottom: `1px solid ${theme.border}`,
+    backgroundColor: theme.backgroundSecondary,
+  },
+  formTitle: {
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: theme.text,
+    margin: 0,
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    color: theme.textSecondary,
+    cursor: 'pointer',
+    padding: '0.25rem',
+    borderRadius: '4px',
+    transition: 'color 0.2s ease',
   },
   form: {
-    marginTop: '1rem',
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
   },
   formRow: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '1rem',
-    marginBottom: '1rem',
+    gap: '1.5rem',
   },
-  fieldGroup: {
+  formGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.25rem',
+    gap: '0.5rem',
   },
   label: {
     fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: theme.text,
   },
   input: {
     padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '0.875rem',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
+    fontSize: '1rem',
+    transition: 'border-color 0.2s ease',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
   },
   select: {
     padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '0.875rem',
-  },
-  colorInput: {
-    width: '100%',
-    height: '42px',
-    padding: '0.25rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
+    fontSize: '1rem',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
     cursor: 'pointer',
   },
+  colorInput: {
+    height: '42px',
+    padding: '0.25rem',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
+    cursor: 'pointer',
+    backgroundColor: theme.inputBackground,
+  },
   textarea: {
-    width: '100%',
     padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '0.875rem',
+    border: `1px solid ${theme.inputBorder}`,
+    borderRadius: '8px',
+    fontSize: '1rem',
     resize: 'vertical',
+    backgroundColor: theme.inputBackground,
+    color: theme.inputText,
+    fontFamily: 'inherit',
   },
   calculationHelper: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#fef3c7',
+    border: '1px solid #f59e0b',
     padding: '1rem',
-    borderRadius: '4px',
+    borderRadius: '8px',
     marginBottom: '1rem',
   },
   helperTitle: {
-    margin: '0 0 0.5rem 0',
+    margin: '0 0 0.75rem 0',
     fontSize: '0.875rem',
-    color: '#1976d2',
-    fontWeight: '500',
+    color: '#92400e',
+    fontWeight: '600',
   },
   helperGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
     gap: '1rem',
     fontSize: '0.875rem',
-    color: '#333',
+    color: theme.text,
+    fontWeight: '500',
   },
   formActions: {
     display: 'flex',
-    gap: '0.5rem',
-    justifyContent: 'flex-end',
-  },
-  submitButton: {
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '500',
+    gap: '0.75rem',
+    paddingTop: '1rem',
+    borderTop: `1px solid ${theme.border}`,
   },
   cancelButton: {
+    flex: 1,
     padding: '0.75rem 1.5rem',
-    backgroundColor: '#95a5a6',
+    backgroundColor: theme.backgroundSecondary,
+    color: theme.textSecondary,
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+  },
+  submitButton: {
+    flex: 1,
+    padding: '0.75rem 1.5rem',
+    backgroundColor: theme.warning,
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
   },
   loading: {
-    textAlign: 'center',
-    padding: '2rem',
-    fontSize: '1.125rem',
-    color: '#666',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
+    color: theme.text,
   },
-  empty: {
+  loadingSpinner: {
+    width: '40px',
+    height: '40px',
+    border: `4px solid ${theme.borderLight}`,
+    borderTop: `4px solid ${theme.warning}`,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '1rem',
+  },
+  emptyState: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
     textAlign: 'center',
-    padding: '4rem 2rem',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    color: '#666',
+    border: `1px solid ${theme.cardBorder}`,
+  },
+  emptyIcon: {
+    fontSize: '3rem',
+    marginBottom: '1rem',
+    opacity: 0.5,
+  },
+  emptyText: {
+    fontSize: '1.125rem',
+    fontWeight: '600',
+    color: theme.text,
+    marginBottom: '0.5rem',
+  },
+  emptySubtext: {
+    color: theme.textSecondary,
+    fontSize: '0.875rem',
+    marginBottom: '0.5rem',
+  },
+  emptyDescription: {
+    color: theme.textTertiary,
+    fontSize: '0.875rem',
+    fontStyle: 'italic',
+  },
+  content: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    boxShadow: theme.shadow,
+    overflow: 'hidden',
+    border: `1px solid ${theme.cardBorder}`,
   },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
     gap: '1.5rem',
+    padding: '1.5rem',
   },
-};
+});
 
 export default GoalsPage;

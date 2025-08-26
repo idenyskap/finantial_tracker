@@ -1,4 +1,11 @@
+import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useCurrency } from '../../contexts/CurrencyContext';
+import { useLanguage } from '../../hooks/useLanguage';
+
 function BudgetProgress({ budget }) {
+  const styles = useThemedStyles(getStyles);
+  const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const percentage = Math.min(budget.percentUsed || 0, 100);
   const isOverBudget = budget.overBudget;
   const isWarning = percentage >= budget.notifyThreshold;
@@ -10,12 +17,6 @@ function BudgetProgress({ budget }) {
     return '#27ae60';
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount || 0);
-  };
 
   return (
     <div style={styles.container}>
@@ -23,7 +24,7 @@ function BudgetProgress({ budget }) {
         <div>
           <h3 style={styles.name}>{budget.name}</h3>
           <p style={styles.category}>
-            {budget.categoryName || 'All Categories'} • {budget.period}
+            {budget.categoryName || t('budgets.allCategories')} • {t(`budgets.${budget.period.toLowerCase()}`)}
           </p>
         </div>
         <div style={styles.amount}>
@@ -58,28 +59,29 @@ function BudgetProgress({ budget }) {
 
       <div style={styles.footer}>
         <span style={styles.remaining}>
-          {budget.remaining >= 0 ? 'Remaining: ' : 'Over budget: '}
+          {budget.remaining >= 0 ? `${t('budgets.remaining')}: ` : `${t('budgets.overBudget')}: `}
           <strong style={{ color: budget.remaining >= 0 ? '#27ae60' : '#e74c3c' }}>
             {formatCurrency(Math.abs(budget.remaining))}
           </strong>
         </span>
         {isWarning && !isOverBudget && (
-          <span style={styles.warning}>⚠️ Approaching limit</span>
+          <span style={styles.warning}>⚠️ {t('budgets.approachingLimit')}</span>
         )}
         {isOverBudget && (
-          <span style={styles.exceeded}>❌ Budget exceeded!</span>
+          <span style={styles.exceeded}>❌ {t('budgets.budgetExceeded')}</span>
         )}
       </div>
     </div>
   );
 }
 
-const styles = {
+const getStyles = (theme) => ({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: theme.cardBackground,
     padding: '1.5rem',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: theme.shadow,
+    border: `1px solid ${theme.cardBorder}`,
   },
   header: {
     display: 'flex',
@@ -90,22 +92,22 @@ const styles = {
   name: {
     margin: '0 0 0.25rem 0',
     fontSize: '1.125rem',
-    color: '#333',
+    color: theme.text,
   },
   category: {
     margin: 0,
     fontSize: '0.875rem',
-    color: '#666',
+    color: theme.textSecondary,
   },
   amount: {
     textAlign: 'right',
     fontSize: '1.125rem',
   },
   separator: {
-    color: '#999',
+    color: theme.textTertiary,
   },
   limit: {
-    color: '#333',
+    color: theme.text,
     fontWeight: '500',
   },
   progressContainer: {
@@ -117,7 +119,7 @@ const styles = {
   progressBar: {
     flex: 1,
     height: '12px',
-    backgroundColor: '#ecf0f1',
+    backgroundColor: theme.borderLight,
     borderRadius: '6px',
     overflow: 'hidden',
     position: 'relative',
@@ -136,7 +138,7 @@ const styles = {
     fontSize: '0.875rem',
     fontWeight: '500',
     minWidth: '40px',
-    color: '#333',
+    color: theme.text,
   },
   footer: {
     display: 'flex',
@@ -145,7 +147,7 @@ const styles = {
     fontSize: '0.875rem',
   },
   remaining: {
-    color: '#666',
+    color: theme.textSecondary,
   },
   warning: {
     color: '#f39c12',
@@ -155,6 +157,6 @@ const styles = {
     color: '#e74c3c',
     fontWeight: '500',
   },
-};
+});
 
 export default BudgetProgress;

@@ -1,16 +1,13 @@
 package com.example.financial_tracker.service;
 
-import com.example.financial_tracker.dto.ChangePasswordDTO;
 import com.example.financial_tracker.dto.UpdateProfileRequest;
 import com.example.financial_tracker.dto.UserDTO;
 import com.example.financial_tracker.entity.User;
-import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.mapper.UserMapper;
 import com.example.financial_tracker.repository.UserRepository;
 import com.example.financial_tracker.dto.ChangePasswordRequest;
 import com.example.financial_tracker.dto.EmailChangeRequest;
 import com.example.financial_tracker.entity.EmailHistory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +76,10 @@ public class UserService implements UserDetailsService {
 
     User saved = userRepository.save(existing);
     return userMapper.toDto(saved);
+  }
+
+  public User saveUser(User user) {
+    return userRepository.save(user);
   }
 
   public void changePassword(User user, ChangePasswordRequest request) {

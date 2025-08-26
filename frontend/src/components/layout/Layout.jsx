@@ -1,12 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { useLanguage } from '../../hooks/useLanguage';
 import ThemeToggle from '../ThemeToggle';
+import LanguageSelector from '../language/LanguageSelector';
 
 function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const styles = useThemedStyles(getStyles);
 
   const handleLogout = () => {
@@ -28,7 +31,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/dashboard' ? styles.activeLink : {})
               }}
             >
-              Dashboard
+              {t('navigation.dashboard')}
             </Link>
             <Link
               to="/transactions"
@@ -37,7 +40,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/transactions' ? styles.activeLink : {})
               }}
             >
-              Transactions
+              {t('navigation.transactions')}
             </Link>
             <Link
               to="/categories"
@@ -46,7 +49,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/categories' ? styles.activeLink : {})
               }}
             >
-              Categories
+              {t('navigation.categories')}
             </Link>
             <Link
               to="/budgets"
@@ -55,7 +58,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/budgets' ? styles.activeLink : {})
               }}
             >
-              Budgets
+              {t('navigation.budgets')}
             </Link>
             <Link
               to="/goals"
@@ -64,7 +67,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/goals' ? styles.activeLink : {})
               }}
             >
-              Goals
+              {t('navigation.goals')}
             </Link>
             <Link
               to="/recurring"
@@ -73,7 +76,16 @@ function Layout({ children }) {
                 ...(location.pathname === '/recurring' ? styles.activeLink : {})
               }}
             >
-              Recurring
+              {t('navigation.recurring')}
+            </Link>
+            <Link
+              to="/currency-converter"
+              style={{
+                ...styles.link,
+                ...(location.pathname === '/currency-converter' ? styles.activeLink : {})
+              }}
+            >
+              {t('navigation.converter')}
             </Link>
             <Link
               to="/profile"
@@ -82,14 +94,15 @@ function Layout({ children }) {
                 ...(location.pathname === '/profile' ? styles.activeLink : {})
               }}
             >
-              Profile
+              {t('navigation.profile')}
             </Link>
 
             <div style={styles.navRight}>
               <span style={styles.userEmail}>{user?.email}</span>
+              <LanguageSelector compact={true} />
               <ThemeToggle />
               <button onClick={handleLogout} style={styles.logoutBtn}>
-                Logout
+                {t('auth.logout')}
               </button>
             </div>
           </div>
@@ -112,16 +125,17 @@ const getStyles = (theme) => ({
   nav: {
     backgroundColor: theme.backgroundSecondary,
     padding: '1rem 0',
-    boxShadow: theme.shadow,
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
     borderBottom: `1px solid ${theme.border}`,
   },
   navContent: {
-    maxWidth: '1200px',
+    maxWidth: '100%',
     margin: '0 auto',
-    padding: '0 1rem',
+    padding: '0 2rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   logo: {
     color: theme.primary,
@@ -131,19 +145,24 @@ const getStyles = (theme) => ({
   },
   navLinks: {
     display: 'flex',
-    gap: '1rem',
+    gap: '0.5rem',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   link: {
     color: theme.text,
     textDecoration: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '4px',
-    transition: 'all 0.2s',
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    transition: 'all 0.2s ease',
+    fontSize: '0.95rem',
+    fontWeight: '500',
+    whiteSpace: 'nowrap',
   },
   activeLink: {
     backgroundColor: theme.primary,
     color: 'white',
+    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
   },
   navRight: {
     display: 'flex',
@@ -156,20 +175,24 @@ const getStyles = (theme) => ({
   userEmail: {
     color: theme.textSecondary,
     fontSize: '0.875rem',
+    fontWeight: '500',
   },
   logoutBtn: {
-    backgroundColor: theme.danger,
+    backgroundColor: '#ef4444',
     color: 'white',
     border: 'none',
     padding: '0.5rem 1rem',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
-    transition: 'opacity 0.2s',
+    transition: 'all 0.2s ease',
+    fontSize: '0.875rem',
+    fontWeight: '500',
   },
   main: {
-    maxWidth: '1200px',
-    margin: '2rem auto',
-    padding: '0 1rem',
+    width: '100%',
+    maxWidth: 'none',
+    margin: '2rem 0',
+    padding: '0 2rem',
   },
 });
 
