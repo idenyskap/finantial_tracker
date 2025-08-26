@@ -17,6 +17,7 @@ function NotificationSettingsPage() {
       const response = await api.get('/notifications/settings');
       setSettings(response.data);
     } catch (error) {
+      console.error('Failed to load notification settings:', error);
       toast.error('Failed to load notification settings');
     } finally {
       setLoading(false);
@@ -37,6 +38,7 @@ function NotificationSettingsPage() {
       await api.put('/notifications/settings', updatedSettings);
       toast.success('Settings saved');
     } catch (error) {
+      console.error('Failed to save settings:', error);
       toast.error('Failed to save settings');
       fetchSettings(); // Revert on error
     } finally {

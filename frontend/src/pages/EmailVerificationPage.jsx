@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import api from '../services/api';
@@ -18,9 +18,9 @@ function EmailVerificationPage() {
       setStatus('error');
       setMessage('Invalid verification link');
     }
-  }, [searchParams]);
+  }, [searchParams, verifyEmail]);
 
-  const verifyEmail = async (token) => {
+  const verifyEmail = useCallback(async (token) => {
     try {
       await api.post('/auth/verify-email', null, { params: { token } });
       setStatus('success');
@@ -30,10 +30,11 @@ function EmailVerificationPage() {
         navigate('/login');
       }, 3000);
     } catch (error) {
+      console.error('Email verification failed:', error);
       setStatus('error');
       setMessage(error.response?.data?.error || 'Verification failed. The link may be invalid or expired.');
     }
-  };
+  }, [navigate]);
 
   return (
     <div style={styles.container}>

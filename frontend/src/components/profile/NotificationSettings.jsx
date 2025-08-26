@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useLanguage } from '../../hooks/useLanguage';
 import api from '../../services/api';
@@ -14,9 +14,9 @@ function NotificationSettings() {
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+  }, [fetchSettings]);
 
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       const response = await api.get('/notifications/settings');
       setSettings(response.data);
@@ -25,7 +25,8 @@ function NotificationSettings() {
         try {
           const initResponse = await api.post('/notifications/settings/init');
           setSettings(initResponse.data);
-        } catch (_initError) {
+        } catch (initError) {
+          console.error('Failed to initialize notification settings:', initError);
           toast.error(t('profile.failedToInitNotificationSettings'));
         }
       } else {
@@ -34,7 +35,7 @@ function NotificationSettings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
 
   const handleToggle = (field) => {
@@ -67,6 +68,7 @@ function NotificationSettings() {
       await api.put('/notifications/settings', settings);
       toast.success(t('profile.notificationSettingsSaved'));
     } catch (error) {
+      console.error('Failed to save notification settings:', error);
       toast.error(t('profile.failedToSaveNotificationSettings'));
     } finally {
       setSaving(false);

@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-export const LanguageContext = createContext();
+import { LanguageContext } from './contexts';
 
 export const LanguageProvider = ({ children }) => {
   const { i18n, t } = useTranslation();

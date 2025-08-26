@@ -146,6 +146,7 @@ function TransactionsPage() {
       window.URL.revokeObjectURL(url);
       toast.success('Exported to CSV');
     } catch (error) {
+      console.error('Export failed:', error);
       toast.error('Export failed');
     }
   };

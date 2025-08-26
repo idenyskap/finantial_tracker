@@ -18,6 +18,7 @@ function ForgotPasswordPage() {
       await api.post('/auth/request-password-reset', { email });
       setSubmitted(true);
     } catch (error) {
+      console.error('Failed to send reset email:', error);
       toast.error('Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
