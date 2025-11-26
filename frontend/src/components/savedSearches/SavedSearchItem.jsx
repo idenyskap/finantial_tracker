@@ -1,7 +1,7 @@
 import { BookmarkIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useLanguage } from '../../hooks/useLanguage';
-import { useCurrency } from '../../contexts/CurrencyContext';
+import { useCurrency } from '../../hooks/useCurrency';
 
 function SavedSearchItem({ search, onExecute, onDelete }) {
   const styles = useThemedStyles(getStyles);

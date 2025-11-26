@@ -11,7 +11,7 @@ import {
   Filler
 } from 'chart.js';
 import { useLanguage } from '../../hooks/useLanguage';
-import { useCurrency } from '../../contexts/CurrencyContext';
+import { useCurrency } from '../../hooks/useCurrency';
 
 ChartJS.register(
   CategoryScale,

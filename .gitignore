@@ -9,7 +9,10 @@
 *.iml
 *.iws
 out/
+
+# Build output
 target/
+build/
 
 # OS files
 .DS_Store
@@ -18,7 +21,33 @@ Thumbs.db
 # Environment
 .env
 *.env
+.env.*
 
-# Maven
-/logs
-/target
+# Logs
+logs/
+*.log
+
+# Node
+node_modules/
+frontend/node_modules/
+
+# Frontend build
+frontend/dist/
+frontend/build/
+
+# BFG cleanup reports
+*.bfg-report/
+finantial_tracker.git.bfg-report/
+finantial_tracker/
+
+# Test output
+test-clean/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# Claude
+.claude/

@@ -8,7 +8,7 @@ import SavedSearchItem from '../components/savedSearches/SavedSearchItem';
 import { toast } from 'sonner';
 import ImportCSV from '../components/transactions/ImportCSV';
 import { useThemedStyles } from '../hooks/useThemedStyles';
-import { useCurrency } from '../contexts/CurrencyContext';
+import { useCurrency } from '../hooks/useCurrency';
 import { useLanguage } from '../hooks/useLanguage';
 
 function TransactionsPage() {
