@@ -1,5 +1,5 @@
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { useCurrency } from '../../contexts/CurrencyContext';
+import { useCurrency } from '../../hooks/useCurrency';
 import { useLanguage } from '../../hooks/useLanguage';
 
 function BudgetProgress({ budget }) {

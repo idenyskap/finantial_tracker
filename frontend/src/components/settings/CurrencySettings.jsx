@@ -4,7 +4,7 @@ import api from '../../services/api';
 import { toast } from 'sonner';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useLanguage } from '../../hooks/useLanguage';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import { getTheme } from '../../styles/theme';
 import ExchangeRateInfo from '../currency/ExchangeRateInfo';
 

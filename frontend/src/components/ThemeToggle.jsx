@@ -1,4 +1,4 @@
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../hooks/useTheme';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 
 function ThemeToggle() {

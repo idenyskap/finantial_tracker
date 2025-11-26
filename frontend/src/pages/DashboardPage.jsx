@@ -7,7 +7,7 @@ import CategoryPieChart from '../components/charts/CategoryPieChart';
 import CategoryMonthlyChart from '../components/charts/CategoryMonthlyChart';
 import GoalsWidget from '../components/dashboard/GoalsWidget';
 import { useThemedStyles } from '../hooks/useThemedStyles';
-import { useCurrency } from '../contexts/CurrencyContext';
+import { useCurrency } from '../hooks/useCurrency';
 import { useLanguage } from '../hooks/useLanguage';
 
 function DashboardPage() {

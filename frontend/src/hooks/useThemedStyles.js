@@ -1,4 +1,4 @@
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from './useTheme';
 import { getTheme } from '../styles/theme';
 
 export const useThemedStyles = (stylesFn) => {

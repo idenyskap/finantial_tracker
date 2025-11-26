@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { goalService } from '../../services/goalService';
 import { Link } from 'react-router-dom';
-import { useCurrency } from '../../contexts/CurrencyContext';
+import { useCurrency } from '../../hooks/useCurrency';
 
 function GoalsWidget() {
   const { formatCurrency } = useCurrency();

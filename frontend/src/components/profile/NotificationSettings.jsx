@@ -12,10 +12,6 @@ function NotificationSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
-
   const fetchSettings = useCallback(async () => {
     try {
       const response = await api.get('/notifications/settings');
@@ -37,6 +33,9 @@ function NotificationSettings() {
     }
   }, [t]);
 
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const handleToggle = (field) => {
     setSettings(prev => ({

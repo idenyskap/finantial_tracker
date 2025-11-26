@@ -34,6 +34,20 @@ public class CurrencyService {
   // Free API for exchange rates (you can replace with your preferred provider)
   private static final String EXCHANGE_API_URL = "https://api.exchangerate-api.com/v4/latest/";
 
+  public void initializeExchangeRatesIfNeeded() {
+    log.info("Checking for existing exchange rates...");
+    // Check if rates exist, if not fetch them
+    List<ExchangeRate> existingRates = exchangeRateRepository
+      .findCurrentRatesForCurrency(Currency.USD, LocalDateTime.now());
+
+    if (existingRates.isEmpty()) {
+      log.info("No exchange rates found, initializing from external API...");
+      updateExchangeRates();
+    } else {
+      log.info("Exchange rates already exist ({} rates), skipping initialization", existingRates.size());
+    }
+  }
+
   public BigDecimal convert(BigDecimal amount, Currency from, Currency to) {
     if (from == to) {
       return amount;

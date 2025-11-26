@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useLanguage } from '../../hooks/useLanguage';
 import ThemeToggle from '../ThemeToggle';

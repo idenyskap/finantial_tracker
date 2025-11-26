@@ -65,7 +65,8 @@ const CurrencyConverter = () => {
       }, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [amount, fromCurrency, toCurrency, conversionMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amount, fromCurrency, toCurrency]);
 
   const handleSwapCurrencies = () => {
     setFromCurrency(toCurrency);
