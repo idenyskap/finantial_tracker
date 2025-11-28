@@ -13,11 +13,17 @@ import java.util.Optional;
 
 @Repository
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
-  List<Budget> findByUserAndActiveOrderByCreatedAtDesc(User user, boolean active);
+  @Query("SELECT b FROM Budget b " +
+    "LEFT JOIN FETCH b.category " +
+    "WHERE b.user = :user AND b.active = :active " +
+    "ORDER BY b.createdAt DESC")
+  List<Budget> findByUserAndActiveOrderByCreatedAtDesc(@Param("user") User user, @Param("active") boolean active);
 
   Optional<Budget> findByIdAndUser(Long id, User user);
 
-  @Query("SELECT b FROM Budget b WHERE b.user = :user " +
+  @Query("SELECT b FROM Budget b " +
+    "LEFT JOIN FETCH b.category " +
+    "WHERE b.user = :user " +
     "AND b.active = true " +
     "AND (b.category = :category OR b.category IS NULL) " +
     "ORDER BY b.category DESC")
@@ -28,6 +34,8 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
   List<Budget> findByUserAndCategory(User user, Category category);
 
-  @Query("SELECT b FROM Budget b WHERE b.user = :user AND b.active = true")
+  @Query("SELECT b FROM Budget b " +
+    "LEFT JOIN FETCH b.category " +
+    "WHERE b.user = :user AND b.active = true")
   List<Budget> findActiveByUser(@Param("user") User user);
 }

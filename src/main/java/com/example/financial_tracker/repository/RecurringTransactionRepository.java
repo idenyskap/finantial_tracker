@@ -18,10 +18,15 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
 
   Optional<RecurringTransaction> findByIdAndUser(Long id, User user);
 
-  @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.active = true AND rt.nextExecutionDate <= :date")
+  @Query("SELECT rt FROM RecurringTransaction rt " +
+    "JOIN FETCH rt.category " +
+    "JOIN FETCH rt.user " +
+    "WHERE rt.active = true AND rt.nextExecutionDate <= :date")
   List<RecurringTransaction> findDueRecurringTransactions(@Param("date") LocalDate date);
 
-  @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.user = :user AND rt.active = true")
+  @Query("SELECT rt FROM RecurringTransaction rt " +
+    "JOIN FETCH rt.category " +
+    "WHERE rt.user = :user AND rt.active = true")
   List<RecurringTransaction> findActiveByUser(@Param("user") User user);
 
   @Query("SELECT COUNT(rt) FROM RecurringTransaction rt WHERE rt.user = :user AND rt.active = true")

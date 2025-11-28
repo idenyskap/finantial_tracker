@@ -133,20 +133,36 @@ public class TransactionService {
       List<Budget> budgets = budgetRepository.findActiveBudgetsForCategory(user, category);
 
       for (Budget budget : budgets) {
-        BudgetDTO budgetDto = budgetService.getBudgetById(user, budget.getId());
-        BigDecimal percentUsed = budgetDto.getPercentUsed();
+        if (budget.getStartDate() == null || budget.getEndDate() == null) {
+          budget.calculateDates();
+        }
+
+        BigDecimal spent;
+        if (budget.getCategory() != null) {
+          spent = transactionRepository.getTotalExpenseByUserAndCategoryAndDateRange(
+            user, budget.getCategory(), budget.getStartDate(), budget.getEndDate());
+        } else {
+          spent = transactionRepository.getTotalExpenseByUserAndDateRange(
+            user, budget.getStartDate(), budget.getEndDate());
+        }
+
+        BigDecimal remaining = budget.getAmount().subtract(spent);
+        BigDecimal percentUsed = budget.getAmount().compareTo(BigDecimal.ZERO) > 0
+          ? spent.multiply(new BigDecimal("100")).divide(budget.getAmount(), 2, java.math.RoundingMode.HALF_UP)
+          : BigDecimal.ZERO;
+        boolean overBudget = spent.compareTo(budget.getAmount()) > 0;
 
         BudgetWarningDTO.WarningLevel level;
         String message;
 
-        if (budgetDto.isOverBudget()) {
+        if (overBudget) {
           level = BudgetWarningDTO.WarningLevel.EXCEEDED;
           message = String.format("Budget '%s' exceeded! Spent: $%.2f of $%.2f limit",
-            budget.getName(), budgetDto.getSpent(), budget.getAmount());
+            budget.getName(), spent, budget.getAmount());
         } else if (percentUsed.compareTo(new BigDecimal(budget.getNotifyThreshold())) >= 0) {
           level = BudgetWarningDTO.WarningLevel.ALERT;
           message = String.format("Budget '%s' is %.0f%% used. Remaining: $%.2f",
-            budget.getName(), percentUsed, budgetDto.getRemaining());
+            budget.getName(), percentUsed, remaining);
         } else if (percentUsed.compareTo(new BigDecimal("50")) >= 0) {
           level = BudgetWarningDTO.WarningLevel.WARNING;
           message = String.format("Budget '%s' is %.0f%% used",
@@ -161,10 +177,10 @@ public class TransactionService {
           .budgetId(budget.getId())
           .budgetName(budget.getName())
           .limit(budget.getAmount())
-          .spent(budgetDto.getSpent())
-          .remaining(budgetDto.getRemaining())
+          .spent(spent)
+          .remaining(remaining)
           .percentUsed(percentUsed)
-          .overBudget(budgetDto.isOverBudget())
+          .overBudget(overBudget)
           .message(message)
           .level(level)
           .build();

@@ -3,6 +3,7 @@ package com.example.financial_tracker.service;
 import com.example.financial_tracker.dto.*;
 import com.example.financial_tracker.entity.Transaction;
 import com.example.financial_tracker.entity.User;
+import com.example.financial_tracker.mapper.TransactionMapper;
 import com.example.financial_tracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ public class DashboardService {
   private final TransactionRepository transactionRepository;
   private final TransactionService transactionService;
   private final AnalyticsService analyticsService;
+  private final TransactionMapper transactionMapper;
 
   public DashboardDTO getDashboard(User user) {
     log.info("Generating dashboard for user: {}", user.getEmail());
@@ -64,20 +66,7 @@ public class DashboardService {
       user, PageRequest.of(0, 10)
     );
 
-    List<TransactionDTO> recentTransactionDtos = new ArrayList<>();
-    for (Transaction t : recentTransactions) {
-      TransactionDTO dto = new TransactionDTO();
-      dto.setId(t.getId());
-      dto.setAmount(t.getAmount());
-      dto.setType(t.getType().toString());
-      dto.setCategoryId(t.getCategory().getId());
-      dto.setCategoryName(t.getCategory().getName());
-      dto.setCategoryColor(t.getCategory().getColor());
-      dto.setDate(t.getDate());
-      dto.setDescription(t.getDescription());
-      dto.setUserId(t.getUser().getId());
-      recentTransactionDtos.add(dto);
-    }
+    List<TransactionDTO> recentTransactionDtos = transactionMapper.toDtoList(recentTransactions);
 
     List<CategoryStatsDTO> topExpenseCategories = analyticsService.getTopExpenseCategories(
       user, monthStart, monthEnd, 5

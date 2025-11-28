@@ -15,7 +15,11 @@ import java.util.Optional;
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
 
-  List<Goal> findByUserOrderByPriorityDescTargetDateAsc(User user);
+  @Query("SELECT g FROM Goal g " +
+    "LEFT JOIN FETCH g.category " +
+    "WHERE g.user = :user " +
+    "ORDER BY g.priority DESC, g.targetDate ASC")
+  List<Goal> findByUserOrderByPriorityDescTargetDateAsc(@Param("user") User user);
 
   List<Goal> findByUserAndStatus(User user, GoalStatus status);
 
@@ -27,12 +31,16 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
   @Query("SELECT COUNT(g) FROM Goal g WHERE g.user = :user AND g.status = :status")
   Long countByUserAndStatus(@Param("user") User user, @Param("status") GoalStatus status);
 
-  @Query("SELECT g FROM Goal g WHERE g.user = :user AND g.status = 'ACTIVE' ORDER BY " +
+  @Query("SELECT g FROM Goal g " +
+    "LEFT JOIN FETCH g.category " +
+    "WHERE g.user = :user AND g.status = 'ACTIVE' ORDER BY " +
     "CASE WHEN g.targetDate < CURRENT_DATE THEN 0 ELSE 1 END, " +
     "g.targetDate ASC")
   List<Goal> findActiveGoalsSortedByUrgency(@Param("user") User user);
 
-  @Query("SELECT g FROM Goal g WHERE g.user = :user AND g.status = 'ACTIVE'")
+  @Query("SELECT g FROM Goal g " +
+    "LEFT JOIN FETCH g.category " +
+    "WHERE g.user = :user AND g.status = 'ACTIVE'")
   List<Goal> findActiveByUser(@Param("user") User user);
 
   List<Goal> findByUser(User user);
