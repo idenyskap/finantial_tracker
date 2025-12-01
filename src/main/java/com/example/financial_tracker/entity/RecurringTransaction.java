@@ -1,13 +1,19 @@
 package com.example.financial_tracker.entity;
 
+import com.example.financial_tracker.enumerations.RecurrenceFrequency;
+import com.example.financial_tracker.enumerations.TransactionType;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "t_recurring_transaction")
 public class RecurringTransaction {

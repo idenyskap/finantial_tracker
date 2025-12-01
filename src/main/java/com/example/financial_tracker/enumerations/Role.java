@@ -1,9 +1,7 @@
-package com.example.financial_tracker.entity;
+package com.example.financial_tracker.enumerations;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 
-@RequiredArgsConstructor
 public enum Role implements GrantedAuthority {
   USER,
   ADMIN;

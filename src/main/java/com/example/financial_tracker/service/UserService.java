@@ -38,21 +38,25 @@ public class UserService implements UserDetailsService {
   private String baseUrl;
 
   @Override
+  @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     return userRepository.findByEmail(email)
       .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
   }
 
+  @Transactional(readOnly = true)
   public User getUserByEmail(String email) {
     return userRepository.findByEmail(email)
       .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
   }
 
+  @Transactional(readOnly = true)
   public List<UserDTO> getAllUsers() {
     List<User> users = userRepository.findAll();
     return userMapper.toDtoList(users);
   }
 
+  @Transactional(readOnly = true)
   public UserDTO getUserById(Long id) {
     return userRepository.findById(id)
       .map(userMapper::toDto)

@@ -53,6 +53,7 @@ public class SavedSearchService {
     }
   }
 
+  @Transactional(readOnly = true)
   public List<SavedSearchDTO> getUserSavedSearches(User user) {
     log.info("Fetching saved searches for user: {}", user.getEmail());
 
@@ -63,6 +64,7 @@ public class SavedSearchService {
       .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public SavedSearchDTO getSavedSearchById(User user, Long id) {
     log.info("Fetching saved search ID: {} for user: {}", id, user.getEmail());
 

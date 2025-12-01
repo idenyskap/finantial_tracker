@@ -1,6 +1,6 @@
 package com.example.financial_tracker.dto;
 
-import com.example.financial_tracker.entity.RecurrenceFrequency;
+import com.example.financial_tracker.enumerations.RecurrenceFrequency;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

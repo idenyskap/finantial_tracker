@@ -3,6 +3,7 @@ package com.example.financial_tracker.service;
 import com.example.financial_tracker.dto.MonthlyReportDTO;
 import com.example.financial_tracker.dto.WeeklyReportDTO;
 import com.example.financial_tracker.entity.*;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -2,6 +2,7 @@ package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.*;
 import com.example.financial_tracker.entity.*;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.exception.AccessDeniedException;
 import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
@@ -49,6 +50,7 @@ public class TransactionService {
   private final BudgetRepository budgetRepository;
   private final EmailService emailService;
 
+  @Transactional(readOnly = true)
   public List<TransactionDTO> getTransactionsByUser(User user) {
     log.info("Fetching all transactions for user: {} (ID: {})", user.getEmail(), user.getId());
 
@@ -58,6 +60,7 @@ public class TransactionService {
     return transactionMapper.toDtoList(transactions);
   }
 
+  @Transactional(readOnly = true)
   public Page<TransactionDTO> getTransactionsByUser(User user, Pageable pageable) {
     log.info("Fetching paginated transactions for user: {} (page: {}, size: {})",
       user.getEmail(), pageable.getPageNumber(), pageable.getPageSize());
@@ -71,6 +74,7 @@ public class TransactionService {
     return transactions.map(transactionMapper::toDto);
   }
 
+  @Transactional(readOnly = true)
   public TransactionDTO getTransactionById(Long id, User user) {
     log.info("Fetching transaction ID: {} for user: {}", id, user.getEmail());
 
@@ -253,6 +257,7 @@ public class TransactionService {
     log.info("Successfully deleted transaction ID: {} for user: {}", id, user.getEmail());
   }
 
+  @Transactional(readOnly = true)
   public BigDecimal getBalanceByUser(User user) {
     log.debug("Calculating balance for user: {}", user.getEmail());
 
@@ -263,6 +268,7 @@ public class TransactionService {
     return result;
   }
 
+  @Transactional(readOnly = true)
   public BigDecimal getTotalIncomeByUser(User user) {
     log.debug("Calculating total income for user: {}", user.getEmail());
 
@@ -272,6 +278,7 @@ public class TransactionService {
     return income;
   }
 
+  @Transactional(readOnly = true)
   public BigDecimal getTotalExpenseByUser(User user) {
     log.debug("Calculating total expenses for user: {}", user.getEmail());
 
@@ -281,6 +288,7 @@ public class TransactionService {
     return expense;
   }
 
+  @Transactional(readOnly = true)
   public List<TransactionDTO> getTransactionsWithFilters(User user,
                                                          TransactionType type,
                                                          Long categoryId,
@@ -298,6 +306,7 @@ public class TransactionService {
     return transactionMapper.toDtoList(transactions);
   }
 
+  @Transactional(readOnly = true)
   public List<TransactionDTO> getTransactionsByType(User user, TransactionType type) {
     log.info("Fetching {} transactions for user: {}", type, user.getEmail());
 
@@ -321,6 +330,7 @@ public class TransactionService {
         dto.getDescription().substring(0, 50) + "..." : dto.getDescription());
   }
 
+  @Transactional(readOnly = true)
   public Page<TransactionDTO> searchTransactions(User user, TransactionSearchDTO searchDto) {
     log.info("Searching transactions for user: {} with criteria: {}", user.getEmail(), searchDto);
 
@@ -437,6 +447,7 @@ public class TransactionService {
     );
   }
 
+  @Transactional(readOnly = true)
   public byte[] exportTransactionsToCsv(User user, TransactionSearchDTO searchDto) {
     log.info("Exporting transactions to CSV for user: {}", user.getEmail());
 
@@ -480,6 +491,7 @@ public class TransactionService {
     }
   }
 
+  @Transactional(readOnly = true)
   public TransactionSearchStatsDTO getSearchStats(User user, TransactionSearchDTO searchDto) {
     log.info("Calculating search statistics for user: {}", user.getEmail());
 
@@ -506,6 +518,7 @@ public class TransactionService {
       .build();
   }
 
+  @Transactional(readOnly = true)
   public byte[] exportTransactionsToExcel(User user, TransactionSearchDTO searchDto) {
     log.info("Exporting transactions to Excel for user: {}", user.getEmail());
 
@@ -578,6 +591,7 @@ public class TransactionService {
     }
   }
 
+  @Transactional(readOnly = true)
   public Page<TransactionDTO> searchBySavedSearch(User user, Long savedSearchId, Integer page, Integer size) {
     log.info("Executing saved search ID: {} for user: {}", savedSearchId, user.getEmail());
 

@@ -1,11 +1,16 @@
 package com.example.financial_tracker.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "t_notification_settings")
 public class NotificationSettings {

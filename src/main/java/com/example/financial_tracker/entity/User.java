@@ -1,6 +1,7 @@
-// src/main/java/com/example/financial_tracker/entity/User.java
 package com.example.financial_tracker.entity;
 
+import com.example.financial_tracker.enumerations.Currency;
+import com.example.financial_tracker.enumerations.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,10 +11,12 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "t_user")
 public class User implements UserDetails {
@@ -107,7 +110,6 @@ public class User implements UserDetails {
   @Column(name = "last_2fa_timestamp")
   private LocalDateTime last2faTimestamp;
 
-  // Multi-currency fields
   @Column(name = "default_currency")
   @Enumerated(EnumType.STRING)
   private Currency defaultCurrency = Currency.USD;

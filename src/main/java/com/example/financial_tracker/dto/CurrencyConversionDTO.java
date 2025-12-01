@@ -1,6 +1,6 @@
 package com.example.financial_tracker.dto;
 
-import com.example.financial_tracker.entity.Currency;
+import com.example.financial_tracker.enumerations.Currency;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;

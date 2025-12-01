@@ -23,8 +23,8 @@ public class CategoryMonthlyStatsDTO {
   @NoArgsConstructor
   @AllArgsConstructor
   public static class MonthlyAmountDTO {
-    private String month; // Format: YYYY-MM
-    private String monthName; // Format: MMM YYYY
+    private String month;
+    private String monthName;
     private BigDecimal amount;
     private Integer transactionCount;
   }

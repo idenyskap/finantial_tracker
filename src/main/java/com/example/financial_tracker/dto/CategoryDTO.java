@@ -2,7 +2,7 @@ package com.example.financial_tracker.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import com.example.financial_tracker.entity.TransactionType;
+import com.example.financial_tracker.enumerations.TransactionType;
 
 @Data
 public class CategoryDTO {

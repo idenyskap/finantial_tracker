@@ -3,6 +3,8 @@ package com.example.financial_tracker.service;
 import com.example.financial_tracker.dto.RecurringTransactionDTO;
 import com.example.financial_tracker.dto.TransactionDTO;
 import com.example.financial_tracker.entity.*;
+import com.example.financial_tracker.enumerations.RecurrenceFrequency;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
 import com.example.financial_tracker.mapper.RecurringTransactionMapper;
 import com.example.financial_tracker.repository.CategoryRepository;
@@ -29,6 +31,7 @@ public class RecurringTransactionService {
   private final CategoryRepository categoryRepository;
   private final TransactionService transactionService;
 
+  @Transactional(readOnly = true)
   public List<RecurringTransactionDTO> getUserRecurringTransactions(User user) {
     log.info("Fetching recurring transactions for user: {}", user.getEmail());
     List<RecurringTransaction> transactions = recurringTransactionRepository.findByUserOrderByNextExecutionDateAsc(user);
@@ -100,7 +103,7 @@ public class RecurringTransactionService {
     log.info("Deleted recurring transaction ID: {} for user: {}", id, user.getEmail());
   }
 
-  @Scheduled(cron = "0 0 1 * * *") // Every day at 1:00 am
+  @Scheduled(cron = "0 0 1 * * *")
   @Transactional
   public void processRecurringTransactions() {
     log.info("Starting processing of recurring transactions");

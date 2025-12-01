@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useThemedStyles } from '../hooks/useThemedStyles';
-import { useAuth } from '../hooks/useAuthContext';
+import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
 function EmailChangeConfirmationPage() {

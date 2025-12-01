@@ -1,6 +1,6 @@
 package com.example.financial_tracker.repository;
 
-import com.example.financial_tracker.entity.Currency;
+import com.example.financial_tracker.enumerations.Currency;
 import com.example.financial_tracker.entity.ExchangeRate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

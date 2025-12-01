@@ -1,12 +1,13 @@
 package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.*;
-import com.example.financial_tracker.entity.TransactionType;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,6 +20,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AnalyticsService {
 
   private final TransactionRepository transactionRepository;

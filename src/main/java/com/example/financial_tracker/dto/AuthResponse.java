@@ -15,7 +15,6 @@ public class AuthResponse {
   private String status;
   private String message;
 
-  // Constructor for successful login
   public AuthResponse(String token) {
     this.token = token;
     this.requiresTwoFactor = false;

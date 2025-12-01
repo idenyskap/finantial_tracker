@@ -1,5 +1,6 @@
 package com.example.financial_tracker.entity;
 
+import com.example.financial_tracker.enumerations.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,10 +10,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "t_transaction")
 public class Transaction {

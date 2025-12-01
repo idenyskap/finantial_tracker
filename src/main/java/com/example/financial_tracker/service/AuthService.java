@@ -4,7 +4,7 @@ import com.example.financial_tracker.dto.AuthRequest;
 import com.example.financial_tracker.dto.AuthResponse;
 import com.example.financial_tracker.entity.EmailHistory;
 import com.example.financial_tracker.entity.NotificationSettings;
-import com.example.financial_tracker.entity.Role;
+import com.example.financial_tracker.enumerations.Role;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.repository.NotificationSettingsRepository;
 import com.example.financial_tracker.repository.UserRepository;

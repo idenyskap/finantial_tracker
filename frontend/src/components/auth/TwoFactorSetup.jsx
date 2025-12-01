@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import api from '../../services/api';
 import { toast } from 'sonner';
-import { Shield, Copy, CheckCircle, XCircle } from 'lucide-react';
+import { Shield, Copy, CheckCircle } from 'lucide-react';
 
 const TwoFactorSetup = ({ onClose, onSuccess }) => {
   const [step, setStep] = useState(1);

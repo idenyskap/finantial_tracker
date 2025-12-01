@@ -1,9 +1,9 @@
 package com.example.financial_tracker.controller;
 
 import com.example.financial_tracker.dto.TransactionDTO;
-import com.example.financial_tracker.entity.TransactionType;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.entity.User;
-import com.example.financial_tracker.entity.Role;
+import com.example.financial_tracker.enumerations.Role;
 import com.example.financial_tracker.service.TransactionService;
 import com.example.financial_tracker.service.SavedSearchService;
 import com.fasterxml.jackson.databind.ObjectMapper;

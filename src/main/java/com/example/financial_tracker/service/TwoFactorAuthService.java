@@ -53,16 +53,10 @@ public class TwoFactorAuthService {
       throw new BusinessLogicException("Two-factor authentication is already enabled");
     }
 
-    // Generate secret
     String secret = secretGenerator.generate();
-
-    // Generate QR code
     String qrCodeUrl = generateQRCodeDataURL(user.getEmail(), secret);
-
-    // Generate recovery codes
     Set<String> recoveryCodes = generateRecoveryCodes();
 
-    // Don't save to user yet - wait for verification
     return TwoFactorSetupDTO.builder()
       .secret(secret)
       .qrCode(qrCodeUrl)
@@ -73,12 +67,10 @@ public class TwoFactorAuthService {
   public void enableTwoFactorAuth(User user, String secret, String verificationCode, Set<String> recoveryCodes) {
     log.info("Enabling 2FA for user: {}", user.getEmail());
 
-    // Verify the code first
     if (!verifyCode(secret, verificationCode)) {
       throw new BusinessLogicException("Invalid verification code");
     }
 
-    // Update user
     user.setTwoFactorEnabled(true);
     user.setTwoFactorSecret(secret);
     user.setRecoveryCodes(String.join(",", recoveryCodes));
@@ -108,16 +100,14 @@ public class TwoFactorAuthService {
 
   public boolean verifyTwoFactorCode(User user, String code) {
     if (!user.isTwoFactorEnabled()) {
-      return true; // 2FA not enabled
+      return true;
     }
 
-    // Check if it's a recovery code
     if (isRecoveryCode(user, code)) {
       consumeRecoveryCode(user, code);
       return true;
     }
 
-    // Otherwise verify TOTP code
     return verifyCode(user.getTwoFactorSecret(), code);
   }
 
@@ -147,11 +137,9 @@ public class TwoFactorAuthService {
   }
 
   private Set<String> generateRecoveryCodes() {
-    // Generate 8 recovery codes
     String[] codes = recoveryCodeGenerator.generateCodes(8);
     return Arrays.stream(codes)
       .map(code -> {
-        // Format as XXXX-XXXX if code is 8 characters
         if (code.length() >= 8) {
           return code.substring(0, 4) + "-" + code.substring(4, 8);
         } else {

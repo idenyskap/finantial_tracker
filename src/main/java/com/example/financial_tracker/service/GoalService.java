@@ -4,6 +4,8 @@ import com.example.financial_tracker.dto.GoalContributionDTO;
 import com.example.financial_tracker.dto.GoalDTO;
 import com.example.financial_tracker.dto.TransactionDTO;
 import com.example.financial_tracker.entity.*;
+import com.example.financial_tracker.enumerations.GoalStatus;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
 import com.example.financial_tracker.mapper.GoalMapper;
@@ -33,6 +35,7 @@ public class GoalService {
   private final CategoryRepository categoryRepository;
   private final TransactionService transactionService;
 
+  @Transactional(readOnly = true)
   public List<GoalDTO> getUserGoals(User user) {
     log.info("Fetching all goals for user: {}", user.getEmail());
     List<Goal> goals = goalRepository.findByUserOrderByPriorityDescTargetDateAsc(user);
@@ -42,6 +45,7 @@ public class GoalService {
       .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public List<GoalDTO> getActiveGoals(User user) {
     log.info("Fetching active goals for user: {}", user.getEmail());
     List<Goal> goals = goalRepository.findActiveGoalsSortedByUrgency(user);
@@ -51,6 +55,7 @@ public class GoalService {
       .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public GoalDTO getGoalById(User user, Long id) {
     log.info("Fetching goal ID: {} for user: {}", id, user.getEmail());
 

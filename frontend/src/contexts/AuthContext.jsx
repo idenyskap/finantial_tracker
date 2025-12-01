@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.getProfile();
       setUser(response.data);
     } catch (error) {
-      console.log('No active session');
       setUser(null);
     } finally {
       setLoading(false);
@@ -40,9 +39,19 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (error) {
+      const data = error.response?.data;
+      let errorMessage = 'Login failed';
+
+      if (data?.fieldErrors) {
+        const firstError = Object.values(data.fieldErrors)[0];
+        errorMessage = firstError || data.message;
+      } else if (data?.message) {
+        errorMessage = data.message;
+      }
+
       return {
         success: false,
-        error: error.response?.data?.message || 'Login failed'
+        error: errorMessage
       };
     }
   };
@@ -53,9 +62,19 @@ export const AuthProvider = ({ children }) => {
       await loadUser();
       return { success: true };
     } catch (error) {
+      const data = error.response?.data;
+      let errorMessage = 'Registration failed';
+
+      if (data?.fieldErrors) {
+        const firstError = Object.values(data.fieldErrors)[0];
+        errorMessage = firstError || data.message;
+      } else if (data?.message) {
+        errorMessage = data.message;
+      }
+
       return {
         success: false,
-        error: error.response?.data?.message || 'Registration failed'
+        error: errorMessage
       };
     }
   };

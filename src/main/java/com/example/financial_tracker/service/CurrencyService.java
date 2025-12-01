@@ -4,13 +4,14 @@ import com.example.financial_tracker.dto.CurrencyConversionDTO;
 import com.example.financial_tracker.dto.CurrencyInfoDTO;
 import com.example.financial_tracker.dto.ExchangeRateDTO;
 import com.example.financial_tracker.dto.UserCurrencyPreferenceDTO;
-import com.example.financial_tracker.entity.Currency;
+import com.example.financial_tracker.enumerations.Currency;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.entity.ExchangeRate;
 import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.repository.ExchangeRateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -34,12 +35,10 @@ public class CurrencyService {
   private final ExchangeRateRepository exchangeRateRepository;
   private final RestTemplate restTemplate = new RestTemplate();
 
-  // Free API for exchange rates (you can replace with your preferred provider)
   private static final String EXCHANGE_API_URL = "https://api.exchangerate-api.com/v4/latest/";
 
   public void initializeExchangeRatesIfNeeded() {
     log.info("Checking for existing exchange rates...");
-    // Check if rates exist, if not fetch them
     List<ExchangeRate> existingRates = exchangeRateRepository
       .findCurrentRatesForCurrency(Currency.USD, LocalDateTime.now());
 
@@ -60,19 +59,17 @@ public class CurrencyService {
     return amount.multiply(rate).setScale(to.getDecimalPlaces(), RoundingMode.HALF_UP);
   }
 
+  @Transactional(readOnly = true)
   @Cacheable(value = "exchangeRates", key = "#from.name() + '-' + #to.name()")
   public BigDecimal getExchangeRate(Currency from, Currency to) {
     log.debug("Getting exchange rate from {} to {}", from, to);
 
-    // Try to get from database first
     ExchangeRate rate = exchangeRateRepository
       .findLatestRate(from, to, LocalDateTime.now())
       .orElseGet(() -> {
-        // If not found, try reverse rate
         return exchangeRateRepository
           .findLatestRate(to, from, LocalDateTime.now())
           .map(reverseRate -> {
-            // Calculate reverse rate
             BigDecimal reversed = BigDecimal.ONE.divide(
               reverseRate.getRate(), 6, RoundingMode.HALF_UP
             );
@@ -97,12 +94,12 @@ public class CurrencyService {
     return reversed;
   }
 
-  @Scheduled(cron = "0 0 */6 * * *") // Every 6 hours
+  @CacheEvict(value = "exchangeRates", allEntries = true)
+  @Scheduled(cron = "0 0 */6 * * *")
   public void updateExchangeRates() {
     log.info("Updating exchange rates from external API");
 
     try {
-      // Update rates for major currencies
       updateRatesForCurrency(Currency.USD);
       updateRatesForCurrency(Currency.EUR);
       updateRatesForCurrency(Currency.GBP);
@@ -126,10 +123,8 @@ public class CurrencyService {
           try {
             Currency toCurrency = Currency.valueOf(currencyCode);
 
-            // Close existing rates
             exchangeRateRepository.closeExistingRates(baseCurrency, toCurrency, now);
 
-            // Create new rate
             ExchangeRate exchangeRate = new ExchangeRate();
             exchangeRate.setFromCurrency(baseCurrency);
             exchangeRate.setToCurrency(toCurrency);
@@ -140,7 +135,6 @@ public class CurrencyService {
             exchangeRateRepository.save(exchangeRate);
 
           } catch (IllegalArgumentException e) {
-            // Currency not supported in our enum
             log.trace("Skipping unsupported currency: {}", currencyCode);
           }
         });
@@ -153,6 +147,7 @@ public class CurrencyService {
     }
   }
 
+  @Transactional(readOnly = true)
   public List<ExchangeRateDTO> getCurrentRates(Currency baseCurrency) {
     List<ExchangeRate> rates = exchangeRateRepository
       .findCurrentRatesForCurrency(baseCurrency, LocalDateTime.now());
@@ -162,6 +157,7 @@ public class CurrencyService {
       .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public CurrencyConversionDTO convertAmount(CurrencyConversionDTO request) {
     BigDecimal convertedAmount = convert(
       request.getAmount(),
@@ -193,11 +189,11 @@ public class CurrencyService {
       .build();
   }
 
+  @CacheEvict(value = "exchangeRates", key = "#dto.fromCurrency.name() + '-' + #dto.toCurrency.name()")
   public void createManualRate(ExchangeRateDTO dto) {
     log.info("Creating manual exchange rate from {} to {} with rate {}",
       dto.getFromCurrency(), dto.getToCurrency(), dto.getRate());
 
-    // Close any existing rates
     exchangeRateRepository.closeExistingRates(
       dto.getFromCurrency(),
       dto.getToCurrency(),
@@ -214,6 +210,7 @@ public class CurrencyService {
     exchangeRateRepository.save(rate);
   }
 
+  @Transactional(readOnly = true)
   public List<CurrencyInfoDTO> getAvailableCurrencies() {
     return Arrays.stream(Currency.values())
       .map(currency -> CurrencyInfoDTO.builder()
@@ -224,6 +221,7 @@ public class CurrencyService {
       .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public UserCurrencyPreferenceDTO getUserPreferences(User user) {
     return UserCurrencyPreferenceDTO.builder()
       .defaultCurrency(user.getDefaultCurrency())

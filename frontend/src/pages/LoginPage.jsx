@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useAuth } from '../hooks/useAuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import TwoFactorInput from '../components/auth/TwoFactorInput';
 
@@ -14,6 +14,7 @@ const LoginPage = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [requires2FA, setRequires2FA] = useState(false);
   const [tempCredentials, setTempCredentials] = useState(null);
 
@@ -42,23 +43,22 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       const result = await login(formData);
 
       if (result.requires2FA) {
-
         setRequires2FA(true);
         setTempCredentials(formData);
       } else if (result.success) {
         toast.success('Welcome back!');
         navigate('/dashboard');
       } else {
-        toast.error(result.error || 'Invalid email or password');
+        setError(result.error || 'Invalid email or password');
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('An error occurred during login');
+    } catch (err) {
+      setError('An error occurred during login');
     } finally {
       setLoading(false);
     }
@@ -121,6 +121,12 @@ const LoginPage = () => {
               Forgot your password?
             </Link>
           </div>
+
+          {error && (
+            <div style={styles.errorMessage}>
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
@@ -214,6 +220,15 @@ const getStyles = (theme) => ({
   buttonDisabled: {
     opacity: 0.5,
     cursor: 'not-allowed',
+  },
+  errorMessage: {
+    backgroundColor: '#fee2e2',
+    color: '#dc2626',
+    padding: '12px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    textAlign: 'center',
+    border: '1px solid #fecaca',
   },
 });
 

@@ -4,7 +4,7 @@ import com.example.financial_tracker.dto.ChangePasswordRequest;
 import com.example.financial_tracker.dto.EmailChangeRequest;
 import com.example.financial_tracker.dto.UpdateProfileRequest;
 import com.example.financial_tracker.dto.UserDTO;
-import com.example.financial_tracker.entity.Role;
+import com.example.financial_tracker.enumerations.Role;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.mapper.UserMapper;
 import com.example.financial_tracker.repository.UserRepository;

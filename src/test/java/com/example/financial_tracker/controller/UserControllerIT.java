@@ -2,7 +2,7 @@ package com.example.financial_tracker.controller;
 
 import com.example.financial_tracker.dto.*;
 import com.example.financial_tracker.entity.User;
-import com.example.financial_tracker.entity.Role;
+import com.example.financial_tracker.enumerations.Role;
 import com.example.financial_tracker.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

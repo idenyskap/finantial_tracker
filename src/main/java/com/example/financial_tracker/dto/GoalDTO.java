@@ -1,7 +1,7 @@
 package com.example.financial_tracker.dto;
 
-import com.example.financial_tracker.entity.GoalPriority;
-import com.example.financial_tracker.entity.GoalStatus;
+import com.example.financial_tracker.enumerations.GoalPriority;
+import com.example.financial_tracker.enumerations.GoalStatus;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

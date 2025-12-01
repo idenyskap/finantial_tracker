@@ -48,6 +48,7 @@ public class BudgetService {
     return mapBudgetWithSpent(saved);
   }
 
+  @Transactional(readOnly = true)
   public List<BudgetDTO> getUserBudgets(User user) {
     log.info("Fetching budgets for user: {}", user.getEmail());
 
@@ -58,6 +59,7 @@ public class BudgetService {
       .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public BudgetDTO getBudgetById(User user, Long id) {
     log.info("Fetching budget {} for user: {}", id, user.getEmail());
 
@@ -100,6 +102,7 @@ public class BudgetService {
     budgetRepository.delete(budget);
   }
 
+  @Transactional(readOnly = true)
   public Optional<BudgetDTO> findBudgetByCategory(User user, Long categoryId) {
     log.info("Finding budget for category {} for user: {}", categoryId, user.getEmail());
 

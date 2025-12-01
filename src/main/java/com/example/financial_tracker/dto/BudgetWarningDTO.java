@@ -23,9 +23,9 @@ public class BudgetWarningDTO {
   private WarningLevel level;
 
   public enum WarningLevel {
-    INFO,      // < 50%
-    WARNING,   // 50-80%
-    ALERT,     // 80-100%
-    EXCEEDED   // > 100%
+    INFO,
+    WARNING,
+    ALERT,
+    EXCEEDED
   }
 }

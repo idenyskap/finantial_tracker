@@ -16,12 +16,10 @@ public class AuthRequest {
     message = "Password must contain at least one lowercase letter, one uppercase letter, and one digit")
   private String password;
 
-  // For registration only
   @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
   @Pattern(regexp = "^[a-zA-Z\\s]+$", message = "Name can only contain letters and spaces")
   private String name;
 
-  // For 2FA authentication
   @Size(min = 6, max = 10, message = "2FA code must be between 6 and 10 characters")
   private String twoFactorCode;
 }

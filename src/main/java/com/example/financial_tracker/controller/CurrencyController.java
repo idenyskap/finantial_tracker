@@ -4,7 +4,7 @@ import com.example.financial_tracker.dto.CurrencyConversionDTO;
 import com.example.financial_tracker.dto.CurrencyInfoDTO;
 import com.example.financial_tracker.dto.ExchangeRateDTO;
 import com.example.financial_tracker.dto.UserCurrencyPreferenceDTO;
-import com.example.financial_tracker.entity.Currency;
+import com.example.financial_tracker.enumerations.Currency;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.CurrencyService;
 import com.example.financial_tracker.service.UserService;

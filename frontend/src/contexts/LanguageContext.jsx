@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageContext } from './contexts';
 
@@ -11,13 +11,6 @@ export const LanguageProvider = ({ children }) => {
     return 'en';
   });
 
-  const saveLanguagePreference = {
-    mutate: (language) => {
-      console.log('Saving language preference locally:', language);
-    },
-    isPending: false
-  };
-
   useEffect(() => {
     if (currentLanguage !== i18n.language) {
       i18n.changeLanguage(currentLanguage);
@@ -27,19 +20,10 @@ export const LanguageProvider = ({ children }) => {
   const changeLanguage = async (language) => {
     if (language === currentLanguage) return;
 
-    console.log('Changing language from', currentLanguage, 'to', language);
-
     try {
       setCurrentLanguage(language);
-
       await i18n.changeLanguage(language);
-
       localStorage.setItem('i18nextLng', language);
-
-      saveLanguagePreference.mutate(language);
-
-      console.log('Language changed successfully to', language);
-
     } catch (error) {
       console.error('Failed to change language:', error);
       setCurrentLanguage(currentLanguage);
@@ -92,7 +76,7 @@ export const LanguageProvider = ({ children }) => {
     formatDateTime,
     formatNumber,
     t,
-    isChangingLanguage: saveLanguagePreference.isPending,
+    isChangingLanguage: false,
   };
 
   return (

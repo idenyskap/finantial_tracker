@@ -21,6 +21,7 @@ public class NotificationService {
   private final NotificationSettingsRepository notificationSettingsRepository;
   private final NotificationSettingsMapper notificationSettingsMapper;
 
+  @Transactional(readOnly = true)
   public NotificationSettingsDTO getSettings(User user) {
     log.info("Fetching notification settings for user: {}", user.getEmail());
 

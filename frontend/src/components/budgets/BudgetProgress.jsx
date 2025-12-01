@@ -32,7 +32,7 @@ function BudgetProgress({ budget }) {
             {formatCurrency(budget.spent)}
           </span>
           <span style={styles.separator}> / </span>
-          <span style={styles.limit}>{formatCurrency(budget.amount)}</span> {/* Изменено */}
+          <span style={styles.limit}>{formatCurrency(budget.amount)}</span>
         </div>
       </div>
 
@@ -54,7 +54,7 @@ function BudgetProgress({ budget }) {
             />
           )}
         </div>
-        <span style={styles.percentageText}>{percentage.toFixed(0)}%</span> {/* Изменено */}
+        <span style={styles.percentageText}>{percentage.toFixed(0)}%</span>
       </div>
 
       <div style={styles.footer}>

@@ -2,8 +2,8 @@ package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.CategoryDTO;
 import com.example.financial_tracker.entity.Category;
-import com.example.financial_tracker.entity.Role;
-import com.example.financial_tracker.entity.TransactionType;
+import com.example.financial_tracker.enumerations.Role;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.exception.AccessDeniedException;
 import com.example.financial_tracker.exception.ResourceNotFoundException;

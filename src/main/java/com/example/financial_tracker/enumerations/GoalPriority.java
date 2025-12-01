@@ -1,4 +1,4 @@
-package com.example.financial_tracker.entity;
+package com.example.financial_tracker.enumerations;
 
 public enum GoalPriority {
   LOW("Low"),

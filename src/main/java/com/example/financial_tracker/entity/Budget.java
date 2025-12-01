@@ -1,5 +1,6 @@
 package com.example.financial_tracker.entity;
 
+import com.example.financial_tracker.enumerations.BudgetPeriod;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,10 +10,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "budgets")
 public class Budget {

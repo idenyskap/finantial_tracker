@@ -7,7 +7,6 @@ import com.example.financial_tracker.exception.AccessDeniedException;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
 import com.example.financial_tracker.mapper.CategoryMapper;
 import com.example.financial_tracker.repository.CategoryRepository;
-import com.example.financial_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,10 +23,11 @@ public class CategoryService {
   private final CategoryRepository categoryRepository;
   private final CategoryMapper categoryMapper;
 
+  @Transactional(readOnly = true)
   public List<Category> getAllCategories(User user) {
     log.info("Fetching all categories for user: {} (ID: {})", user.getEmail(), user.getId());
 
-    List<Category> categories = categoryRepository.findByUserOrderByNameAsc(user); // Изменено
+    List<Category> categories = categoryRepository.findByUserOrderByNameAsc(user);
 
     log.info("Found {} categories for user: {}", categories.size(), user.getEmail());
     return categories;
@@ -48,6 +48,7 @@ public class CategoryService {
     return categoryMapper.toDto(saved);
   }
 
+  @Transactional(readOnly = true)
   public CategoryDTO getCategoryById(Long id, User user) {
     log.debug("Fetching category ID: {} for user: {}", id, user.getEmail());
 

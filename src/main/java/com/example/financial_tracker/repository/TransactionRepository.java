@@ -2,7 +2,7 @@ package com.example.financial_tracker.repository;
 
 import com.example.financial_tracker.entity.Category;
 import com.example.financial_tracker.entity.Transaction;
-import com.example.financial_tracker.entity.TransactionType;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
