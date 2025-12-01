@@ -5,6 +5,8 @@ export const authService = {
 
   register: (userData) => api.post('/auth/register', userData),
 
+  logout: () => api.post('/auth/logout'),
+
   getProfile: () => api.get('/users/me'),
 
   requestPasswordReset: (email) => api.post('/auth/request-password-reset', { email }),
@@ -14,10 +16,4 @@ export const authService = {
   verifyEmail: (token) => api.post('/auth/verify-email', { token }),
 
   resendVerification: (email) => api.post('/auth/resend-verification', { email }),
-
-  logout: () => {
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-  },
-  isAuthenticated: () => !!localStorage.getItem('token'),
 };

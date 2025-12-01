@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
+import { AuthContext } from '../contexts/contexts';
 import { toast } from 'sonner';
 
 function LoginForm() {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -24,13 +25,18 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const response = await authService.login(formData);
-      localStorage.setItem('token', response.data.token);
+      const result = await login(formData);
 
-      toast.success('Login successful!');
-      navigate('/transactions');
+      if (result.success) {
+        toast.success('Login successful!');
+        navigate('/dashboard');
+      } else if (result.requires2FA) {
+        toast.info('Please enter your 2FA code');
+      } else {
+        toast.error(result.error || 'Login failed');
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Login failed');
+      toast.error('Login failed');
     } finally {
       setLoading(false);
     }

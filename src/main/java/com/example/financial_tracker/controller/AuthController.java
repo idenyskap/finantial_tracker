@@ -4,6 +4,8 @@ import com.example.financial_tracker.dto.AuthRequest;
 import com.example.financial_tracker.dto.AuthResponse;
 import com.example.financial_tracker.service.AuthService;
 import com.example.financial_tracker.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +23,42 @@ public class AuthController {
   private final AuthService authService;
   private final UserService userService;
 
+  private static final int COOKIE_MAX_AGE = 86400;
+  private static final String COOKIE_PATH = "/";
+
   @PostMapping("/register")
-  public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRequest request) {
-    return ResponseEntity.ok(authService.register(request));
+  public ResponseEntity<AuthResponse> register(
+          @Valid @RequestBody AuthRequest request,
+          HttpServletResponse response) {
+      AuthResponse authResponse = authService.register(request);
+
+      if (authResponse.getToken() != null) {
+          addTokenCookie(response, authResponse.getToken());
+          authResponse.setToken(null);
+      }
+
+      return ResponseEntity.ok(authResponse);
   }
 
   @PostMapping("/login")
-  public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
-    return ResponseEntity.ok(authService.login(request));
+  public ResponseEntity<AuthResponse> login(
+          @Valid @RequestBody AuthRequest request,
+          HttpServletResponse response) {
+
+      AuthResponse authResponse = authService.login(request);
+
+      if (authResponse.getToken() != null && !authResponse.isRequiresTwoFactor()) {
+          addTokenCookie(response, authResponse.getToken());
+          authResponse.setToken(null);
+      }
+
+    return ResponseEntity.ok(authResponse);
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<?> logout(HttpServletResponse response) {
+      removeTokenCookie(response);
+      return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
   }
 
   @PostMapping("/confirm-email-change")
@@ -136,6 +166,24 @@ public class AuthController {
         "error", e.getMessage()
       ));
     }
+  }
+
+  private void addTokenCookie(HttpServletResponse response, String token) {
+      Cookie cookie = new Cookie("token", token);
+      cookie.setHttpOnly(true);
+      cookie.setSecure(false);
+      cookie.setPath(COOKIE_PATH);
+      cookie.setMaxAge(COOKIE_MAX_AGE);
+      response.addCookie(cookie);
+  }
+
+  private void removeTokenCookie(HttpServletResponse response) {
+      Cookie cookie = new Cookie("token", null);
+      cookie.setHttpOnly(true);
+      cookie.setSecure(false);
+      cookie.setPath(COOKIE_PATH);
+      cookie.setMaxAge(0);
+      response.addCookie(cookie);
   }
 
 }
