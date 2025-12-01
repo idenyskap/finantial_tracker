@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -145,9 +146,14 @@ public class AuthService {
 
   @Transactional
   public void requestPasswordReset(String email) {
-    User user = userRepository.findByEmail(email)
-      .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    Optional<User> userOptional = userRepository.findByEmail(email);
 
+    if (userOptional.isEmpty()) {
+      log.info("Password reset requested for non-existent email: {}", email);
+      return;
+    }
+
+    User user = userOptional.get();
     String resetToken = tokenService.generateToken();
     user.setResetPasswordToken(resetToken);
     user.setResetPasswordTokenExpiresAt(tokenService.getExpiryDate());

@@ -2,6 +2,7 @@ package com.example.financial_tracker.security.jwt;
 
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.UserService;
+import com.example.financial_tracker.util.RequestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -40,7 +41,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        final String clientIp = getClientIpAddress(request);
+        final String clientIp = RequestUtils.getClientIpAddress(request);
 
         log.info("=== JWT Filter triggered for: {} {} from IP: {}",
                 request.getMethod(), request.getRequestURI(), clientIp);
@@ -139,7 +140,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         log.warn("JWT Security Event - {} - {} {} - IP: {} - Error: {}",
                 errorCode, request.getMethod(), request.getRequestURI(),
-                getClientIpAddress(request), message);
+                RequestUtils.getClientIpAddress(request), message);
 
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -155,19 +156,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);
         response.getWriter().write(jsonResponse);
         response.getWriter().flush();
-    }
-
-    private String getClientIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            return xRealIp;
-        }
-
-        return request.getRemoteAddr();
     }
 }

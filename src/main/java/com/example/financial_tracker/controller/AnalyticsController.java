@@ -3,6 +3,7 @@ package com.example.financial_tracker.controller;
 import com.example.financial_tracker.dto.*;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.AnalyticsService;
+import com.example.financial_tracker.util.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +31,7 @@ public class AnalyticsController {
     HttpServletRequest request) {
 
     log.info("GET /api/analytics/full - User: {} from IP: {} - Date range: {} to {}",
-      user.getEmail(), getClientIpAddress(request), startDate, endDate);
-
-    if (startDate == null) {
-      startDate = LocalDate.now().minusMonths(12);
-    }
-    if (endDate == null) {
-      endDate = LocalDate.now();
-    }
+      user.getEmail(), RequestUtils.getClientIpAddress(request), startDate, endDate);
 
     AnalyticsDTO analytics = analyticsService.getFullAnalytics(user, startDate, endDate);
 
@@ -55,14 +49,7 @@ public class AnalyticsController {
     HttpServletRequest request) {
 
     log.info("GET /api/analytics/monthly - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
-
-    if (startDate == null) {
-      startDate = LocalDate.now().minusMonths(12);
-    }
-    if (endDate == null) {
-      endDate = LocalDate.now();
-    }
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     List<MonthlyStatsDTO> monthlyStats = analyticsService.getMonthlyStats(user, startDate, endDate);
     return ResponseEntity.ok(monthlyStats);
@@ -77,7 +64,7 @@ public class AnalyticsController {
     HttpServletRequest request) {
 
     log.info("GET /api/analytics/categories/expenses - User: {} from IP: {} - Limit: {}",
-      user.getEmail(), getClientIpAddress(request), limit);
+      user.getEmail(), RequestUtils.getClientIpAddress(request), limit);
 
     List<CategoryStatsDTO> categories = analyticsService.getTopExpenseCategories(user, startDate, endDate, limit);
     return ResponseEntity.ok(categories);
@@ -92,7 +79,7 @@ public class AnalyticsController {
     HttpServletRequest request) {
 
     log.info("GET /api/analytics/categories/income - User: {} from IP: {} - Limit: {}",
-      user.getEmail(), getClientIpAddress(request), limit);
+      user.getEmail(), RequestUtils.getClientIpAddress(request), limit);
 
     List<CategoryStatsDTO> categories = analyticsService.getTopIncomeCategories(user, startDate, endDate, limit);
     return ResponseEntity.ok(categories);
@@ -104,7 +91,7 @@ public class AnalyticsController {
     HttpServletRequest request) {
 
     log.info("GET /api/analytics/comparison - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     ComparisonStatsDTO comparison = analyticsService.getComparisonStats(user);
     return ResponseEntity.ok(comparison);
@@ -119,23 +106,9 @@ public class AnalyticsController {
     HttpServletRequest request) {
 
     log.info("GET /api/analytics/categories/monthly - User: {} from IP: {} - Limit: {}",
-      user.getEmail(), getClientIpAddress(request), limit);
+      user.getEmail(), RequestUtils.getClientIpAddress(request), limit);
 
     List<CategoryMonthlyStatsDTO> categoryStats = analyticsService.getCategoryMonthlyStats(user, startDate, endDate, limit);
     return ResponseEntity.ok(categoryStats);
-  }
-
-  private String getClientIpAddress(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      return xForwardedFor.split(",")[0].trim();
-    }
-
-    String xRealIp = request.getHeader("X-Real-IP");
-    if (xRealIp != null && !xRealIp.isEmpty()) {
-      return xRealIp;
-    }
-
-    return request.getRemoteAddr();
   }
 }

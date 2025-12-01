@@ -1,12 +1,7 @@
 package com.example.financial_tracker.controller;
 
 import com.example.financial_tracker.dto.NotificationSettingsDTO;
-import com.example.financial_tracker.entity.NotificationSettings;
 import com.example.financial_tracker.entity.User;
-import com.example.financial_tracker.mapper.NotificationSettingsMapper;
-import com.example.financial_tracker.repository.NotificationSettingsRepository;
-import com.example.financial_tracker.service.EmailQuotaService;
-import com.example.financial_tracker.service.EmailService;
 import com.example.financial_tracker.service.NotificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
 
   private final NotificationService notificationService;
-  private final NotificationSettingsRepository notificationSettingsRepository;
-  private final NotificationSettingsMapper notificationSettingsMapper;
-  private final EmailService emailService;
-  private final EmailQuotaService emailQuotaService;
 
   @GetMapping("/settings")
   public ResponseEntity<NotificationSettingsDTO> getSettings(
@@ -45,23 +36,7 @@ public class NotificationController {
   @PostMapping("/settings/init")
   public ResponseEntity<NotificationSettingsDTO> initializeSettings(
     @AuthenticationPrincipal User user) {
-
-    if (notificationSettingsRepository.findByUser(user).isPresent()) {
-      return ResponseEntity.ok(notificationService.getSettings(user));
-    }
-
-    NotificationSettings settings = new NotificationSettings();
-    settings.setUser(user);
-    settings.setEmailEnabled(false);
-    settings.setWeeklyReport(false);
-    settings.setMonthlyReport(false);
-    settings.setPaymentReminders(false);
-    settings.setPaymentReminderDays(1);
-    settings.setDailyReminder(false);
-
-    NotificationSettings saved = notificationSettingsRepository.save(settings);
-    log.info("Created notification settings for existing user: {}", user.getEmail());
-
-    return ResponseEntity.ok(notificationSettingsMapper.toDto(saved));
+    NotificationSettingsDTO settings = notificationService.initializeSettings(user);
+    return ResponseEntity.ok(settings);
   }
 }

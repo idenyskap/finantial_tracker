@@ -1,6 +1,7 @@
 package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.UpdateProfileRequest;
+import com.example.financial_tracker.dto.UserCurrencyPreferenceDTO;
 import com.example.financial_tracker.dto.UserDTO;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.mapper.UserMapper;
@@ -64,7 +65,10 @@ public class UserService implements UserDetailsService {
     return userMapper.toDto(savedUser);
   }
 
-  public void deleteUser(Long id) {
+  public void deleteUser(Long id, User currentUser) {
+    if (id.equals(currentUser.getId())) {
+      throw new IllegalArgumentException("Cannot delete your own account");
+    }
     userRepository.deleteById(id);
   }
 
@@ -80,6 +84,18 @@ public class UserService implements UserDetailsService {
 
   public User saveUser(User user) {
     return userRepository.save(user);
+  }
+
+  public UserCurrencyPreferenceDTO updateCurrencyPreferences(User user, UserCurrencyPreferenceDTO preferences) {
+    log.info("Updating currency preferences for user: {}", user.getEmail());
+
+    user.setDefaultCurrency(preferences.getDefaultCurrency());
+    user.setDisplaySecondaryCurrency(preferences.isDisplaySecondary());
+    user.setSecondaryCurrency(preferences.getSecondaryCurrency());
+
+    userRepository.save(user);
+
+    return preferences;
   }
 
   public void changePassword(User user, ChangePasswordRequest request) {

@@ -3,6 +3,7 @@ package com.example.financial_tracker.controller;
 import com.example.financial_tracker.dto.SavedSearchDTO;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.SavedSearchService;
+import com.example.financial_tracker.util.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class SavedSearchController {
     HttpServletRequest request) {
 
     log.info("POST /api/saved-searches - User: {} from IP: {} creating saved search: '{}'",
-      user.getEmail(), getClientIpAddress(request), dto.getName());
+      user.getEmail(), RequestUtils.getClientIpAddress(request), dto.getName());
 
     SavedSearchDTO created = savedSearchService.createSavedSearch(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -41,7 +42,7 @@ public class SavedSearchController {
     HttpServletRequest request) {
 
     log.info("GET /api/saved-searches - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     List<SavedSearchDTO> searches = savedSearchService.getUserSavedSearches(user);
     return ResponseEntity.ok(searches);
@@ -54,7 +55,7 @@ public class SavedSearchController {
     HttpServletRequest request) {
 
     log.info("GET /api/saved-searches/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     SavedSearchDTO search = savedSearchService.getSavedSearchById(user, id);
     return ResponseEntity.ok(search);
@@ -67,23 +68,9 @@ public class SavedSearchController {
     HttpServletRequest request) {
 
     log.info("DELETE /api/saved-searches/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     savedSearchService.deleteSavedSearch(user, id);
     return ResponseEntity.noContent().build();
-  }
-
-  private String getClientIpAddress(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      return xForwardedFor.split(",")[0].trim();
-    }
-
-    String xRealIp = request.getHeader("X-Real-IP");
-    if (xRealIp != null && !xRealIp.isEmpty()) {
-      return xRealIp;
-    }
-
-    return request.getRemoteAddr();
   }
 }

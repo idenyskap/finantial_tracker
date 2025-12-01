@@ -1,8 +1,11 @@
 package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.CurrencyConversionDTO;
+import com.example.financial_tracker.dto.CurrencyInfoDTO;
 import com.example.financial_tracker.dto.ExchangeRateDTO;
+import com.example.financial_tracker.dto.UserCurrencyPreferenceDTO;
 import com.example.financial_tracker.entity.Currency;
+import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.entity.ExchangeRate;
 import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.repository.ExchangeRateRepository;
@@ -17,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -209,5 +212,23 @@ public class CurrencyService {
     rate.setSource("MANUAL");
 
     exchangeRateRepository.save(rate);
+  }
+
+  public List<CurrencyInfoDTO> getAvailableCurrencies() {
+    return Arrays.stream(Currency.values())
+      .map(currency -> CurrencyInfoDTO.builder()
+        .code(currency.name())
+        .name(currency.getDisplayName())
+        .symbol(currency.getSymbol())
+        .build())
+      .collect(Collectors.toList());
+  }
+
+  public UserCurrencyPreferenceDTO getUserPreferences(User user) {
+    return UserCurrencyPreferenceDTO.builder()
+      .defaultCurrency(user.getDefaultCurrency())
+      .displaySecondary(user.isDisplaySecondaryCurrency())
+      .secondaryCurrency(user.getSecondaryCurrency())
+      .build();
   }
 }

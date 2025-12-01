@@ -4,6 +4,7 @@ import com.example.financial_tracker.dto.*;
 import com.example.financial_tracker.entity.TransactionType;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.TransactionService;
+import com.example.financial_tracker.util.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -47,7 +48,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("GET /api/transactions - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     List<TransactionDTO> transactions = transactionService.getTransactionsByUser(user);
 
@@ -70,12 +71,9 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("GET /api/transactions/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     TransactionDTO transaction = transactionService.getTransactionById(id, user);
-    if (transaction == null) {
-      return ResponseEntity.notFound().build();
-    }
     return ResponseEntity.ok(transaction);
   }
 
@@ -86,7 +84,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("POST /api/transactions - User: {} from IP: {} creating {} transaction of amount: {}",
-      user.getEmail(), getClientIpAddress(request), dto.getType(), dto.getAmount());
+      user.getEmail(), RequestUtils.getClientIpAddress(request), dto.getType(), dto.getAmount());
 
     TransactionDTO created = transactionService.createTransaction(dto, user);
 
@@ -104,7 +102,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("PUT /api/transactions/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     TransactionDTO updated = transactionService.updateTransaction(id, dto, user);
     return ResponseEntity.ok(updated);
@@ -117,7 +115,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("DELETE /api/transactions/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     transactionService.deleteTransaction(id, user);
     return ResponseEntity.noContent().build();
@@ -129,7 +127,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("GET /api/transactions/balance - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     BigDecimal balance = transactionService.getBalanceByUser(user);
     return ResponseEntity.ok(balance);
@@ -141,7 +139,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("GET /api/transactions/stats - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     BigDecimal income = transactionService.getTotalIncomeByUser(user);
     BigDecimal expense = transactionService.getTotalExpenseByUser(user);
@@ -169,7 +167,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("GET /api/transactions/filter - User: {} from IP: {} - Filters: type={}, categoryId={}, startDate={}, endDate={}",
-      user.getEmail(), getClientIpAddress(request), type, categoryId, startDate, endDate);
+      user.getEmail(), RequestUtils.getClientIpAddress(request), type, categoryId, startDate, endDate);
 
     List<TransactionDTO> transactions = transactionService.getTransactionsWithFilters(
       user, type, categoryId, startDate, endDate);
@@ -182,7 +180,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("GET /api/transactions/income - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     List<TransactionDTO> transactions = transactionService.getTransactionsByType(user, TransactionType.INCOME);
     return ResponseEntity.ok(transactions);
@@ -194,24 +192,10 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("GET /api/transactions/expense - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     List<TransactionDTO> transactions = transactionService.getTransactionsByType(user, TransactionType.EXPENSE);
     return ResponseEntity.ok(transactions);
-  }
-
-  private String getClientIpAddress(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      return xForwardedFor.split(",")[0].trim();
-    }
-
-    String xRealIp = request.getHeader("X-Real-IP");
-    if (xRealIp != null && !xRealIp.isEmpty()) {
-      return xRealIp;
-    }
-
-    return request.getRemoteAddr();
   }
 
   @GetMapping("/search")
@@ -232,7 +216,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("Search transactions request from IP: {} with params: searchText={}, dateFrom={}, dateTo={}",
-      getClientIpAddress(request), searchText, dateFrom, dateTo);
+      RequestUtils.getClientIpAddress(request), searchText, dateFrom, dateTo);
 
     TransactionSearchDTO searchDto = TransactionSearchDTO.builder()
       .searchText(searchText)
@@ -260,7 +244,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("Search transactions POST request from IP: {} with criteria: {}",
-      getClientIpAddress(request), searchDto);
+      RequestUtils.getClientIpAddress(request), searchDto);
 
     Page<TransactionDTO> results = transactionService.searchTransactions(user, searchDto);
     return ResponseEntity.ok(results);
@@ -279,7 +263,7 @@ public class TransactionController {
     @RequestParam(required = false) List<Long> categoryIds,
     HttpServletRequest request) {
 
-    log.info("Get search stats request from IP: {}", getClientIpAddress(request));
+    log.info("Get search stats request from IP: {}", RequestUtils.getClientIpAddress(request));
 
     TransactionSearchDTO searchDto = TransactionSearchDTO.builder()
       .searchText(searchText)
@@ -311,7 +295,7 @@ public class TransactionController {
     @RequestParam(defaultValue = "DESC") TransactionSearchDTO.SortDirection sortDirection,
     HttpServletRequest request) {
 
-    log.info("Export transactions to CSV request from IP: {}", getClientIpAddress(request));
+    log.info("Export transactions to CSV request from IP: {}", RequestUtils.getClientIpAddress(request));
 
     TransactionSearchDTO searchDto = TransactionSearchDTO.builder()
       .searchText(searchText)
@@ -345,7 +329,7 @@ public class TransactionController {
     @Valid @RequestBody TransactionSearchDTO searchDto,
     HttpServletRequest request) {
 
-    log.info("Export transactions to CSV POST request from IP: {}", getClientIpAddress(request));
+    log.info("Export transactions to CSV POST request from IP: {}", RequestUtils.getClientIpAddress(request));
 
     byte[] csvData = transactionService.exportTransactionsToCsv(user, searchDto);
 
@@ -375,7 +359,7 @@ public class TransactionController {
     @RequestParam(defaultValue = "DESC") TransactionSearchDTO.SortDirection sortDirection,
     HttpServletRequest request) {
 
-    log.info("Export transactions to Excel request from IP: {}", getClientIpAddress(request));
+    log.info("Export transactions to Excel request from IP: {}", RequestUtils.getClientIpAddress(request));
 
     TransactionSearchDTO searchDto = TransactionSearchDTO.builder()
       .searchText(searchText)
@@ -409,7 +393,7 @@ public class TransactionController {
     @Valid @RequestBody TransactionSearchDTO searchDto,
     HttpServletRequest request) {
 
-    log.info("Export transactions to Excel POST request from IP: {}", getClientIpAddress(request));
+    log.info("Export transactions to Excel POST request from IP: {}", RequestUtils.getClientIpAddress(request));
 
     byte[] excelData = transactionService.exportTransactionsToExcel(user, searchDto);
 
@@ -434,7 +418,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("Search by saved search ID: {} - User: {} from IP: {}",
-      savedSearchId, user.getEmail(), getClientIpAddress(request));
+      savedSearchId, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     Page<TransactionDTO> results = transactionService.searchBySavedSearch(user, savedSearchId, page, size);
     return ResponseEntity.ok(results);
@@ -447,7 +431,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("Get stats for saved search ID: {} - User: {} from IP: {}",
-      savedSearchId, user.getEmail(), getClientIpAddress(request));
+      savedSearchId, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
 
@@ -462,7 +446,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("Export saved search ID: {} to CSV - User: {} from IP: {}",
-      savedSearchId, user.getEmail(), getClientIpAddress(request));
+      savedSearchId, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
 
@@ -487,7 +471,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("Export saved search ID: {} to Excel - User: {} from IP: {}",
-      savedSearchId, user.getEmail(), getClientIpAddress(request));
+      savedSearchId, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
 
@@ -512,7 +496,7 @@ public class TransactionController {
     HttpServletRequest request) {
 
     log.info("POST /api/transactions/import/csv - User: {} from IP: {} importing CSV file: {}",
-      user.getEmail(), getClientIpAddress(request), file.getOriginalFilename());
+      user.getEmail(), RequestUtils.getClientIpAddress(request), file.getOriginalFilename());
 
     if (file.isEmpty()) {
       throw new BadRequestException("Please select a file to import");

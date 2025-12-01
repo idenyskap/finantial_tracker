@@ -3,6 +3,7 @@ package com.example.financial_tracker.controller;
 import com.example.financial_tracker.dto.BudgetDTO;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.BudgetService;
+import com.example.financial_tracker.util.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class BudgetController {
     HttpServletRequest request) {
 
     log.info("POST /api/budgets - User: {} from IP: {} creating budget: '{}'",
-      user.getEmail(), getClientIpAddress(request), dto.getName());
+      user.getEmail(), RequestUtils.getClientIpAddress(request), dto.getName());
 
     BudgetDTO created = budgetService.createBudget(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -41,7 +42,7 @@ public class BudgetController {
     HttpServletRequest request) {
 
     log.info("GET /api/budgets - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     List<BudgetDTO> budgets = budgetService.getUserBudgets(user);
     return ResponseEntity.ok(budgets);
@@ -54,7 +55,7 @@ public class BudgetController {
     HttpServletRequest request) {
 
     log.info("GET /api/budgets/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     BudgetDTO budget = budgetService.getBudgetById(user, id);
     return ResponseEntity.ok(budget);
@@ -68,7 +69,7 @@ public class BudgetController {
     HttpServletRequest request) {
 
     log.info("PUT /api/budgets/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     BudgetDTO updated = budgetService.updateBudget(user, id, dto);
     return ResponseEntity.ok(updated);
@@ -81,7 +82,7 @@ public class BudgetController {
     HttpServletRequest request) {
 
     log.info("DELETE /api/budgets/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     budgetService.deleteBudget(user, id);
     return ResponseEntity.noContent().build();
@@ -94,36 +95,10 @@ public class BudgetController {
     HttpServletRequest request) {
 
     log.info("GET /api/budgets/check/{} - User: {} from IP: {}",
-      categoryId, user.getEmail(), getClientIpAddress(request));
+      categoryId, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
-    List<BudgetDTO> budgets = budgetService.getUserBudgets(user);
-
-    BudgetDTO relevantBudget = budgets.stream()
-      .filter(b -> b.getCategoryId() != null && b.getCategoryId().equals(categoryId))
-      .findFirst()
-      .orElse(budgets.stream()
-        .filter(b -> b.getCategoryId() == null)
-        .findFirst()
-        .orElse(null));
-
-    if (relevantBudget == null) {
-      return ResponseEntity.noContent().build();
-    }
-
-    return ResponseEntity.ok(relevantBudget);
-  }
-
-  private String getClientIpAddress(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      return xForwardedFor.split(",")[0].trim();
-    }
-
-    String xRealIp = request.getHeader("X-Real-IP");
-    if (xRealIp != null && !xRealIp.isEmpty()) {
-      return xRealIp;
-    }
-
-    return request.getRemoteAddr();
+    return budgetService.findBudgetByCategory(user, categoryId)
+      .map(ResponseEntity::ok)
+      .orElse(ResponseEntity.noContent().build());
   }
 }

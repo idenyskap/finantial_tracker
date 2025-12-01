@@ -64,4 +64,26 @@ public class NotificationService {
 
     return notificationSettingsRepository.save(settings);
   }
+
+  public NotificationSettingsDTO initializeSettings(User user) {
+    log.info("Initializing notification settings for user: {}", user.getEmail());
+
+    return notificationSettingsRepository.findByUser(user)
+      .map(notificationSettingsMapper::toDto)
+      .orElseGet(() -> {
+        NotificationSettings settings = new NotificationSettings();
+        settings.setUser(user);
+        settings.setEmailEnabled(false);
+        settings.setWeeklyReport(false);
+        settings.setMonthlyReport(false);
+        settings.setPaymentReminders(false);
+        settings.setPaymentReminderDays(1);
+        settings.setDailyReminder(false);
+
+        NotificationSettings saved = notificationSettingsRepository.save(settings);
+        log.info("Created notification settings for existing user: {}", user.getEmail());
+
+        return notificationSettingsMapper.toDto(saved);
+      });
+  }
 }

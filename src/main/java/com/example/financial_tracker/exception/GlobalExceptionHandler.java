@@ -99,6 +99,24 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest().body(errorResponse);
   }
 
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ErrorResponse> handleIllegalArgument(
+    IllegalArgumentException ex,
+    HttpServletRequest request) {
+
+    log.warn("Invalid argument: {}", ex.getMessage());
+
+    ErrorResponse errorResponse = ErrorResponse.builder()
+      .message(ex.getMessage())
+      .error("INVALID_ARGUMENT")
+      .status(HttpStatus.BAD_REQUEST.value())
+      .timestamp(LocalDateTime.now())
+      .path(request.getRequestURI())
+      .build();
+
+    return ResponseEntity.badRequest().body(errorResponse);
+  }
+
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleBadCredentials(
     BadCredentialsException ex,

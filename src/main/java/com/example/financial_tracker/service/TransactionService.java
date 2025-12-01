@@ -75,12 +75,10 @@ public class TransactionService {
     log.info("Fetching transaction ID: {} for user: {}", id, user.getEmail());
 
     Transaction transaction = transactionRepository.findByIdAndUser(id, user)
-      .orElse(null);
-
-    if (transaction == null) {
-      log.warn("Transaction ID: {} not found for user: {}", id, user.getEmail());
-      return null;
-    }
+      .orElseThrow(() -> {
+        log.warn("Transaction ID: {} not found for user: {}", id, user.getEmail());
+        return new ResourceNotFoundException("Transaction not found");
+      });
 
     log.info("Successfully retrieved transaction ID: {} for user: {}", id, user.getEmail());
     return transactionMapper.toDto(transaction);

@@ -3,6 +3,7 @@ package com.example.financial_tracker.controller;
 import com.example.financial_tracker.dto.*;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.service.UserService;
+import com.example.financial_tracker.util.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class UserController {
     HttpServletRequest request) {
 
     log.info("GET /api/users - Admin: {} from IP: {} requesting all users",
-      currentUser.getEmail(), getClientIpAddress(request));
+      currentUser.getEmail(), RequestUtils.getClientIpAddress(request));
 
     List<UserDTO> users = userService.getAllUsers();
 
@@ -44,7 +45,7 @@ public class UserController {
     HttpServletRequest request) {
 
     log.info("GET /api/users/me - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     UserDTO userDTO = userService.getUserById(user.getId());
     return ResponseEntity.ok(userDTO);
@@ -58,7 +59,7 @@ public class UserController {
     HttpServletRequest request) {
 
     log.info("GET /api/users/{} - Admin: {} from IP: {}",
-      id, currentUser.getEmail(), getClientIpAddress(request));
+      id, currentUser.getEmail(), RequestUtils.getClientIpAddress(request));
 
     UserDTO user = userService.getUserById(id);
     if (user == null) {
@@ -74,7 +75,7 @@ public class UserController {
     HttpServletRequest request) {
 
     log.info("PUT /api/users/me - User: {} from IP: {} updating profile",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     UserDTO updated = userService.updateUser(user.getId(), userDTO);
     return ResponseEntity.ok(updated);
@@ -88,7 +89,7 @@ public class UserController {
     HttpServletRequest request) {
 
     log.info("POST /api/users - Admin: {} from IP: {} creating user",
-      currentUser.getEmail(), getClientIpAddress(request));
+      currentUser.getEmail(), RequestUtils.getClientIpAddress(request));
 
     return ResponseEntity.ok(userService.createUser(userDTO));
   }
@@ -101,14 +102,9 @@ public class UserController {
     HttpServletRequest request) {
 
     log.warn("DELETE /api/users/{} - Admin: {} from IP: {} attempting to delete user",
-      id, currentUser.getEmail(), getClientIpAddress(request));
+      id, currentUser.getEmail(), RequestUtils.getClientIpAddress(request));
 
-    if (id.equals(currentUser.getId())) {
-      log.warn("Admin: {} attempted to delete their own account", currentUser.getEmail());
-      return ResponseEntity.badRequest().build();
-    }
-
-    userService.deleteUser(id);
+    userService.deleteUser(id, currentUser);
 
     log.warn("User ID: {} successfully deleted by admin: {}", id, currentUser.getEmail());
     return ResponseEntity.noContent().build();
@@ -123,74 +119,40 @@ public class UserController {
     HttpServletRequest request) {
 
     log.info("PUT /api/users/{} - Admin: {} from IP: {}",
-      id, currentUser.getEmail(), getClientIpAddress(request));
+      id, currentUser.getEmail(), RequestUtils.getClientIpAddress(request));
 
     UserDTO updated = userService.updateUser(id, dto);
     return ResponseEntity.ok(updated);
   }
 
   @PutMapping("/change-password")
-  public ResponseEntity<?> changePassword(
+  public ResponseEntity<Map<String, String>> changePassword(
     @AuthenticationPrincipal User user,
     @RequestBody @Valid ChangePasswordRequest request,
     HttpServletRequest httpRequest) {
 
     log.info("PUT /api/users/change-password - User: {} from IP: {} changing password",
-      user.getEmail(), getClientIpAddress(httpRequest));
+      user.getEmail(), RequestUtils.getClientIpAddress(httpRequest));
 
-    try {
-      userService.changePassword(user, request);
+    userService.changePassword(user, request);
 
-      log.info("Password successfully changed for user: {}", user.getEmail());
+    log.info("Password successfully changed for user: {}", user.getEmail());
 
-      return ResponseEntity.ok(Map.of(
-        "message", "Password changed successfully"
-      ));
-    } catch (IllegalArgumentException e) {
-      log.warn("Failed password change attempt for user: {} - {}", user.getEmail(), e.getMessage());
-
-      return ResponseEntity.badRequest().body(Map.of(
-        "error", e.getMessage()
-      ));
-    }
-  }
-
-  private String getClientIpAddress(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      return xForwardedFor.split(",")[0].trim();
-    }
-
-    String xRealIp = request.getHeader("X-Real-IP");
-    if (xRealIp != null && !xRealIp.isEmpty()) {
-      return xRealIp;
-    }
-
-    return request.getRemoteAddr();
+    return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
   }
 
   @PostMapping("/request-email-change")
-  public ResponseEntity<?> requestEmailChange(
+  public ResponseEntity<Map<String, String>> requestEmailChange(
     @AuthenticationPrincipal User user,
     @RequestBody @Valid EmailChangeRequest request,
     HttpServletRequest httpRequest) {
 
     log.info("POST /api/users/request-email-change - User: {} from IP: {} requesting email change to {}",
-      user.getEmail(), getClientIpAddress(httpRequest), request.getNewEmail());
+      user.getEmail(), RequestUtils.getClientIpAddress(httpRequest), request.getNewEmail());
 
-    try {
-      userService.requestEmailChange(user, request);
+    userService.requestEmailChange(user, request);
 
-      return ResponseEntity.ok(Map.of(
-        "message", "Confirmation email sent to new address"
-      ));
-    } catch (IllegalArgumentException e) {
-      log.warn("Email change request failed for user {} - {}", user.getEmail(), e.getMessage());
-
-      return ResponseEntity.badRequest().body(Map.of(
-        "error", e.getMessage()
-      ));
-    }
+    return ResponseEntity.ok(Map.of("message", "Confirmation email sent to new address"));
   }
 
   @GetMapping("/profile")
@@ -199,7 +161,7 @@ public class UserController {
     HttpServletRequest request) {
 
     log.info("GET /api/users/profile - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     UserDTO userDTO = userService.getUserById(user.getId());
     return ResponseEntity.ok(userDTO);
@@ -212,7 +174,7 @@ public class UserController {
     HttpServletRequest httpRequest) {
 
     log.info("PUT /api/users/profile - User: {} from IP: {} updating profile",
-      user.getEmail(), getClientIpAddress(httpRequest));
+      user.getEmail(), RequestUtils.getClientIpAddress(httpRequest));
 
     UserDTO updated = userService.updateProfile(user, request);
     return ResponseEntity.ok(updated);

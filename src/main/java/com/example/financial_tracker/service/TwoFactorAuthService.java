@@ -17,6 +17,7 @@ import dev.samstevens.totp.time.SystemTimeProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class TwoFactorAuthService {
 
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
   private final SecretGenerator secretGenerator = new DefaultSecretGenerator(32);
   private final QrGenerator qrGenerator = new ZxingPngQrGenerator();
   private final CodeVerifier codeVerifier = new DefaultCodeVerifier(
@@ -46,6 +48,10 @@ public class TwoFactorAuthService {
 
   public TwoFactorSetupDTO setupTwoFactorAuth(User user) {
     log.info("Setting up 2FA for user: {}", user.getEmail());
+
+    if (user.isTwoFactorEnabled()) {
+      throw new BusinessLogicException("Two-factor authentication is already enabled");
+    }
 
     // Generate secret
     String secret = secretGenerator.generate();
@@ -84,12 +90,20 @@ public class TwoFactorAuthService {
   public void disableTwoFactorAuth(User user, String password) {
     log.info("Disabling 2FA for user: {}", user.getEmail());
 
+    validatePassword(user, password);
+
     user.setTwoFactorEnabled(false);
     user.setTwoFactorSecret(null);
     user.setRecoveryCodes(null);
 
     userRepository.save(user);
     log.info("2FA disabled successfully for user: {}", user.getEmail());
+  }
+
+  private void validatePassword(User user, String password) {
+    if (!passwordEncoder.matches(password, user.getPassword())) {
+      throw new BusinessLogicException("Invalid password");
+    }
   }
 
   public boolean verifyTwoFactorCode(User user, String code) {
@@ -175,6 +189,8 @@ public class TwoFactorAuthService {
 
   public Set<String> regenerateRecoveryCodes(User user, String password) {
     log.info("Regenerating recovery codes for user: {}", user.getEmail());
+
+    validatePassword(user, password);
 
     Set<String> newCodes = generateRecoveryCodes();
     user.setRecoveryCodes(String.join(",", newCodes));

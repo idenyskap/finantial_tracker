@@ -5,6 +5,7 @@ import com.example.financial_tracker.entity.Category;
 import com.example.financial_tracker.entity.User;
 import com.example.financial_tracker.mapper.CategoryMapper;
 import com.example.financial_tracker.service.CategoryService;
+import com.example.financial_tracker.util.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -34,7 +35,7 @@ public class CategoryController {
     HttpServletRequest request) {
 
     log.info("GET /api/categories - User: {} from IP: {}",
-      user.getEmail(), getClientIpAddress(request));
+      user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     List<Category> categories = categoryService.getAllCategories(user);
     return ResponseEntity.ok(categoryMapper.toDtoList(categories));
@@ -47,7 +48,7 @@ public class CategoryController {
     HttpServletRequest request) {
 
     log.info("GET /api/categories/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     CategoryDTO category = categoryService.getCategoryById(id, user);
     return ResponseEntity.ok(category);
@@ -60,7 +61,7 @@ public class CategoryController {
     HttpServletRequest request) {
 
     log.info("POST /api/categories - User: {} from IP: {} creating category: '{}'",
-      user.getEmail(), getClientIpAddress(request), dto.getName());
+      user.getEmail(), RequestUtils.getClientIpAddress(request), dto.getName());
 
     CategoryDTO created = categoryService.createCategory(dto, user);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -73,7 +74,7 @@ public class CategoryController {
     HttpServletRequest request) {
 
     log.info("DELETE /api/categories/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     categoryService.deleteById(id, user);
     return ResponseEntity.noContent().build();
@@ -87,23 +88,9 @@ public class CategoryController {
     HttpServletRequest request) {
 
     log.info("PUT /api/categories/{} - User: {} from IP: {}",
-      id, user.getEmail(), getClientIpAddress(request));
+      id, user.getEmail(), RequestUtils.getClientIpAddress(request));
 
     CategoryDTO updated = categoryService.updateCategory(id, dto, user);
     return ResponseEntity.ok(updated);
-  }
-
-  private String getClientIpAddress(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      return xForwardedFor.split(",")[0].trim();
-    }
-
-    String xRealIp = request.getHeader("X-Real-IP");
-    if (xRealIp != null && !xRealIp.isEmpty()) {
-      return xRealIp;
-    }
-
-    return request.getRemoteAddr();
   }
 }

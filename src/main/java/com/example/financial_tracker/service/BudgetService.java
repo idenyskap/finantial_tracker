@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -97,6 +98,20 @@ public class BudgetService {
       .orElseThrow(() -> new ResourceNotFoundException("Budget not found"));
 
     budgetRepository.delete(budget);
+  }
+
+  public Optional<BudgetDTO> findBudgetByCategory(User user, Long categoryId) {
+    log.info("Finding budget for category {} for user: {}", categoryId, user.getEmail());
+
+    List<Budget> budgets = budgetRepository.findByUserAndActiveOrderByCreatedAtDesc(user, true);
+
+    return budgets.stream()
+      .filter(b -> b.getCategory() != null && b.getCategory().getId().equals(categoryId))
+      .findFirst()
+      .or(() -> budgets.stream()
+        .filter(b -> b.getCategory() == null)
+        .findFirst())
+      .map(this::mapBudgetWithSpent);
   }
 
   private BudgetDTO mapBudgetWithSpent(Budget budget) {

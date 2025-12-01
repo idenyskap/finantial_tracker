@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -21,7 +20,6 @@ import java.util.Set;
 public class TwoFactorAuthController {
 
   private final TwoFactorAuthService twoFactorAuthService;
-  private final PasswordEncoder passwordEncoder;
 
   @GetMapping("/status")
   public ResponseEntity<TwoFactorAuthDTO> getTwoFactorStatus(@AuthenticationPrincipal User user) {
@@ -31,54 +29,37 @@ public class TwoFactorAuthController {
   @PostMapping("/setup")
   public ResponseEntity<TwoFactorSetupDTO> setupTwoFactorAuth(@AuthenticationPrincipal User user) {
     log.info("User {} initiating 2FA setup", user.getEmail());
-
-    if (user.isTwoFactorEnabled()) {
-      return ResponseEntity.badRequest().build();
-    }
-
     TwoFactorSetupDTO setup = twoFactorAuthService.setupTwoFactorAuth(user);
     return ResponseEntity.ok(setup);
   }
 
   @PostMapping("/enable")
-  public ResponseEntity<?> enableTwoFactorAuth(
+  public ResponseEntity<Map<String, String>> enableTwoFactorAuth(
     @AuthenticationPrincipal User user,
     @Valid @RequestBody Enable2FARequest request) {
 
     log.info("User {} enabling 2FA", user.getEmail());
 
-    try {
-      twoFactorAuthService.enableTwoFactorAuth(
-        user,
-        request.getSecret(),
-        request.getVerificationCode(),
-        request.getRecoveryCodes()
-      );
+    twoFactorAuthService.enableTwoFactorAuth(
+      user,
+      request.getSecret(),
+      request.getVerificationCode(),
+      request.getRecoveryCodes()
+    );
 
-      return ResponseEntity.ok(Map.of(
-        "message", "Two-factor authentication enabled successfully"
-      ));
-    } catch (Exception e) {
-      return ResponseEntity.badRequest().body(Map.of(
-        "error", e.getMessage()
-      ));
-    }
+    return ResponseEntity.ok(Map.of(
+      "message", "Two-factor authentication enabled successfully"
+    ));
   }
 
   @PostMapping("/disable")
-  public ResponseEntity<?> disableTwoFactorAuth(
+  public ResponseEntity<Map<String, String>> disableTwoFactorAuth(
     @AuthenticationPrincipal User user,
-    @RequestBody Map<String, String> request) {
+    @Valid @RequestBody PasswordConfirmRequest request) {
 
-    String password = request.get("password");
+    log.info("User {} disabling 2FA", user.getEmail());
 
-    if (!passwordEncoder.matches(password, user.getPassword())) {
-      return ResponseEntity.badRequest().body(Map.of(
-        "error", "Invalid password"
-      ));
-    }
-
-    twoFactorAuthService.disableTwoFactorAuth(user, password);
+    twoFactorAuthService.disableTwoFactorAuth(user, request.getPassword());
 
     return ResponseEntity.ok(Map.of(
       "message", "Two-factor authentication disabled successfully"
@@ -86,19 +67,13 @@ public class TwoFactorAuthController {
   }
 
   @PostMapping("/regenerate-codes")
-  public ResponseEntity<?> regenerateRecoveryCodes(
+  public ResponseEntity<Map<String, Object>> regenerateRecoveryCodes(
     @AuthenticationPrincipal User user,
-    @RequestBody Map<String, String> request) {
+    @Valid @RequestBody PasswordConfirmRequest request) {
 
-    String password = request.get("password");
+    log.info("User {} regenerating recovery codes", user.getEmail());
 
-    if (!passwordEncoder.matches(password, user.getPassword())) {
-      return ResponseEntity.badRequest().body(Map.of(
-        "error", "Invalid password"
-      ));
-    }
-
-    Set<String> newCodes = twoFactorAuthService.regenerateRecoveryCodes(user, password);
+    Set<String> newCodes = twoFactorAuthService.regenerateRecoveryCodes(user, request.getPassword());
 
     return ResponseEntity.ok(Map.of(
       "recoveryCodes", newCodes,

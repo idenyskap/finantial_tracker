@@ -26,6 +26,9 @@ public class AnalyticsService {
   public AnalyticsDTO getFullAnalytics(User user, LocalDate startDate, LocalDate endDate) {
     log.info("Generating full analytics for user: {}", user.getEmail());
 
+    LocalDate effectiveStartDate = startDate != null ? startDate : LocalDate.now().minusMonths(12);
+    LocalDate effectiveEndDate = endDate != null ? endDate : LocalDate.now();
+
     BigDecimal totalIncome = getTotalIncomeOrZero(user);
     BigDecimal totalExpense = getTotalExpenseOrZero(user);
     BigDecimal currentBalance = getBalanceOrZero(user);
@@ -35,11 +38,11 @@ public class AnalyticsService {
       .totalExpense(totalExpense)
       .currentBalance(currentBalance)
       .netChange(totalIncome.subtract(totalExpense))
-      .monthlyStats(getMonthlyStats(user, startDate, endDate))
-      .topExpenseCategories(getTopExpenseCategories(user, startDate, endDate, 10))
-      .topIncomeCategories(getTopIncomeCategories(user, startDate, endDate, 10))
+      .monthlyStats(getMonthlyStats(user, effectiveStartDate, effectiveEndDate))
+      .topExpenseCategories(getTopExpenseCategories(user, effectiveStartDate, effectiveEndDate, 10))
+      .topIncomeCategories(getTopIncomeCategories(user, effectiveStartDate, effectiveEndDate, 10))
       .comparison(getComparisonStats(user))
-      .monthlyStatsList(getMonthlyStatsForLastYear(user)) // Добавлено для графиков
+      .monthlyStatsList(getMonthlyStatsForLastYear(user))
       .build();
   }
 
@@ -75,10 +78,13 @@ public class AnalyticsService {
   }
 
   public List<MonthlyStatsDTO> getMonthlyStats(User user, LocalDate startDate, LocalDate endDate) {
-    log.info("Calculating monthly stats for user: {} from {} to {}",
-      user.getEmail(), startDate, endDate);
+    LocalDate effectiveStartDate = startDate != null ? startDate : LocalDate.now().minusMonths(12);
+    LocalDate effectiveEndDate = endDate != null ? endDate : LocalDate.now();
 
-    List<Object[]> results = transactionRepository.getMonthlyStatsByUser(user, startDate, endDate);
+    log.info("Calculating monthly stats for user: {} from {} to {}",
+      user.getEmail(), effectiveStartDate, effectiveEndDate);
+
+    List<Object[]> results = transactionRepository.getMonthlyStatsByUser(user, effectiveStartDate, effectiveEndDate);
     List<MonthlyStatsDTO> monthlyStats = new ArrayList<>();
 
     for (Object[] result : results) {
