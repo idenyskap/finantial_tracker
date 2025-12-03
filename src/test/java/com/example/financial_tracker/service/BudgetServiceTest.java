@@ -1,7 +1,11 @@
 package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.BudgetDTO;
-import com.example.financial_tracker.entity.*;
+import com.example.financial_tracker.entity.Budget;
+import com.example.financial_tracker.entity.Category;
+import com.example.financial_tracker.entity.User;
+import com.example.financial_tracker.enumerations.BudgetPeriod;
+import com.example.financial_tracker.enumerations.Role;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
 import com.example.financial_tracker.mapper.BudgetMapper;
 import com.example.financial_tracker.repository.BudgetRepository;
@@ -85,7 +89,6 @@ class BudgetServiceTest {
 
   @Test
   void testCreateBudget_WithCategory_Success() {
-    // Given
     BudgetDTO inputDTO = new BudgetDTO();
     inputDTO.setName("Test Budget");
     inputDTO.setAmount(BigDecimal.valueOf(1000.00));
@@ -100,10 +103,8 @@ class BudgetServiceTest {
         eq(testUser), eq(testCategory), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.valueOf(200.00));
 
-    // When
     BudgetDTO result = budgetService.createBudget(testUser, inputDTO);
 
-    // Then
     assertNotNull(result);
     assertEquals(testBudgetDTO.getId(), result.getId());
     assertEquals(testBudgetDTO.getName(), result.getName());
@@ -117,7 +118,6 @@ class BudgetServiceTest {
 
   @Test
   void testCreateBudget_WithoutCategory_Success() {
-    // Given
     BudgetDTO inputDTO = new BudgetDTO();
     inputDTO.setName("General Budget");
     inputDTO.setAmount(BigDecimal.valueOf(1000.00));
@@ -137,10 +137,8 @@ class BudgetServiceTest {
         eq(testUser), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.valueOf(300.00));
 
-    // When
     BudgetDTO result = budgetService.createBudget(testUser, inputDTO);
 
-    // Then
     assertNotNull(result);
     verify(categoryRepository, never()).findByIdAndUser(any(), any());
     verify(budgetRepository).save(argThat(budget ->
@@ -151,7 +149,6 @@ class BudgetServiceTest {
 
   @Test
   void testCreateBudget_CategoryNotFound() {
-    // Given
     BudgetDTO inputDTO = new BudgetDTO();
     inputDTO.setCategoryId(999L);
 
@@ -159,7 +156,6 @@ class BudgetServiceTest {
     when(categoryRepository.findByIdAndUser(999L, testUser))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> budgetService.createBudget(testUser, inputDTO)
@@ -171,7 +167,6 @@ class BudgetServiceTest {
 
   @Test
   void testGetUserBudgets_Success() {
-    // Given
     List<Budget> budgets = List.of(testBudget);
     when(budgetRepository.findByUserAndActiveOrderByCreatedAtDesc(testUser, true))
         .thenReturn(budgets);
@@ -180,10 +175,8 @@ class BudgetServiceTest {
         eq(testUser), eq(testCategory), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.valueOf(150.00));
 
-    // When
     List<BudgetDTO> result = budgetService.getUserBudgets(testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals(testBudgetDTO.getId(), result.get(0).getId());
@@ -193,21 +186,17 @@ class BudgetServiceTest {
 
   @Test
   void testGetUserBudgets_EmptyList() {
-    // Given
     when(budgetRepository.findByUserAndActiveOrderByCreatedAtDesc(testUser, true))
         .thenReturn(List.of());
 
-    // When
     List<BudgetDTO> result = budgetService.getUserBudgets(testUser);
 
-    // Then
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
 
   @Test
   void testGetBudgetById_Success() {
-    // Given
     when(budgetRepository.findByIdAndUser(1L, testUser))
         .thenReturn(Optional.of(testBudget));
     when(budgetMapper.toDto(testBudget)).thenReturn(testBudgetDTO);
@@ -215,10 +204,8 @@ class BudgetServiceTest {
         eq(testUser), eq(testCategory), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.valueOf(100.00));
 
-    // When
     BudgetDTO result = budgetService.getBudgetById(testUser, 1L);
 
-    // Then
     assertNotNull(result);
     assertEquals(testBudgetDTO.getId(), result.getId());
     assertEquals(testBudgetDTO.getName(), result.getName());
@@ -228,11 +215,9 @@ class BudgetServiceTest {
 
   @Test
   void testGetBudgetById_NotFound() {
-    // Given
     when(budgetRepository.findByIdAndUser(999L, testUser))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> budgetService.getBudgetById(testUser, 999L)
@@ -243,7 +228,6 @@ class BudgetServiceTest {
 
   @Test
   void testUpdateBudget_Success() {
-    // Given
     BudgetDTO updateDTO = new BudgetDTO();
     updateDTO.setName("Updated Budget");
     updateDTO.setAmount(BigDecimal.valueOf(800.00));
@@ -262,10 +246,8 @@ class BudgetServiceTest {
         eq(testUser), eq(testCategory), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.valueOf(250.00));
 
-    // When
     BudgetDTO result = budgetService.updateBudget(testUser, 1L, updateDTO);
 
-    // Then
     assertNotNull(result);
     verify(budgetRepository).save(argThat(budget ->
         budget.getName().equals("Updated Budget") &&
@@ -278,7 +260,6 @@ class BudgetServiceTest {
 
   @Test
   void testUpdateBudget_RemoveCategory() {
-    // Given
     BudgetDTO updateDTO = new BudgetDTO();
     updateDTO.setName("General Budget");
     updateDTO.setAmount(BigDecimal.valueOf(1000.00));
@@ -293,10 +274,8 @@ class BudgetServiceTest {
         eq(testUser), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.valueOf(400.00));
 
-    // When
     BudgetDTO result = budgetService.updateBudget(testUser, 1L, updateDTO);
 
-    // Then
     assertNotNull(result);
     verify(budgetRepository).save(argThat(budget ->
         budget.getCategory() == null
@@ -306,12 +285,10 @@ class BudgetServiceTest {
 
   @Test
   void testUpdateBudget_BudgetNotFound() {
-    // Given
     BudgetDTO updateDTO = new BudgetDTO();
     when(budgetRepository.findByIdAndUser(999L, testUser))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> budgetService.updateBudget(testUser, 999L, updateDTO)
@@ -323,7 +300,6 @@ class BudgetServiceTest {
 
   @Test
   void testUpdateBudget_CategoryNotFound() {
-    // Given
     BudgetDTO updateDTO = new BudgetDTO();
     updateDTO.setCategoryId(999L);
 
@@ -332,7 +308,6 @@ class BudgetServiceTest {
     when(categoryRepository.findByIdAndUser(999L, testUser))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> budgetService.updateBudget(testUser, 1L, updateDTO)
@@ -344,25 +319,20 @@ class BudgetServiceTest {
 
   @Test
   void testDeleteBudget_Success() {
-    // Given
     when(budgetRepository.findByIdAndUser(1L, testUser))
         .thenReturn(Optional.of(testBudget));
 
-    // When
     budgetService.deleteBudget(testUser, 1L);
 
-    // Then
     verify(budgetRepository).findByIdAndUser(1L, testUser);
     verify(budgetRepository).delete(testBudget);
   }
 
   @Test
   void testDeleteBudget_NotFound() {
-    // Given
     when(budgetRepository.findByIdAndUser(999L, testUser))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> budgetService.deleteBudget(testUser, 999L)
@@ -374,7 +344,6 @@ class BudgetServiceTest {
 
   @Test
   void testMapBudgetWithSpent_CategoryBudget() {
-    // Given
     testBudget.setStartDate(null);
     testBudget.setEndDate(null);
 
@@ -385,10 +354,8 @@ class BudgetServiceTest {
         eq(testUser), eq(testCategory), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.valueOf(150.00));
 
-    // When
     BudgetDTO result = budgetService.getBudgetById(testUser, 1L);
 
-    // Then
     assertNotNull(result);
     verify(transactionRepository).getTotalExpenseByUserAndCategoryAndDateRange(
         eq(testUser), eq(testCategory), any(LocalDate.class), any(LocalDate.class)
@@ -397,7 +364,6 @@ class BudgetServiceTest {
 
   @Test
   void testMapBudgetWithSpent_GeneralBudget() {
-    // Given
     testBudget.setCategory(null);
     when(budgetRepository.findByIdAndUser(1L, testUser))
         .thenReturn(Optional.of(testBudget));
@@ -406,10 +372,8 @@ class BudgetServiceTest {
         eq(testUser), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.valueOf(200.00));
 
-    // When
     BudgetDTO result = budgetService.getBudgetById(testUser, 1L);
 
-    // Then
     assertNotNull(result);
     verify(transactionRepository).getTotalExpenseByUserAndDateRange(
         eq(testUser), any(LocalDate.class), any(LocalDate.class)
@@ -421,7 +385,6 @@ class BudgetServiceTest {
 
   @Test
   void testRepository_InteractionVerification() {
-    // Given
     List<Budget> budgets = List.of(testBudget);
     when(budgetRepository.findByUserAndActiveOrderByCreatedAtDesc(testUser, true))
         .thenReturn(budgets);
@@ -430,10 +393,8 @@ class BudgetServiceTest {
         eq(testUser), eq(testCategory), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(BigDecimal.ZERO);
 
-    // When
     budgetService.getUserBudgets(testUser);
 
-    // Then
     verify(budgetRepository, times(1)).findByUserAndActiveOrderByCreatedAtDesc(testUser, true);
     verifyNoMoreInteractions(budgetRepository);
   }

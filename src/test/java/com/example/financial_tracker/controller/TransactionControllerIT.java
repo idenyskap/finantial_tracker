@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
 class TransactionControllerIT {
 
   @Autowired
@@ -113,9 +115,9 @@ class TransactionControllerIT {
   @WithMockUser(username = "test@example.com")
   void testGetTransactionById_NotFound() throws Exception {
     User user = createTestUser();
-    
+
     when(transactionService.getTransactionById(eq(999L), any(User.class)))
-        .thenReturn(null);
+        .thenThrow(new com.example.financial_tracker.exception.ResourceNotFoundException("Transaction not found"));
 
     mockMvc.perform(get("/api/v1/transactions/999")
         .with(user(user)))
@@ -158,7 +160,6 @@ class TransactionControllerIT {
   void testCreateTransaction_InvalidData() throws Exception {
     User user = createTestUser();
     TransactionDTO invalidDto = new TransactionDTO();
-    // Missing required fields
 
     mockMvc.perform(post("/api/v1/transactions")
         .with(user(user))

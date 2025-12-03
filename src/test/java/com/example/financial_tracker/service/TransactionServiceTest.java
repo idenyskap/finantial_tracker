@@ -1,7 +1,11 @@
 package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.TransactionDTO;
-import com.example.financial_tracker.entity.*;
+import com.example.financial_tracker.entity.Category;
+import com.example.financial_tracker.entity.Transaction;
+import com.example.financial_tracker.entity.User;
+import com.example.financial_tracker.enumerations.Role;
+import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.exception.AccessDeniedException;
 import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
@@ -103,7 +107,6 @@ class TransactionServiceTest {
 
   @Test
   void testGetTransactionsByUser_Success() {
-    // Given
     List<Transaction> transactions = List.of(testTransaction);
     List<TransactionDTO> expectedDTOs = List.of(testTransactionDTO);
 
@@ -112,10 +115,8 @@ class TransactionServiceTest {
     when(transactionMapper.toDtoList(transactions))
         .thenReturn(expectedDTOs);
 
-    // When
     List<TransactionDTO> result = transactionService.getTransactionsByUser(testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals(testTransactionDTO.getId(), result.get(0).getId());
@@ -127,16 +128,13 @@ class TransactionServiceTest {
 
   @Test
   void testGetTransactionsByUser_EmptyList() {
-    // Given
     when(transactionRepository.findByUserOrderByDateDesc(testUser))
         .thenReturn(List.of());
     when(transactionMapper.toDtoList(any()))
         .thenReturn(List.of());
 
-    // When
     List<TransactionDTO> result = transactionService.getTransactionsByUser(testUser);
 
-    // Then
     assertNotNull(result);
     assertTrue(result.isEmpty());
 
@@ -145,7 +143,6 @@ class TransactionServiceTest {
 
   @Test
   void testGetTransactionsByUserPaginated_Success() {
-    // Given
     Pageable pageable = PageRequest.of(0, 10);
     List<Transaction> transactions = List.of(testTransaction);
     Page<Transaction> transactionPage = new PageImpl<>(transactions, pageable, 1);
@@ -155,10 +152,8 @@ class TransactionServiceTest {
     when(transactionMapper.toDto(testTransaction))
         .thenReturn(testTransactionDTO);
 
-    // When
     Page<TransactionDTO> result = transactionService.getTransactionsByUser(testUser, pageable);
 
-    // Then
     assertNotNull(result);
     assertEquals(1, result.getTotalElements());
     assertEquals(1, result.getContent().size());
@@ -169,16 +164,13 @@ class TransactionServiceTest {
 
   @Test
   void testGetTransactionById_Success() {
-    // Given
     when(transactionRepository.findByIdAndUser(1L, testUser))
         .thenReturn(Optional.of(testTransaction));
     when(transactionMapper.toDto(testTransaction))
         .thenReturn(testTransactionDTO);
 
-    // When
     TransactionDTO result = transactionService.getTransactionById(1L, testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(testTransactionDTO.getId(), result.getId());
     assertEquals(testTransactionDTO.getAmount(), result.getAmount());
@@ -189,23 +181,21 @@ class TransactionServiceTest {
 
   @Test
   void testGetTransactionById_NotFound() {
-    // Given
     when(transactionRepository.findByIdAndUser(999L, testUser))
         .thenReturn(Optional.empty());
 
-    // When
-    TransactionDTO result = transactionService.getTransactionById(999L, testUser);
+    ResourceNotFoundException exception = assertThrows(
+        ResourceNotFoundException.class,
+        () -> transactionService.getTransactionById(999L, testUser)
+    );
 
-    // Then
-    assertNull(result);
-
+    assertTrue(exception.getMessage().contains("Transaction not found"));
     verify(transactionRepository).findByIdAndUser(999L, testUser);
     verify(transactionMapper, never()).toDto(any());
   }
 
   @Test
   void testCreateTransaction_Success() {
-    // Given
     TransactionDTO inputDTO = new TransactionDTO();
     inputDTO.setAmount(BigDecimal.valueOf(100.00));
     inputDTO.setDescription("Test transaction");
@@ -222,10 +212,8 @@ class TransactionServiceTest {
     when(transactionMapper.toDto(testTransaction))
         .thenReturn(testTransactionDTO);
 
-    // When
     TransactionDTO result = transactionService.createTransaction(inputDTO, testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(testTransactionDTO.getId(), result.getId());
     assertEquals(testTransactionDTO.getAmount(), result.getAmount());
@@ -237,12 +225,10 @@ class TransactionServiceTest {
 
   @Test
   void testCreateTransaction_InvalidTransactionType() {
-    // Given
     TransactionDTO inputDTO = new TransactionDTO();
     inputDTO.setType("INVALID_TYPE");
     inputDTO.setCategoryId(1L);
 
-    // When & Then
     BusinessLogicException exception = assertThrows(
         BusinessLogicException.class,
         () -> transactionService.createTransaction(inputDTO, testUser)
@@ -254,7 +240,6 @@ class TransactionServiceTest {
 
   @Test
   void testCreateTransaction_CategoryNotFound() {
-    // Given
     TransactionDTO inputDTO = new TransactionDTO();
     inputDTO.setType("EXPENSE");
     inputDTO.setCategoryId(999L);
@@ -262,7 +247,6 @@ class TransactionServiceTest {
     when(categoryRepository.findById(999L))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> transactionService.createTransaction(inputDTO, testUser)
@@ -274,7 +258,6 @@ class TransactionServiceTest {
 
   @Test
   void testCreateTransaction_CategoryBelongsToOtherUser() {
-    // Given
     Category otherUserCategory = new Category();
     otherUserCategory.setId(1L);
     otherUserCategory.setUser(otherUser);
@@ -286,7 +269,6 @@ class TransactionServiceTest {
     when(categoryRepository.findById(1L))
         .thenReturn(Optional.of(otherUserCategory));
 
-    // When & Then
     AccessDeniedException exception = assertThrows(
         AccessDeniedException.class,
         () -> transactionService.createTransaction(inputDTO, testUser)
@@ -298,7 +280,6 @@ class TransactionServiceTest {
 
   @Test
   void testCreateTransaction_WithValidUppercaseType() {
-    // Given
     TransactionDTO inputDTO = new TransactionDTO();
     inputDTO.setType("INCOME");
     inputDTO.setCategoryId(1L);
@@ -312,17 +293,14 @@ class TransactionServiceTest {
     when(transactionMapper.toDto(testTransaction))
         .thenReturn(testTransactionDTO);
 
-    // When
     TransactionDTO result = transactionService.createTransaction(inputDTO, testUser);
 
-    // Then
     assertNotNull(result);
     verify(transactionRepository).save(any(Transaction.class));
   }
 
   @Test
   void testCreateTransaction_WithValidLowercaseType() {
-    // Given
     TransactionDTO inputDTO = new TransactionDTO();
     inputDTO.setType("expense");
     inputDTO.setCategoryId(1L);
@@ -336,17 +314,14 @@ class TransactionServiceTest {
     when(transactionMapper.toDto(testTransaction))
         .thenReturn(testTransactionDTO);
 
-    // When
     TransactionDTO result = transactionService.createTransaction(inputDTO, testUser);
 
-    // Then
     assertNotNull(result);
     verify(transactionRepository).save(any(Transaction.class));
   }
 
   @Test
   void testCreateTransaction_WithNullType() {
-    // Given
     TransactionDTO inputDTO = new TransactionDTO();
     inputDTO.setType(null);
     inputDTO.setCategoryId(1L);
@@ -360,50 +335,41 @@ class TransactionServiceTest {
     when(transactionMapper.toDto(testTransaction))
         .thenReturn(testTransactionDTO);
 
-    // When
     TransactionDTO result = transactionService.createTransaction(inputDTO, testUser);
 
-    // Then
     assertNotNull(result);
     verify(transactionRepository).save(any(Transaction.class));
   }
 
   @Test
   void testRepository_InteractionVerification() {
-    // Given
     List<Transaction> transactions = List.of(testTransaction);
     when(transactionRepository.findByUserOrderByDateDesc(testUser))
         .thenReturn(transactions);
     when(transactionMapper.toDtoList(transactions))
         .thenReturn(List.of(testTransactionDTO));
 
-    // When
     transactionService.getTransactionsByUser(testUser);
 
-    // Then
     verify(transactionRepository, times(1)).findByUserOrderByDateDesc(testUser);
     verifyNoMoreInteractions(transactionRepository);
   }
 
   @Test
   void testMapper_InteractionVerification() {
-    // Given
     when(transactionRepository.findByIdAndUser(1L, testUser))
         .thenReturn(Optional.of(testTransaction));
     when(transactionMapper.toDto(testTransaction))
         .thenReturn(testTransactionDTO);
 
-    // When
     transactionService.getTransactionById(1L, testUser);
 
-    // Then
     verify(transactionMapper, times(1)).toDto(testTransaction);
     verifyNoMoreInteractions(transactionMapper);
   }
 
   @Test
   void testCreateTransaction_TransactionEntitySetup() {
-    // Given
     TransactionDTO inputDTO = new TransactionDTO();
     inputDTO.setType("EXPENSE");
     inputDTO.setCategoryId(1L);
@@ -416,7 +382,6 @@ class TransactionServiceTest {
     when(transactionRepository.save(any(Transaction.class)))
         .thenAnswer(invocation -> {
           Transaction saved = invocation.getArgument(0);
-          // Verify that user and category are properly set
           assertEquals(testUser, saved.getUser());
           assertEquals(testCategory, saved.getCategory());
           return saved;
@@ -424,10 +389,8 @@ class TransactionServiceTest {
     when(transactionMapper.toDto(any()))
         .thenReturn(testTransactionDTO);
 
-    // When
     transactionService.createTransaction(inputDTO, testUser);
 
-    // Then
     verify(transactionRepository).save(argThat(transaction ->
         transaction.getUser().equals(testUser) &&
         transaction.getCategory().equals(testCategory)

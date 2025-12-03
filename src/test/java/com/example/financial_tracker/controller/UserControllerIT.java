@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
 class UserControllerIT {
 
   @Autowired
@@ -66,8 +68,6 @@ class UserControllerIT {
     return dto;
   }
 
-  // Admin-only endpoints tests
-
   @Test
   void testGetAllUsers_Unauthorized() throws Exception {
     mockMvc.perform(get("/api/v1/users")
@@ -89,8 +89,6 @@ class UserControllerIT {
   @Test
   @WithMockUser(username = "admin@example.com", authorities = "ROLE_ADMIN")
   void testGetAllUsers_Admin_StillForbidden() throws Exception {
-    // Note: In test environment, even with ROLE_ADMIN, this endpoint returns 403
-    // This indicates that additional security configuration may be needed in tests
     User admin = createTestAdmin();
 
     mockMvc.perform(get("/api/v1/users")
@@ -166,8 +164,6 @@ class UserControllerIT {
         .with(user(admin)))
       .andExpect(status().isForbidden());
   }
-
-  // User endpoints tests
 
   @Test
   @WithMockUser(username = "user@example.com")
@@ -274,7 +270,7 @@ class UserControllerIT {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("Current password is incorrect"));
+      .andExpect(jsonPath("$.message").value("Current password is incorrect"));
   }
 
   @Test
@@ -311,10 +307,8 @@ class UserControllerIT {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("Email already exists"));
+      .andExpect(jsonPath("$.message").value("Email already exists"));
   }
-
-  // Unauthorized access tests
 
   @Test
   void testGetCurrentUser_Unauthorized() throws Exception {

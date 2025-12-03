@@ -65,20 +65,16 @@ class UserServiceTest {
     testUserDTO.setEmail("test@example.com");
     testUserDTO.setName("Test User");
 
-    // Set the base URL for email service
     ReflectionTestUtils.setField(userService, "baseUrl", "http://localhost:3000");
   }
 
   @Test
   void testLoadUserByUsername_Success() {
-    // Given
     when(userRepository.findByEmail("test@example.com"))
         .thenReturn(Optional.of(testUser));
 
-    // When
     UserDetails result = userService.loadUserByUsername("test@example.com");
 
-    // Then
     assertNotNull(result);
     assertEquals("test@example.com", result.getUsername());
     verify(userRepository).findByEmail("test@example.com");
@@ -86,11 +82,9 @@ class UserServiceTest {
 
   @Test
   void testLoadUserByUsername_NotFound() {
-    // Given
     when(userRepository.findByEmail("notfound@example.com"))
         .thenReturn(Optional.empty());
 
-    // When & Then
     UsernameNotFoundException exception = assertThrows(
         UsernameNotFoundException.class,
         () -> userService.loadUserByUsername("notfound@example.com")
@@ -102,14 +96,11 @@ class UserServiceTest {
 
   @Test
   void testGetUserByEmail_Success() {
-    // Given
     when(userRepository.findByEmail("test@example.com"))
         .thenReturn(Optional.of(testUser));
 
-    // When
     User result = userService.getUserByEmail("test@example.com");
 
-    // Then
     assertNotNull(result);
     assertEquals(testUser.getId(), result.getId());
     assertEquals(testUser.getEmail(), result.getEmail());
@@ -118,11 +109,9 @@ class UserServiceTest {
 
   @Test
   void testGetUserByEmail_NotFound() {
-    // Given
     when(userRepository.findByEmail("notfound@example.com"))
         .thenReturn(Optional.empty());
 
-    // When & Then
     RuntimeException exception = assertThrows(
         RuntimeException.class,
         () -> userService.getUserByEmail("notfound@example.com")
@@ -133,17 +122,14 @@ class UserServiceTest {
 
   @Test
   void testGetAllUsers_Success() {
-    // Given
     List<User> users = List.of(testUser);
     List<UserDTO> userDTOs = List.of(testUserDTO);
 
     when(userRepository.findAll()).thenReturn(users);
     when(userMapper.toDtoList(users)).thenReturn(userDTOs);
 
-    // When
     List<UserDTO> result = userService.getAllUsers();
 
-    // Then
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals(testUserDTO.getId(), result.get(0).getId());
@@ -154,28 +140,22 @@ class UserServiceTest {
 
   @Test
   void testGetAllUsers_EmptyList() {
-    // Given
     when(userRepository.findAll()).thenReturn(List.of());
     when(userMapper.toDtoList(List.of())).thenReturn(List.of());
 
-    // When
     List<UserDTO> result = userService.getAllUsers();
 
-    // Then
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
 
   @Test
   void testGetUserById_Success() {
-    // Given
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userMapper.toDto(testUser)).thenReturn(testUserDTO);
 
-    // When
     UserDTO result = userService.getUserById(1L);
 
-    // Then
     assertNotNull(result);
     assertEquals(testUserDTO.getId(), result.getId());
     assertEquals(testUserDTO.getEmail(), result.getEmail());
@@ -186,13 +166,10 @@ class UserServiceTest {
 
   @Test
   void testGetUserById_NotFound() {
-    // Given
     when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-    // When
     UserDTO result = userService.getUserById(999L);
 
-    // Then
     assertNull(result);
     verify(userRepository).findById(999L);
     verify(userMapper, never()).toDto(any());
@@ -200,7 +177,6 @@ class UserServiceTest {
 
   @Test
   void testCreateUser_Success() {
-    // Given
     UserDTO inputDTO = new UserDTO();
     inputDTO.setEmail("new@example.com");
     inputDTO.setName("New User");
@@ -223,10 +199,8 @@ class UserServiceTest {
     when(userRepository.save(mappedUser)).thenReturn(savedUser);
     when(userMapper.toDto(savedUser)).thenReturn(expectedDTO);
 
-    // When
     UserDTO result = userService.createUser(inputDTO);
 
-    // Then
     assertNotNull(result);
     assertEquals(expectedDTO.getId(), result.getId());
     assertEquals(expectedDTO.getEmail(), result.getEmail());
@@ -238,16 +212,17 @@ class UserServiceTest {
 
   @Test
   void testDeleteUser_Success() {
-    // When
-    userService.deleteUser(1L);
+    User admin = new User();
+    admin.setId(2L);
+    admin.setRole(Role.ADMIN);
 
-    // Then
+    userService.deleteUser(1L, admin);
+
     verify(userRepository).deleteById(1L);
   }
 
   @Test
   void testUpdateUser_Success() {
-    // Given
     UserDTO updateDTO = new UserDTO();
     updateDTO.setName("Updated Name");
 
@@ -263,10 +238,8 @@ class UserServiceTest {
     when(userRepository.save(any(User.class))).thenReturn(updatedUser);
     when(userMapper.toDto(updatedUser)).thenReturn(expectedDTO);
 
-    // When
     UserDTO result = userService.updateUser(1L, updateDTO);
 
-    // Then
     assertNotNull(result);
     assertEquals(expectedDTO.getName(), result.getName());
 
@@ -279,13 +252,11 @@ class UserServiceTest {
 
   @Test
   void testUpdateUser_NotFound() {
-    // Given
     UserDTO updateDTO = new UserDTO();
     updateDTO.setName("Updated Name");
 
     when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-    // When & Then
     RuntimeException exception = assertThrows(
         RuntimeException.class,
         () -> userService.updateUser(999L, updateDTO)
@@ -298,15 +269,12 @@ class UserServiceTest {
 
   @Test
   void testSaveUser_Success() {
-    // Given
     User savedUser = new User();
     savedUser.setId(1L);
     when(userRepository.save(testUser)).thenReturn(savedUser);
 
-    // When
     User result = userService.saveUser(testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(savedUser.getId(), result.getId());
     verify(userRepository).save(testUser);
@@ -314,7 +282,6 @@ class UserServiceTest {
 
   @Test
   void testChangePassword_Success() {
-    // Given
     ChangePasswordRequest request = new ChangePasswordRequest();
     request.setCurrentPassword("currentPassword");
     request.setNewPassword("newPassword");
@@ -324,10 +291,8 @@ class UserServiceTest {
     when(passwordEncoder.encode("newPassword"))
         .thenReturn("encodedNewPassword");
 
-    // When
     userService.changePassword(testUser, request);
 
-    // Then
     verify(passwordEncoder).matches("currentPassword", "encodedPassword");
     verify(passwordEncoder).encode("newPassword");
     verify(userRepository).save(argThat(user ->
@@ -337,7 +302,6 @@ class UserServiceTest {
 
   @Test
   void testChangePassword_IncorrectCurrentPassword() {
-    // Given
     ChangePasswordRequest request = new ChangePasswordRequest();
     request.setCurrentPassword("wrongPassword");
     request.setNewPassword("newPassword");
@@ -345,7 +309,6 @@ class UserServiceTest {
     when(passwordEncoder.matches("wrongPassword", "encodedPassword"))
         .thenReturn(false);
 
-    // When & Then
     IllegalArgumentException exception = assertThrows(
         IllegalArgumentException.class,
         () -> userService.changePassword(testUser, request)
@@ -359,7 +322,6 @@ class UserServiceTest {
 
   @Test
   void testUpdateProfile_Success() {
-    // Given
     UpdateProfileRequest request = new UpdateProfileRequest();
     request.setName("Updated Profile Name");
 
@@ -374,10 +336,8 @@ class UserServiceTest {
     when(userRepository.save(any(User.class))).thenReturn(updatedUser);
     when(userMapper.toDto(updatedUser)).thenReturn(expectedDTO);
 
-    // When
     UserDTO result = userService.updateProfile(testUser, request);
 
-    // Then
     assertNotNull(result);
     assertEquals(expectedDTO.getName(), result.getName());
 
@@ -389,7 +349,6 @@ class UserServiceTest {
 
   @Test
   void testRequestEmailChange_Success() {
-    // Given
     EmailChangeRequest request = new EmailChangeRequest();
     request.setNewEmail("new@example.com");
     request.setPassword("currentPassword");
@@ -401,10 +360,8 @@ class UserServiceTest {
     when(tokenService.generateToken()).thenReturn("generated-token");
     when(tokenService.getExpiryDate()).thenReturn(LocalDateTime.now().plusHours(24));
 
-    // When
     userService.requestEmailChange(testUser, request);
 
-    // Then
     verify(passwordEncoder).matches("currentPassword", "encodedPassword");
     verify(userRepository).findByEmail("new@example.com");
     verify(tokenService).generateToken();
@@ -418,7 +375,6 @@ class UserServiceTest {
 
   @Test
   void testRequestEmailChange_IncorrectPassword() {
-    // Given
     EmailChangeRequest request = new EmailChangeRequest();
     request.setNewEmail("new@example.com");
     request.setPassword("wrongPassword");
@@ -426,7 +382,6 @@ class UserServiceTest {
     when(passwordEncoder.matches("wrongPassword", "encodedPassword"))
         .thenReturn(false);
 
-    // When & Then
     IllegalArgumentException exception = assertThrows(
         IllegalArgumentException.class,
         () -> userService.requestEmailChange(testUser, request)
@@ -440,7 +395,6 @@ class UserServiceTest {
 
   @Test
   void testRequestEmailChange_EmailAlreadyExists() {
-    // Given
     EmailChangeRequest request = new EmailChangeRequest();
     request.setNewEmail("existing@example.com");
     request.setPassword("currentPassword");
@@ -453,7 +407,6 @@ class UserServiceTest {
     when(userRepository.findByEmail("existing@example.com"))
         .thenReturn(Optional.of(existingUser));
 
-    // When & Then
     IllegalArgumentException exception = assertThrows(
         IllegalArgumentException.class,
         () -> userService.requestEmailChange(testUser, request)
@@ -468,28 +421,22 @@ class UserServiceTest {
 
   @Test
   void testRepository_InteractionVerification() {
-    // Given
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userMapper.toDto(testUser)).thenReturn(testUserDTO);
 
-    // When
     userService.getUserById(1L);
 
-    // Then
     verify(userRepository, times(1)).findById(1L);
     verifyNoMoreInteractions(userRepository);
   }
 
   @Test
   void testMapper_InteractionVerification() {
-    // Given
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userMapper.toDto(testUser)).thenReturn(testUserDTO);
 
-    // When
     userService.getUserById(1L);
 
-    // Then
     verify(userMapper, times(1)).toDto(testUser);
     verifyNoMoreInteractions(userMapper);
   }

@@ -1,6 +1,7 @@
 package com.example.financial_tracker.controller;
 
 import com.example.financial_tracker.dto.AuthRequest;
+import com.example.financial_tracker.dto.AuthResponse;
 import com.example.financial_tracker.service.AuthService;
 import com.example.financial_tracker.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
@@ -19,12 +21,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
 class AuthControllerIT {
 
   @Autowired
@@ -45,6 +49,9 @@ class AuthControllerIT {
     request.setEmail("test@example.com");
     request.setPassword("Password123");
     request.setName("Test User");
+
+    when(authService.register(any(AuthRequest.class)))
+        .thenReturn(new AuthResponse("test-token"));
 
     mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
@@ -70,6 +77,9 @@ class AuthControllerIT {
     AuthRequest request = new AuthRequest();
     request.setEmail("test@example.com");
     request.setPassword("Password123");
+
+    when(authService.login(any(AuthRequest.class)))
+        .thenReturn(new AuthResponse("test-token"));
 
     mockMvc.perform(post("/api/v1/auth/login")
         .contentType(MediaType.APPLICATION_JSON)
@@ -105,7 +115,7 @@ class AuthControllerIT {
     mockMvc.perform(post("/api/v1/auth/confirm-email-change")
         .param("token", "invalid-token"))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("Invalid token"));
+      .andExpect(jsonPath("$.message").value("Invalid token"));
   }
 
   @Test
@@ -129,7 +139,7 @@ class AuthControllerIT {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("Email is required"));
+      .andExpect(jsonPath("$.fieldErrors.email").value("Email is required"));
   }
 
   @Test
@@ -159,7 +169,7 @@ class AuthControllerIT {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("Password must be at least 6 characters long"));
+      .andExpect(jsonPath("$.fieldErrors.newPassword").value("Password must be at least 6 characters long"));
   }
 
   @Test
@@ -170,7 +180,7 @@ class AuthControllerIT {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("Reset token is required"));
+      .andExpect(jsonPath("$.fieldErrors.token").value("Reset token is required"));
   }
 
   @Test
@@ -191,7 +201,7 @@ class AuthControllerIT {
     mockMvc.perform(post("/api/v1/auth/verify-email")
         .param("token", "invalid-token"))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("Invalid verification token"));
+      .andExpect(jsonPath("$.message").value("Invalid verification token"));
   }
 
   @Test
@@ -215,7 +225,7 @@ class AuthControllerIT {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("Email is required"));
+      .andExpect(jsonPath("$.fieldErrors.email").value("Email is required"));
   }
 
   @Test
@@ -229,6 +239,6 @@ class AuthControllerIT {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value("User not found"));
+      .andExpect(jsonPath("$.message").value("User not found"));
   }
 }

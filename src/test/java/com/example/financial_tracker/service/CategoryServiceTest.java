@@ -71,15 +71,12 @@ class CategoryServiceTest {
 
   @Test
   void testGetAllCategories_Success() {
-    // Given
     List<Category> categories = List.of(testCategory);
     when(categoryRepository.findByUserOrderByNameAsc(testUser))
         .thenReturn(categories);
 
-    // When
     List<Category> result = categoryService.getAllCategories(testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals(testCategory.getId(), result.get(0).getId());
@@ -90,14 +87,11 @@ class CategoryServiceTest {
 
   @Test
   void testGetAllCategories_EmptyList() {
-    // Given
     when(categoryRepository.findByUserOrderByNameAsc(testUser))
         .thenReturn(List.of());
 
-    // When
     List<Category> result = categoryService.getAllCategories(testUser);
 
-    // Then
     assertNotNull(result);
     assertTrue(result.isEmpty());
 
@@ -106,7 +100,6 @@ class CategoryServiceTest {
 
   @Test
   void testCreateCategory_Success() {
-    // Given
     CategoryDTO inputDTO = new CategoryDTO();
     inputDTO.setName("New Category");
     inputDTO.setColor("#00FF00");
@@ -135,10 +128,8 @@ class CategoryServiceTest {
     when(categoryRepository.save(any(Category.class))).thenReturn(savedCategory);
     when(categoryMapper.toDto(savedCategory)).thenReturn(expectedDTO);
 
-    // When
     CategoryDTO result = categoryService.createCategory(inputDTO, testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(expectedDTO.getId(), result.getId());
     assertEquals(expectedDTO.getName(), result.getName());
@@ -154,16 +145,13 @@ class CategoryServiceTest {
 
   @Test
   void testGetCategoryById_Success() {
-    // Given
     when(categoryRepository.findById(1L))
         .thenReturn(Optional.of(testCategory));
     when(categoryMapper.toDto(testCategory))
         .thenReturn(testCategoryDTO);
 
-    // When
     CategoryDTO result = categoryService.getCategoryById(1L, testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(testCategoryDTO.getId(), result.getId());
     assertEquals(testCategoryDTO.getName(), result.getName());
@@ -174,11 +162,9 @@ class CategoryServiceTest {
 
   @Test
   void testGetCategoryById_NotFound() {
-    // Given
     when(categoryRepository.findById(999L))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> categoryService.getCategoryById(999L, testUser)
@@ -191,7 +177,6 @@ class CategoryServiceTest {
 
   @Test
   void testGetCategoryById_AccessDenied() {
-    // Given
     Category otherUserCategory = new Category();
     otherUserCategory.setId(1L);
     otherUserCategory.setUser(otherUser);
@@ -199,7 +184,6 @@ class CategoryServiceTest {
     when(categoryRepository.findById(1L))
         .thenReturn(Optional.of(otherUserCategory));
 
-    // When & Then
     AccessDeniedException exception = assertThrows(
         AccessDeniedException.class,
         () -> categoryService.getCategoryById(1L, testUser)
@@ -212,25 +196,20 @@ class CategoryServiceTest {
 
   @Test
   void testDeleteById_Success() {
-    // Given
     when(categoryRepository.findById(1L))
         .thenReturn(Optional.of(testCategory));
 
-    // When
     categoryService.deleteById(1L, testUser);
 
-    // Then
     verify(categoryRepository).findById(1L);
     verify(categoryRepository).delete(testCategory);
   }
 
   @Test
   void testDeleteById_NotFound() {
-    // Given
     when(categoryRepository.findById(999L))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> categoryService.deleteById(999L, testUser)
@@ -243,7 +222,6 @@ class CategoryServiceTest {
 
   @Test
   void testDeleteById_AccessDenied() {
-    // Given
     Category otherUserCategory = new Category();
     otherUserCategory.setId(1L);
     otherUserCategory.setUser(otherUser);
@@ -251,7 +229,6 @@ class CategoryServiceTest {
     when(categoryRepository.findById(1L))
         .thenReturn(Optional.of(otherUserCategory));
 
-    // When & Then
     AccessDeniedException exception = assertThrows(
         AccessDeniedException.class,
         () -> categoryService.deleteById(1L, testUser)
@@ -264,7 +241,6 @@ class CategoryServiceTest {
 
   @Test
   void testUpdateCategory_Success() {
-    // Given
     CategoryDTO updateDTO = new CategoryDTO();
     updateDTO.setName("Updated Food");
     updateDTO.setColor("#FFFF00");
@@ -291,10 +267,8 @@ class CategoryServiceTest {
     when(categoryMapper.toDto(updatedCategory))
         .thenReturn(expectedDTO);
 
-    // When
     CategoryDTO result = categoryService.updateCategory(1L, updateDTO, testUser);
 
-    // Then
     assertNotNull(result);
     assertEquals(expectedDTO.getName(), result.getName());
     assertEquals(expectedDTO.getColor(), result.getColor());
@@ -309,14 +283,12 @@ class CategoryServiceTest {
 
   @Test
   void testUpdateCategory_NotFound() {
-    // Given
     CategoryDTO updateDTO = new CategoryDTO();
     updateDTO.setName("Updated Food");
 
     when(categoryRepository.findById(999L))
         .thenReturn(Optional.empty());
 
-    // When & Then
     ResourceNotFoundException exception = assertThrows(
         ResourceNotFoundException.class,
         () -> categoryService.updateCategory(999L, updateDTO, testUser)
@@ -329,7 +301,6 @@ class CategoryServiceTest {
 
   @Test
   void testUpdateCategory_AccessDenied() {
-    // Given
     Category otherUserCategory = new Category();
     otherUserCategory.setId(1L);
     otherUserCategory.setUser(otherUser);
@@ -340,7 +311,6 @@ class CategoryServiceTest {
     when(categoryRepository.findById(1L))
         .thenReturn(Optional.of(otherUserCategory));
 
-    // When & Then
     AccessDeniedException exception = assertThrows(
         AccessDeniedException.class,
         () -> categoryService.updateCategory(1L, updateDTO, testUser)
@@ -353,38 +323,31 @@ class CategoryServiceTest {
 
   @Test
   void testRepository_InteractionVerification() {
-    // Given
     List<Category> categories = List.of(testCategory);
     when(categoryRepository.findByUserOrderByNameAsc(testUser))
         .thenReturn(categories);
 
-    // When
     categoryService.getAllCategories(testUser);
 
-    // Then
     verify(categoryRepository, times(1)).findByUserOrderByNameAsc(testUser);
     verifyNoMoreInteractions(categoryRepository);
   }
 
   @Test
   void testMapper_InteractionVerification() {
-    // Given
     when(categoryRepository.findById(1L))
         .thenReturn(Optional.of(testCategory));
     when(categoryMapper.toDto(testCategory))
         .thenReturn(testCategoryDTO);
 
-    // When
     categoryService.getCategoryById(1L, testUser);
 
-    // Then
     verify(categoryMapper, times(1)).toDto(testCategory);
     verifyNoMoreInteractions(categoryMapper);
   }
 
   @Test
   void testCreateCategory_EntitySetup() {
-    // Given
     CategoryDTO inputDTO = new CategoryDTO();
     inputDTO.setName("Test Category");
 
@@ -398,10 +361,8 @@ class CategoryServiceTest {
         });
     when(categoryMapper.toDto(any())).thenReturn(testCategoryDTO);
 
-    // When
     categoryService.createCategory(inputDTO, testUser);
 
-    // Then
     verify(categoryRepository).save(argThat(category ->
         category.getUser().equals(testUser)
     ));

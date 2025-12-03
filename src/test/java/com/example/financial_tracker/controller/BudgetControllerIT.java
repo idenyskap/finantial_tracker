@@ -14,10 +14,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
 class BudgetControllerIT {
 
   @Autowired
@@ -132,7 +135,6 @@ class BudgetControllerIT {
   void testCreateBudget_InvalidData() throws Exception {
     User user = createTestUser();
     BudgetDTO invalidDto = new BudgetDTO();
-    // Missing required fields
 
     mockMvc.perform(post("/api/v1/budgets")
         .with(user(user))
@@ -178,10 +180,10 @@ class BudgetControllerIT {
   @WithMockUser(username = "test@example.com")
   void testCheckCategoryBudget_Success() throws Exception {
     User user = createTestUser();
-    List<BudgetDTO> budgets = List.of(createTestBudget());
-    
-    when(budgetService.getUserBudgets(any(User.class)))
-        .thenReturn(budgets);
+    BudgetDTO budget = createTestBudget();
+
+    when(budgetService.findBudgetByCategory(any(User.class), eq(1L)))
+        .thenReturn(Optional.of(budget));
 
     mockMvc.perform(get("/api/v1/budgets/check/1")
         .with(user(user)))
@@ -194,34 +196,12 @@ class BudgetControllerIT {
   @WithMockUser(username = "test@example.com")
   void testCheckCategoryBudget_NotFound() throws Exception {
     User user = createTestUser();
-    
-    when(budgetService.getUserBudgets(any(User.class)))
-        .thenReturn(List.of());
+
+    when(budgetService.findBudgetByCategory(any(User.class), eq(999L)))
+        .thenReturn(Optional.empty());
 
     mockMvc.perform(get("/api/v1/budgets/check/999")
         .with(user(user)))
       .andExpect(status().isNoContent());
-  }
-
-  @Test
-  @WithMockUser(username = "test@example.com")  
-  void testCheckCategoryBudget_FallbackToGeneral() throws Exception {
-    User user = createTestUser();
-    
-    // Create a general budget (no categoryId)
-    BudgetDTO generalBudget = createTestBudget();
-    generalBudget.setCategoryId(null);
-    generalBudget.setName("General Budget");
-    
-    List<BudgetDTO> budgets = List.of(generalBudget);
-    
-    when(budgetService.getUserBudgets(any(User.class)))
-        .thenReturn(budgets);
-
-    mockMvc.perform(get("/api/v1/budgets/check/999")
-        .with(user(user)))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.name").value("General Budget"))
-      .andExpect(jsonPath("$.categoryId").doesNotExist());
   }
 }
