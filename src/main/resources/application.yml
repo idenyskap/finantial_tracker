@@ -44,8 +44,17 @@ spring:
             enable: true
             required: true
     default-encoding: UTF-8
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500, expireAfterWrite=1h
 
 app:
+  cookie:
+    max-age: 86400
+    secure: false
+    path: /
+    http-only: true
   mail:
     from: noreply@financetracker.com
     from-name: Finance Tracker
