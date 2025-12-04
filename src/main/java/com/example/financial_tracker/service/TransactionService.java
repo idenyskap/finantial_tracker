@@ -52,22 +52,22 @@ public class TransactionService {
 
   @Transactional(readOnly = true)
   public List<TransactionDTO> getTransactionsByUser(User user) {
-    log.info("Fetching all transactions for user: {} (ID: {})", user.getEmail(), user.getId());
+    log.debug("Fetching all transactions for user: {} (ID: {})", user.getEmail(), user.getId());
 
     List<Transaction> transactions = transactionRepository.findByUserOrderByDateDesc(user);
 
-    log.info("Found {} transactions for user: {}", transactions.size(), user.getEmail());
+    log.debug("Found {} transactions for user: {}", transactions.size(), user.getEmail());
     return transactionMapper.toDtoList(transactions);
   }
 
   @Transactional(readOnly = true)
   public Page<TransactionDTO> getTransactionsByUser(User user, Pageable pageable) {
-    log.info("Fetching paginated transactions for user: {} (page: {}, size: {})",
+    log.debug("Fetching paginated transactions for user: {} (page: {}, size: {})",
       user.getEmail(), pageable.getPageNumber(), pageable.getPageSize());
 
     Page<Transaction> transactions = transactionRepository.findByUserOrderByDateDesc(user, pageable);
 
-    log.info("Retrieved page {} of {} with {} transactions for user: {}",
+    log.debug("Retrieved page {} of {} with {} transactions for user: {}",
       transactions.getNumber(), transactions.getTotalPages(),
       transactions.getNumberOfElements(), user.getEmail());
 
@@ -76,7 +76,7 @@ public class TransactionService {
 
   @Transactional(readOnly = true)
   public TransactionDTO getTransactionById(Long id, User user) {
-    log.info("Fetching transaction ID: {} for user: {}", id, user.getEmail());
+    log.debug("Fetching transaction ID: {} for user: {}", id, user.getEmail());
 
     Transaction transaction = transactionRepository.findByIdAndUser(id, user)
       .orElseThrow(() -> {
@@ -84,7 +84,7 @@ public class TransactionService {
         return new ResourceNotFoundException("Transaction not found");
       });
 
-    log.info("Successfully retrieved transaction ID: {} for user: {}", id, user.getEmail());
+    log.debug("Successfully retrieved transaction ID: {} for user: {}", id, user.getEmail());
     return transactionMapper.toDto(transaction);
   }
 
@@ -264,7 +264,7 @@ public class TransactionService {
     BigDecimal balance = transactionRepository.calculateBalanceByUser(user);
     BigDecimal result = balance != null ? balance : BigDecimal.ZERO;
 
-    log.info("Current balance for user: {} is: {}", user.getEmail(), result);
+    log.debug("Current balance for user: {} is: {}", user.getEmail(), result);
     return result;
   }
 
@@ -274,7 +274,7 @@ public class TransactionService {
 
     BigDecimal income = transactionRepository.getTotalIncomeByUser(user);
 
-    log.info("Total income for user: {} is: {}", user.getEmail(), income);
+    log.debug("Total income for user: {} is: {}", user.getEmail(), income);
     return income;
   }
 
@@ -284,7 +284,7 @@ public class TransactionService {
 
     BigDecimal expense = transactionRepository.getTotalExpenseByUser(user);
 
-    log.info("Total expenses for user: {} is: {}", user.getEmail(), expense);
+    log.debug("Total expenses for user: {} is: {}", user.getEmail(), expense);
     return expense;
   }
 
@@ -294,13 +294,13 @@ public class TransactionService {
                                                          Long categoryId,
                                                          LocalDate startDate,
                                                          LocalDate endDate) {
-    log.info("Fetching filtered transactions for user: {} - Type: {}, CategoryID: {}, Date range: {} to {}",
+    log.debug("Fetching filtered transactions for user: {} - Type: {}, CategoryID: {}, Date range: {} to {}",
       user.getEmail(), type, categoryId, startDate, endDate);
 
     List<Transaction> transactions = transactionRepository.findByUserWithFilters(
       user, type, categoryId, startDate, endDate);
 
-    log.info("Found {} transactions matching filters for user: {}",
+    log.debug("Found {} transactions matching filters for user: {}",
       transactions.size(), user.getEmail());
 
     return transactionMapper.toDtoList(transactions);
@@ -308,11 +308,11 @@ public class TransactionService {
 
   @Transactional(readOnly = true)
   public List<TransactionDTO> getTransactionsByType(User user, TransactionType type) {
-    log.info("Fetching {} transactions for user: {}", type, user.getEmail());
+    log.debug("Fetching {} transactions for user: {}", type, user.getEmail());
 
     List<Transaction> transactions = transactionRepository.findByUserAndTypeOrderByDateDesc(user, type);
 
-    log.info("Found {} {} transactions for user: {}",
+    log.debug("Found {} {} transactions for user: {}",
       transactions.size(), type, user.getEmail());
 
     return transactionMapper.toDtoList(transactions);
@@ -332,7 +332,7 @@ public class TransactionService {
 
   @Transactional(readOnly = true)
   public Page<TransactionDTO> searchTransactions(User user, TransactionSearchDTO searchDto) {
-    log.info("Searching transactions for user: {} with criteria: {}", user.getEmail(), searchDto);
+    log.debug("Searching transactions for user: {} with criteria: {}", user.getEmail(), searchDto);
 
     applyQuickDateFilter(searchDto);
 
@@ -342,7 +342,7 @@ public class TransactionService {
 
     Page<Transaction> transactions = transactionRepository.findAll(spec, pageable);
 
-    log.info("Found {} transactions matching criteria", transactions.getTotalElements());
+    log.debug("Found {} transactions matching criteria", transactions.getTotalElements());
     return transactions.map(transactionMapper::toDto);
   }
 
@@ -493,7 +493,7 @@ public class TransactionService {
 
   @Transactional(readOnly = true)
   public TransactionSearchStatsDTO getSearchStats(User user, TransactionSearchDTO searchDto) {
-    log.info("Calculating search statistics for user: {}", user.getEmail());
+    log.debug("Calculating search statistics for user: {}", user.getEmail());
 
     applyQuickDateFilter(searchDto);
     Specification<Transaction> spec = createSearchSpecification(user, searchDto);
@@ -593,7 +593,7 @@ public class TransactionService {
 
   @Transactional(readOnly = true)
   public Page<TransactionDTO> searchBySavedSearch(User user, Long savedSearchId, Integer page, Integer size) {
-    log.info("Executing saved search ID: {} for user: {}", savedSearchId, user.getEmail());
+    log.debug("Executing saved search ID: {} for user: {}", savedSearchId, user.getEmail());
 
     SavedSearchDTO savedSearch = savedSearchService.getSavedSearchById(user, savedSearchId);
 
@@ -605,7 +605,7 @@ public class TransactionService {
       searchDto.setSize(size);
     }
 
-    log.info("Executing search with criteria from saved search '{}'", savedSearch.getName());
+    log.debug("Executing search with criteria from saved search '{}'", savedSearch.getName());
     return searchTransactions(user, searchDto);
   }
 

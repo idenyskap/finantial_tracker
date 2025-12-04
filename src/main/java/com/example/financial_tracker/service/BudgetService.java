@@ -50,7 +50,7 @@ public class BudgetService {
 
   @Transactional(readOnly = true)
   public List<BudgetDTO> getUserBudgets(User user) {
-    log.info("Fetching budgets for user: {}", user.getEmail());
+    log.debug("Fetching budgets for user: {}", user.getEmail());
 
     List<Budget> budgets = budgetRepository.findByUserAndActiveOrderByCreatedAtDesc(user, true);
 
@@ -61,7 +61,7 @@ public class BudgetService {
 
   @Transactional(readOnly = true)
   public BudgetDTO getBudgetById(User user, Long id) {
-    log.info("Fetching budget {} for user: {}", id, user.getEmail());
+    log.debug("Fetching budget {} for user: {}", id, user.getEmail());
 
     Budget budget = budgetRepository.findByIdAndUser(id, user)
       .orElseThrow(() -> new ResourceNotFoundException("Budget not found"));
@@ -104,7 +104,7 @@ public class BudgetService {
 
   @Transactional(readOnly = true)
   public Optional<BudgetDTO> findBudgetByCategory(User user, Long categoryId) {
-    log.info("Finding budget for category {} for user: {}", categoryId, user.getEmail());
+    log.debug("Finding budget for category {} for user: {}", categoryId, user.getEmail());
 
     List<Budget> budgets = budgetRepository.findByUserAndActiveOrderByCreatedAtDesc(user, true);
 

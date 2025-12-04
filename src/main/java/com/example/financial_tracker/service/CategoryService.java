@@ -25,11 +25,11 @@ public class CategoryService {
 
   @Transactional(readOnly = true)
   public List<Category> getAllCategories(User user) {
-    log.info("Fetching all categories for user: {} (ID: {})", user.getEmail(), user.getId());
+    log.debug("Fetching all categories for user: {} (ID: {})", user.getEmail(), user.getId());
 
     List<Category> categories = categoryRepository.findByUserOrderByNameAsc(user);
 
-    log.info("Found {} categories for user: {}", categories.size(), user.getEmail());
+    log.debug("Found {} categories for user: {}", categories.size(), user.getEmail());
     return categories;
   }
 
