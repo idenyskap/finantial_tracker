@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @Builder
 @EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "t_transaction")
+@Table(name = "transactions")
 public class Transaction {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

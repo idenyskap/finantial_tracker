@@ -12,7 +12,7 @@ import java.time.LocalTime;
 @Setter
 @EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "t_notification_settings")
+@Table(name = "notification_settings")
 public class NotificationSettings {
 
   @Id

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "t_goal")
+@Table(name = "goals")
 public class Goal {
 
   @Id

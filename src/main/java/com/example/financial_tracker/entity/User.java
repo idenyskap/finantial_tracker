@@ -18,7 +18,7 @@ import java.util.List;
 @Builder
 @EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "t_user")
+@Table(name = "users")
 public class User implements UserDetails {
 
   @Id
