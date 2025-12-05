@@ -144,25 +144,30 @@ A comprehensive personal finance management application built with Spring Boot a
 financial-tracker/
 ├── src/main/java/                 # Backend source code
 │   └── com/example/financial_tracker/
+│       ├── config/                # Configuration classes (Security, Cache, CORS)
 │       ├── controller/            # REST API endpoints
-│       ├── service/               # Business logic
-│       ├── repository/            # Data access layer
-│       ├── entity/                # JPA entities
 │       ├── dto/                   # Data transfer objects
-│       ├── config/                # Configuration classes
-│       ├── security/              # Security configuration
-│       └── exception/             # Custom exceptions
+│       ├── entity/                # JPA entities
+│       ├── enumerations/          # Enum types (Currency, TransactionType, etc.)
+│       ├── exception/             # Custom exceptions and global handler
+│       ├── mapper/                # MapStruct mappers (Entity <-> DTO)
+│       ├── repository/            # Data access layer (Spring Data JPA)
+│       ├── scheduler/             # Scheduled tasks (recurring transactions)
+│       ├── security/              # JWT filter and security config
+│       ├── service/               # Business logic layer
+│       ├── util/                  # Utility classes
+│       └── validation/            # Custom validation annotations
 ├── src/main/resources/
 │   ├── db/migration/              # Flyway migrations
-│   └── templates/emails/          # Email templates
+│   └── templates/emails/          # Email templates (Thymeleaf)
 ├── frontend/
 │   ├── src/
-│   │   ├── components/            # React components
-│   │   ├── pages/                 # Page components
+│   │   ├── components/            # React components (by feature)
+│   │   ├── contexts/              # React contexts (Auth, Theme, Currency, Language)
 │   │   ├── hooks/                 # Custom hooks
-│   │   ├── contexts/              # React contexts
-│   │   ├── services/              # API services
-│   │   └── locales/               # Translation files
+│   │   ├── locales/               # Translation files (en, uk)
+│   │   ├── pages/                 # Page components
+│   │   └── services/              # API services (Axios)
 │   └── public/                    # Static assets
 └── docker-compose.yml             # Docker configuration
 ```
