@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 @EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "t_email_history")
+@Table(name = "email_history")
 public class EmailHistory {
 
   @Id

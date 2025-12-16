@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "t_category")
+@Table(name = "categories")
 public class Category {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

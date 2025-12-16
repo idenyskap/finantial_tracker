@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "t_recurring_transaction")
+@Table(name = "recurring_transactions")
 public class RecurringTransaction {
 
   @Id
