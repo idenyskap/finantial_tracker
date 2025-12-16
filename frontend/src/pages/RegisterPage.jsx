@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import { useLanguage } from '../hooks/useLanguage';
 import { CheckCircleIcon, XCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import api from '../services/api';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -129,30 +130,11 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        })
+      const response = await api.post('/auth/register', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Handle server validation errors
-        if (data.message) {
-          toast.error(data.message);
-          if (data.message.toLowerCase().includes('email')) {
-            setErrors(prev => ({ ...prev, email: data.message }));
-          }
-        } else {
-          toast.error(t('register.registrationFailed') || 'Registration failed');
-        }
-        return;
-      }
 
       // Success - show success state
       setRegistrationSuccess(true);
@@ -160,7 +142,14 @@ const RegisterPage = () => {
 
     } catch (err) {
       console.error('Registration error:', err);
-      toast.error(t('register.networkError') || 'Network error. Please try again.');
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+        if (err.response.data.message.toLowerCase().includes('email')) {
+          setErrors(prev => ({ ...prev, email: err.response.data.message }));
+        }
+      } else {
+        toast.error(t('register.networkError') || 'Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
