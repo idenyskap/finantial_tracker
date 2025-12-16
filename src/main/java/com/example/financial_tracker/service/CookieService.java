@@ -1,9 +1,9 @@
 package com.example.financial_tracker.service;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -22,26 +22,33 @@ public class CookieService {
   @Value("${app.cookie.http-only:true}")
   private boolean httpOnly;
 
+  @Value("${app.cookie.same-site:Lax}")
+  private String sameSite;
+
   private static final String AUTH_COOKIE_NAME = "token";
 
   public void setAuthCookie(HttpServletResponse response, String token) {
-    Cookie cookie = new Cookie(AUTH_COOKIE_NAME, token);
-    cookie.setHttpOnly(httpOnly);
-    cookie.setSecure(secure);
-    cookie.setPath(path);
-    cookie.setMaxAge(maxAge);
-    response.addCookie(cookie);
+    ResponseCookie cookie = ResponseCookie.from(AUTH_COOKIE_NAME, token)
+        .httpOnly(httpOnly)
+        .secure(secure)
+        .path(path)
+        .maxAge(maxAge)
+        .sameSite(sameSite)
+        .build();
+    response.addHeader("Set-Cookie", cookie.toString());
 
-    log.debug("Auth cookie set with maxAge: {}, secure: {}, httpOnly: {}", maxAge, secure, httpOnly);
+    log.debug("Auth cookie set with maxAge: {}, secure: {}, httpOnly: {}, sameSite: {}", maxAge, secure, httpOnly, sameSite);
   }
 
   public void clearAuthCookie(HttpServletResponse response) {
-    Cookie cookie = new Cookie(AUTH_COOKIE_NAME, null);
-    cookie.setHttpOnly(httpOnly);
-    cookie.setSecure(secure);
-    cookie.setPath(path);
-    cookie.setMaxAge(0);
-    response.addCookie(cookie);
+    ResponseCookie cookie = ResponseCookie.from(AUTH_COOKIE_NAME, "")
+        .httpOnly(httpOnly)
+        .secure(secure)
+        .path(path)
+        .maxAge(0)
+        .sameSite(sameSite)
+        .build();
+    response.addHeader("Set-Cookie", cookie.toString());
 
     log.debug("Auth cookie cleared");
   }

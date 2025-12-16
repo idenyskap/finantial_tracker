@@ -20,6 +20,7 @@ spring:
 app:
   cookie:
     secure: true
+    same-site: None
   mail:
     base-url: ${FRONTEND_URL:https://vercel.app}
     quota:
