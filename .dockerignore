@@ -1,0 +1,11 @@
+target/
+!target/*.jar
+.git
+.gitignore
+.idea
+*.iml
+*.md
+frontend/
+docker-compose.yml
+.env
+*.log
