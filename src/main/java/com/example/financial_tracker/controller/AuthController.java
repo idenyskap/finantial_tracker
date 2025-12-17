@@ -32,7 +32,6 @@ public class AuthController {
 
       if (authResponse.getToken() != null) {
           cookieService.setAuthCookie(response, authResponse.getToken());
-          authResponse.setToken(null);
       }
 
       return ResponseEntity.ok(authResponse);
@@ -47,7 +46,6 @@ public class AuthController {
 
       if (authResponse.getToken() != null && !authResponse.isRequiresTwoFactor()) {
           cookieService.setAuthCookie(response, authResponse.getToken());
-          authResponse.setToken(null);
       }
 
     return ResponseEntity.ok(authResponse);
