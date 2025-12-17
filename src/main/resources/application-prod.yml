@@ -22,6 +22,8 @@ app:
     secure: true
     same-site: None
   mail:
+    from: ${MAIL_USERNAME}
+    from-name: Finance Tracker
     base-url: ${FRONTEND_URL:https://vercel.app}
     quota:
       enabled: true
