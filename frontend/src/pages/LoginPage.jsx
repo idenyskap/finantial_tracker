@@ -149,20 +149,20 @@ const LoginPage = () => {
   );
 };
 
-const getStyles = (theme) => ({
+const getStyles = (theme, { isMobile } = {}) => ({
   container: {
     minHeight: '100vh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.background,
-    padding: '20px',
-    paddingTop: '80px',
+    padding: isMobile ? '16px' : '20px',
+    paddingTop: isMobile ? '60px' : '80px',
     position: 'relative',
   },
   card: {
     backgroundColor: theme.backgroundSecondary,
-    padding: '40px',
+    padding: isMobile ? '24px' : '40px',
     borderRadius: '12px',
     boxShadow: theme.shadow,
     width: '100%',

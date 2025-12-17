@@ -286,9 +286,9 @@ function DashboardPage() {
 
 }
 
-const getStyles = (theme) => ({
+const getStyles = (theme, { isMobile } = {}) => ({
   container: {
-    padding: '1.5rem',
+    padding: isMobile ? '1rem' : '1.5rem',
     maxWidth: '1200px',
     margin: '0 auto',
     backgroundColor: theme.background,
@@ -296,10 +296,11 @@ const getStyles = (theme) => ({
   },
   header: {
     display: 'flex',
+    flexDirection: isMobile ? 'column' : 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '2rem',
-    padding: '1.5rem',
+    alignItems: isMobile ? 'stretch' : 'flex-start',
+    marginBottom: isMobile ? '1rem' : '2rem',
+    padding: isMobile ? '1rem' : '1.5rem',
     backgroundColor: theme.cardBackground,
     borderRadius: '12px',
     boxShadow: theme.shadow,
@@ -309,7 +310,7 @@ const getStyles = (theme) => ({
     flex: 1,
   },
   title: {
-    fontSize: '2rem',
+    fontSize: isMobile ? '1.5rem' : '2rem',
     fontWeight: '700',
     color: theme.text,
     marginBottom: '0.5rem',
@@ -317,7 +318,7 @@ const getStyles = (theme) => ({
   },
   subtitle: {
     color: theme.textSecondary,
-    fontSize: '1rem',
+    fontSize: isMobile ? '0.875rem' : '1rem',
     margin: 0,
   },
   loading: {
@@ -358,17 +359,17 @@ const getStyles = (theme) => ({
     marginBottom: '1rem',
   },
   statsSection: {
-    marginBottom: '2rem',
+    marginBottom: isMobile ? '1rem' : '2rem',
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '1.5rem',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: isMobile ? '1rem' : '1.5rem',
   },
   statCard: {
     backgroundColor: theme.cardBackground,
     borderRadius: '12px',
-    padding: '1.5rem',
+    padding: isMobile ? '1rem' : '1.5rem',
     boxShadow: theme.shadow,
     border: `1px solid ${theme.cardBorder}`,
     transition: 'all 0.2s ease',

@@ -406,9 +406,9 @@ function GoalsPage() {
   );
 }
 
-const getStyles = (theme) => ({
+const getStyles = (theme, { isMobile } = {}) => ({
   container: {
-    padding: '1.5rem',
+    padding: isMobile ? '1rem' : '1.5rem',
     maxWidth: '1200px',
     margin: '0 auto',
     backgroundColor: theme.background,
@@ -416,10 +416,12 @@ const getStyles = (theme) => ({
   },
   header: {
     display: 'flex',
+    flexDirection: isMobile ? 'column' : 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '2rem',
-    padding: '1.5rem',
+    alignItems: isMobile ? 'stretch' : 'flex-start',
+    gap: isMobile ? '1rem' : '0',
+    marginBottom: isMobile ? '1rem' : '2rem',
+    padding: isMobile ? '1rem' : '1.5rem',
     backgroundColor: theme.cardBackground,
     borderRadius: '12px',
     boxShadow: theme.shadow,
@@ -429,7 +431,7 @@ const getStyles = (theme) => ({
     flex: 1,
   },
   title: {
-    fontSize: '2rem',
+    fontSize: isMobile ? '1.5rem' : '2rem',
     fontWeight: '700',
     color: theme.text,
     marginBottom: '0.5rem',
@@ -437,12 +439,14 @@ const getStyles = (theme) => ({
   },
   subtitle: {
     color: theme.textSecondary,
-    fontSize: '1rem',
+    fontSize: isMobile ? '0.875rem' : '1rem',
     margin: 0,
   },
   headerActions: {
     display: 'flex',
+    flexDirection: isMobile ? 'column' : 'row',
     gap: '0.75rem',
+    width: isMobile ? '100%' : 'auto',
   },
   filterButton: {
     display: 'flex',
@@ -490,15 +494,16 @@ const getStyles = (theme) => ({
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '0',
   },
   statCard: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1rem',
-    padding: '1.5rem',
-    borderRight: `1px solid ${theme.border}`,
+    gap: isMobile ? '0.75rem' : '1rem',
+    padding: isMobile ? '1rem' : '1.5rem',
+    borderRight: isMobile ? 'none' : `1px solid ${theme.border}`,
+    borderBottom: isMobile ? `1px solid ${theme.border}` : 'none',
     transition: 'background-color 0.2s ease',
   },
   statIcon: {
@@ -560,8 +565,8 @@ const getStyles = (theme) => ({
   },
   formRow: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '1.5rem',
+    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+    gap: isMobile ? '1rem' : '1.5rem',
   },
   formGroup: {
     display: 'flex',
@@ -721,9 +726,9 @@ const getStyles = (theme) => ({
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-    gap: '1.5rem',
-    padding: '1.5rem',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))',
+    gap: isMobile ? '1rem' : '1.5rem',
+    padding: isMobile ? '1rem' : '1.5rem',
   },
 });
 

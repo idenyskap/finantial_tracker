@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 import ThemeToggle from '../ThemeToggle';
 import LanguageSelector from '../language/LanguageSelector';
 import {
@@ -13,7 +15,9 @@ import {
   ArrowPathIcon,
   CurrencyDollarIcon,
   UserCircleIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 
 function Layout({ children }) {
@@ -21,110 +25,106 @@ function Layout({ children }) {
   const location = useLocation();
   const { user, logout } = useAuth();
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const styles = useThemedStyles(getStyles);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const navLinks = [
+    { to: '/dashboard', icon: HomeIcon, label: t('navigation.dashboard') },
+    { to: '/transactions', icon: BanknotesIcon, label: t('navigation.transactions') },
+    { to: '/categories', icon: TagIcon, label: t('navigation.categories') },
+    { to: '/budgets', icon: WalletIcon, label: t('navigation.budgets') },
+    { to: '/goals', icon: TrophyIcon, label: t('navigation.goals') },
+    { to: '/recurring', icon: ArrowPathIcon, label: t('navigation.recurring') },
+    { to: '/currency-converter', icon: CurrencyDollarIcon, label: t('navigation.converter') },
+    { to: '/profile', icon: UserCircleIcon, label: t('navigation.profile') },
+  ];
+
+  const handleNavClick = () => {
+    if (isMobile) {
+      setMobileMenuOpen(false);
+    }
+  };
+
   return (
     <div style={styles.container}>
       <nav style={styles.nav}>
         <div style={styles.navContent}>
-          <Link to="/dashboard" style={styles.logo}>Financial Tracker</Link>
+          <Link to="/dashboard" style={styles.logo}>
+            {isMobile ? 'FT' : 'Financial Tracker'}
+          </Link>
 
-          <div style={styles.navCenter}>
-            <Link
-              to="/dashboard"
-              style={{
-                ...styles.link,
-                ...(location.pathname === '/dashboard' ? styles.activeLink : {})
-              }}
-            >
-              <HomeIcon style={styles.navIcon} />
-              {t('navigation.dashboard')}
-            </Link>
-            <Link
-              to="/transactions"
-              style={{
-                ...styles.link,
-                ...(location.pathname === '/transactions' ? styles.activeLink : {})
-              }}
-            >
-              <BanknotesIcon style={styles.navIcon} />
-              {t('navigation.transactions')}
-            </Link>
-            <Link
-              to="/categories"
-              style={{
-                ...styles.link,
-                ...(location.pathname === '/categories' ? styles.activeLink : {})
-              }}
-            >
-              <TagIcon style={styles.navIcon} />
-              {t('navigation.categories')}
-            </Link>
-            <Link
-              to="/budgets"
-              style={{
-                ...styles.link,
-                ...(location.pathname === '/budgets' ? styles.activeLink : {})
-              }}
-            >
-              <WalletIcon style={styles.navIcon} />
-              {t('navigation.budgets')}
-            </Link>
-            <Link
-              to="/goals"
-              style={{
-                ...styles.link,
-                ...(location.pathname === '/goals' ? styles.activeLink : {})
-              }}
-            >
-              <TrophyIcon style={styles.navIcon} />
-              {t('navigation.goals')}
-            </Link>
-            <Link
-              to="/recurring"
-              style={{
-                ...styles.link,
-                ...(location.pathname === '/recurring' ? styles.activeLink : {})
-              }}
-            >
-              <ArrowPathIcon style={styles.navIcon} />
-              {t('navigation.recurring')}
-            </Link>
-            <Link
-              to="/currency-converter"
-              style={{
-                ...styles.link,
-                ...(location.pathname === '/currency-converter' ? styles.activeLink : {})
-              }}
-            >
-              <CurrencyDollarIcon style={styles.navIcon} />
-              {t('navigation.converter')}
-            </Link>
-            <Link
-              to="/profile"
-              style={{
-                ...styles.link,
-                ...(location.pathname === '/profile' ? styles.activeLink : {})
-              }}
-            >
-              <UserCircleIcon style={styles.navIcon} />
-              {t('navigation.profile')}
-            </Link>
-          </div>
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <div style={styles.navCenter}>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  style={{
+                    ...styles.link,
+                    ...(location.pathname === link.to ? styles.activeLink : {})
+                  }}
+                >
+                  <link.icon style={styles.navIcon} />
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div style={styles.navRight}>
             <LanguageSelector compact={true} />
             <ThemeToggle />
-            <button onClick={handleLogout} style={styles.logoutBtn} title={user?.email}>
-              <ArrowRightOnRectangleIcon style={styles.logoutIcon} />
-            </button>
+            {!isMobile && (
+              <button onClick={handleLogout} style={styles.logoutBtn} title={user?.email}>
+                <ArrowRightOnRectangleIcon style={styles.logoutIcon} />
+              </button>
+            )}
+            {/* Hamburger Menu Button */}
+            {isMobile && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                style={styles.hamburgerBtn}
+              >
+                {mobileMenuOpen ? (
+                  <XMarkIcon style={styles.hamburgerIcon} />
+                ) : (
+                  <Bars3Icon style={styles.hamburgerIcon} />
+                )}
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobile && mobileMenuOpen && (
+          <div style={styles.mobileMenu}>
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={handleNavClick}
+                style={{
+                  ...styles.mobileLink,
+                  ...(location.pathname === link.to ? styles.activeMobileLink : {})
+                }}
+              >
+                <link.icon style={styles.mobileNavIcon} />
+                {link.label}
+              </Link>
+            ))}
+            <button onClick={handleLogout} style={styles.mobileLogoutBtn}>
+              <ArrowRightOnRectangleIcon style={styles.mobileNavIcon} />
+              {t('navigation.logout')}
+            </button>
+          </div>
+        )}
       </nav>
 
       <main style={styles.main}>
@@ -134,7 +134,7 @@ function Layout({ children }) {
   );
 }
 
-const getStyles = (theme) => ({
+const getStyles = (theme, { isMobile } = {}) => ({
   container: {
     minHeight: '100vh',
     backgroundColor: theme.background,
@@ -142,14 +142,17 @@ const getStyles = (theme) => ({
   },
   nav: {
     backgroundColor: theme.backgroundSecondary,
-    padding: '1rem 0',
+    padding: isMobile ? '0.75rem 0' : '1rem 0',
     boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
     borderBottom: `1px solid ${theme.border}`,
+    position: isMobile ? 'sticky' : 'relative',
+    top: 0,
+    zIndex: 100,
   },
   navContent: {
     maxWidth: '100%',
     margin: '0 auto',
-    padding: '0 2rem',
+    padding: isMobile ? '0 1rem' : '0 2rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -157,7 +160,7 @@ const getStyles = (theme) => ({
   },
   logo: {
     color: theme.primary,
-    fontSize: '1.5rem',
+    fontSize: isMobile ? '1.25rem' : '1.5rem',
     fontWeight: 'bold',
     textDecoration: 'none',
     flexShrink: 0,
@@ -194,10 +197,10 @@ const getStyles = (theme) => ({
   navRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
+    gap: isMobile ? '0.5rem' : '0.75rem',
     flexShrink: 0,
-    paddingLeft: '1rem',
-    borderLeft: `1px solid ${theme.border}`,
+    paddingLeft: isMobile ? '0' : '1rem',
+    borderLeft: isMobile ? 'none' : `1px solid ${theme.border}`,
   },
   userEmail: {
     color: theme.textSecondary,
@@ -220,11 +223,69 @@ const getStyles = (theme) => ({
     width: '18px',
     height: '18px',
   },
+  hamburgerBtn: {
+    backgroundColor: theme.primary,
+    color: 'white',
+    border: 'none',
+    padding: '0.5rem',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hamburgerIcon: {
+    width: '24px',
+    height: '24px',
+  },
+  mobileMenu: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '1rem',
+    gap: '0.5rem',
+    borderTop: `1px solid ${theme.border}`,
+    backgroundColor: theme.backgroundSecondary,
+  },
+  mobileLink: {
+    color: theme.text,
+    textDecoration: 'none',
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    fontWeight: '500',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    transition: 'all 0.2s ease',
+    backgroundColor: theme.cardBackground,
+  },
+  activeMobileLink: {
+    backgroundColor: theme.primary,
+    color: 'white',
+  },
+  mobileNavIcon: {
+    width: '20px',
+    height: '20px',
+  },
+  mobileLogoutBtn: {
+    backgroundColor: '#ef4444',
+    color: 'white',
+    border: 'none',
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '500',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    marginTop: '0.5rem',
+  },
   main: {
     width: '100%',
     maxWidth: 'none',
-    margin: '2rem 0',
-    padding: '0 2rem',
+    margin: isMobile ? '1rem 0' : '2rem 0',
+    padding: isMobile ? '0 0.5rem' : '0 2rem',
   },
 });
 
