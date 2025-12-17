@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { authService } from '../services/authService';
+import { setToken, removeToken, getToken } from '../services/api';
 import { AuthContext } from './contexts';
 
 export const AuthProvider = ({ children }) => {
@@ -12,10 +13,17 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const loadUser = async () => {
+    const token = getToken();
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await authService.getProfile();
       setUser(response.data);
     } catch (error) {
+      removeToken();
       setUser(null);
     } finally {
       setLoading(false);
@@ -33,6 +41,10 @@ export const AuthProvider = ({ children }) => {
           requires2FA: true,
           tempCredentials: credentials
         };
+      }
+
+      if (response.data.token) {
+        setToken(response.data.token);
       }
 
       await loadUser();
@@ -58,7 +70,12 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      await authService.register(userData);
+      const response = await authService.register(userData);
+
+      if (response.data.token) {
+        setToken(response.data.token);
+      }
+
       await loadUser();
       return { success: true };
     } catch (error) {
@@ -85,6 +102,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      removeToken();
       setUser(null);
       setRequires2FA(false);
     }

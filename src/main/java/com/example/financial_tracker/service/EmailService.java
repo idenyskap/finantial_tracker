@@ -54,6 +54,7 @@ public class EmailService {
   @Value("${spring.mail.port}")
   private int mailPort;
 
+  @Async
   public void sendEmail(String to, String subject, String template,
                         Map<String, Object> variables, EmailHistory.EmailType type, User user) {
 
