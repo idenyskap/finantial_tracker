@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import TwoFactorInput from '../components/auth/TwoFactorInput';
+import AuthHeader from '../components/auth/AuthHeader';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ const LoginPage = () => {
   if (requires2FA) {
     return (
       <div style={styles.container}>
+        <AuthHeader currentPage="login" />
         <div style={styles.card}>
           <TwoFactorInput
             onSubmit={handle2FASubmit}
@@ -80,6 +82,7 @@ const LoginPage = () => {
 
   return (
     <div style={styles.container}>
+      <AuthHeader currentPage="login" />
       <div style={styles.card}>
         <div style={styles.header}>
           <h2 style={styles.title}>Sign in to your account</h2>
@@ -91,7 +94,7 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
+        <form onSubmit={handleSubmit} style={styles.form} autoComplete="on">
           <div style={styles.inputGroup}>
             <input
               type="email"
@@ -100,6 +103,7 @@ const LoginPage = () => {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               style={styles.input}
+              autoComplete="email"
               required
             />
           </div>
@@ -112,6 +116,7 @@ const LoginPage = () => {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               style={styles.input}
+              autoComplete="current-password"
               required
             />
           </div>
@@ -152,6 +157,8 @@ const getStyles = (theme) => ({
     justifyContent: 'center',
     backgroundColor: theme.background,
     padding: '20px',
+    paddingTop: '80px',
+    position: 'relative',
   },
   card: {
     backgroundColor: theme.backgroundSecondary,

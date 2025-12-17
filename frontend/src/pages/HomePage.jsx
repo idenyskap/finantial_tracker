@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useThemedStyles } from '../hooks/useThemedStyles';
+import { useLanguage } from '../hooks/useLanguage';
 import ThemeToggle from '../components/ThemeToggle';
+import LanguageSelector from '../components/language/LanguageSelector';
 import {
   ChartBarIcon,
   CurrencyDollarIcon,
@@ -15,6 +17,7 @@ function HomePage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const styles = useThemedStyles(getStyles);
+  const { t } = useLanguage();
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -27,38 +30,38 @@ function HomePage() {
   const features = [
     {
       icon: ChartBarIcon,
-      title: 'Smart Analytics',
-      description: 'Visualize your spending patterns with beautiful charts and insights',
+      titleKey: 'featureAnalytics',
+      descKey: 'featureAnalyticsDesc',
       color: '#3498db',
     },
     {
       icon: CurrencyDollarIcon,
-      title: 'Budget Management',
-      description: 'Set budgets and get real-time alerts when you\'re close to limits',
+      titleKey: 'featureBudget',
+      descKey: 'featureBudgetDesc',
       color: '#27ae60',
     },
     {
       icon: ClockIcon,
-      title: 'Recurring Transactions',
-      description: 'Automate your regular payments and income tracking',
+      titleKey: 'featureRecurring',
+      descKey: 'featureRecurringDesc',
       color: '#f39c12',
     },
     {
       icon: TrophyIcon,
-      title: 'Financial Goals',
-      description: 'Set savings goals and track your progress towards achieving them',
+      titleKey: 'featureGoals',
+      descKey: 'featureGoalsDesc',
       color: '#e74c3c',
     },
     {
       icon: ShieldCheckIcon,
-      title: 'Secure & Private',
-      description: 'Your financial data is encrypted and never shared',
+      titleKey: 'featureSecurity',
+      descKey: 'featureSecurityDesc',
       color: '#9b59b6',
     },
     {
       icon: SparklesIcon,
-      title: 'Smart Categories',
-      description: 'Organize transactions with customizable categories',
+      titleKey: 'featureCategories',
+      descKey: 'featureCategoriesDesc',
       color: '#1abc9c',
     },
   ];
@@ -74,16 +77,17 @@ function HomePage() {
           </div>
 
           <nav style={styles.nav}>
+            <LanguageSelector compact />
             <ThemeToggle />
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" style={styles.navLink}>Dashboard</Link>
-                <Link to="/profile" style={styles.navLinkPrimary}>My Account</Link>
+                <Link to="/dashboard" style={styles.navLink}>{t('home.dashboard')}</Link>
+                <Link to="/profile" style={styles.navLinkPrimary}>{t('home.myAccount')}</Link>
               </>
             ) : (
               <>
-                <Link to="/login" style={styles.navLink}>Login</Link>
-                <Link to="/register" style={styles.navLinkPrimary}>Sign Up</Link>
+                <Link to="/login" style={styles.navLink}>{t('home.login')}</Link>
+                <Link to="/register" style={styles.navLinkPrimary}>{t('home.signUp')}</Link>
               </>
             )}
           </nav>
@@ -94,34 +98,18 @@ function HomePage() {
       <section style={styles.hero}>
         <div style={styles.heroContent}>
           <h2 style={styles.heroTitle}>
-            Take Control of Your Financial Future
+            {t('home.heroTitle')}
           </h2>
           <p style={styles.heroSubtitle}>
-            Track expenses, set budgets, and achieve your financial goals with our intuitive personal finance manager.
+            {t('home.heroSubtitle')}
           </p>
           <div style={styles.heroButtons}>
             <button onClick={handleGetStarted} style={styles.ctaButton}>
-              {isAuthenticated ? 'Go to Dashboard' : 'Get Started Free'}
+              {isAuthenticated ? t('home.goToDashboard') : t('home.getStartedFree')}
             </button>
             <Link to="/login" style={styles.secondaryButton}>
-              Learn More
+              {t('home.learnMore')}
             </Link>
-          </div>
-
-          {/* Demo Stats */}
-          <div style={styles.demoStats}>
-            <div style={styles.stat}>
-              <span style={styles.statValue}>10K+</span>
-              <span style={styles.statLabel}>Active Users</span>
-            </div>
-            <div style={styles.stat}>
-              <span style={styles.statValue}>$2M+</span>
-              <span style={styles.statLabel}>Money Tracked</span>
-            </div>
-            <div style={styles.stat}>
-              <span style={styles.statValue}>50K+</span>
-              <span style={styles.statLabel}>Transactions</span>
-            </div>
           </div>
         </div>
       </section>
@@ -129,9 +117,9 @@ function HomePage() {
       {/* Features Section */}
       <section style={styles.features}>
         <div style={styles.featuresContent}>
-          <h3 style={styles.sectionTitle}>Everything You Need to Manage Your Money</h3>
+          <h3 style={styles.sectionTitle}>{t('home.featuresTitle')}</h3>
           <p style={styles.sectionSubtitle}>
-            Powerful features to help you track, analyze, and optimize your finances
+            {t('home.featuresSubtitle')}
           </p>
 
           <div style={styles.featuresGrid}>
@@ -146,8 +134,8 @@ function HomePage() {
                   }}>
                     <Icon style={styles.icon} />
                   </div>
-                  <h4 style={styles.featureTitle}>{feature.title}</h4>
-                  <p style={styles.featureDescription}>{feature.description}</p>
+                  <h4 style={styles.featureTitle}>{t(`home.${feature.titleKey}`)}</h4>
+                  <p style={styles.featureDescription}>{t(`home.${feature.descKey}`)}</p>
                 </div>
               );
             })}
@@ -158,12 +146,12 @@ function HomePage() {
       {/* CTA Section */}
       <section style={styles.cta}>
         <div style={styles.ctaContent}>
-          <h3 style={styles.ctaTitle}>Ready to Start Your Financial Journey?</h3>
+          <h3 style={styles.ctaTitle}>{t('home.ctaTitle')}</h3>
           <p style={styles.ctaSubtitle}>
-            Join thousands of users who are already taking control of their finances
+            {t('home.ctaSubtitle')}
           </p>
           <button onClick={handleGetStarted} style={styles.ctaButtonLarge}>
-            {isAuthenticated ? 'Open Dashboard' : 'Create Free Account'}
+            {isAuthenticated ? t('home.openDashboard') : t('home.createFreeAccount')}
           </button>
         </div>
       </section>
@@ -171,7 +159,7 @@ function HomePage() {
       {/* Footer */}
       <footer style={styles.footer}>
         <p style={styles.footerText}>
-          © 2025 FinanceTracker. Built with ❤️ for better financial health.
+          © 2025 FinanceTracker. {t('home.footer')}
         </p>
       </footer>
     </div>
@@ -274,25 +262,6 @@ const getStyles = (theme) => ({
     borderRadius: '4px',
     textDecoration: 'none',
     transition: 'background-color 0.2s',
-  },
-  demoStats: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '3rem',
-  },
-  stat: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: '2rem',
-    fontWeight: 'bold',
-    color: theme.primary,
-  },
-  statLabel: {
-    fontSize: '0.875rem',
-    color: theme.textSecondary,
   },
   features: {
     padding: '4rem 2rem',

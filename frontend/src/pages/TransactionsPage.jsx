@@ -240,7 +240,7 @@ function TransactionsPage() {
             
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Category</label>
+                <label style={styles.label}>{t('transactions.category')}</label>
                 <select
                   name="categoryId"
                   value={form.categoryId}
@@ -248,7 +248,7 @@ function TransactionsPage() {
                   required
                   style={styles.select}
                 >
-                  <option value="">Select {form.type === 'INCOME' ? t('transactions.income') : t('transactions.expense')} {t('transactions.category')}</option>
+                  <option value="">{t('transactions.selectCategoryPlaceholder')}</option>
                   {filteredCategories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
@@ -273,7 +273,7 @@ function TransactionsPage() {
               <input
                 name="description"
                 type="text"
-                placeholder="Add a description for this transaction"
+                placeholder={t('transactions.descriptionPlaceholder')}
                 value={form.description}
                 onChange={handleChange}
                 style={styles.input}

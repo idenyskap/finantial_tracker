@@ -4,6 +4,17 @@ import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { useLanguage } from '../../hooks/useLanguage';
 import ThemeToggle from '../ThemeToggle';
 import LanguageSelector from '../language/LanguageSelector';
+import {
+  HomeIcon,
+  BanknotesIcon,
+  TagIcon,
+  WalletIcon,
+  TrophyIcon,
+  ArrowPathIcon,
+  CurrencyDollarIcon,
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon
+} from '@heroicons/react/24/outline';
 
 function Layout({ children }) {
   const navigate = useNavigate();
@@ -23,7 +34,7 @@ function Layout({ children }) {
         <div style={styles.navContent}>
           <Link to="/dashboard" style={styles.logo}>Financial Tracker</Link>
 
-          <div style={styles.navLinks}>
+          <div style={styles.navCenter}>
             <Link
               to="/dashboard"
               style={{
@@ -31,6 +42,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/dashboard' ? styles.activeLink : {})
               }}
             >
+              <HomeIcon style={styles.navIcon} />
               {t('navigation.dashboard')}
             </Link>
             <Link
@@ -40,6 +52,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/transactions' ? styles.activeLink : {})
               }}
             >
+              <BanknotesIcon style={styles.navIcon} />
               {t('navigation.transactions')}
             </Link>
             <Link
@@ -49,6 +62,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/categories' ? styles.activeLink : {})
               }}
             >
+              <TagIcon style={styles.navIcon} />
               {t('navigation.categories')}
             </Link>
             <Link
@@ -58,6 +72,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/budgets' ? styles.activeLink : {})
               }}
             >
+              <WalletIcon style={styles.navIcon} />
               {t('navigation.budgets')}
             </Link>
             <Link
@@ -67,6 +82,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/goals' ? styles.activeLink : {})
               }}
             >
+              <TrophyIcon style={styles.navIcon} />
               {t('navigation.goals')}
             </Link>
             <Link
@@ -76,6 +92,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/recurring' ? styles.activeLink : {})
               }}
             >
+              <ArrowPathIcon style={styles.navIcon} />
               {t('navigation.recurring')}
             </Link>
             <Link
@@ -85,6 +102,7 @@ function Layout({ children }) {
                 ...(location.pathname === '/currency-converter' ? styles.activeLink : {})
               }}
             >
+              <CurrencyDollarIcon style={styles.navIcon} />
               {t('navigation.converter')}
             </Link>
             <Link
@@ -94,17 +112,17 @@ function Layout({ children }) {
                 ...(location.pathname === '/profile' ? styles.activeLink : {})
               }}
             >
+              <UserCircleIcon style={styles.navIcon} />
               {t('navigation.profile')}
             </Link>
+          </div>
 
-            <div style={styles.navRight}>
-              <span style={styles.userEmail}>{user?.email}</span>
-              <LanguageSelector compact={true} />
-              <ThemeToggle />
-              <button onClick={handleLogout} style={styles.logoutBtn}>
-                {t('auth.logout')}
-              </button>
-            </div>
+          <div style={styles.navRight}>
+            <LanguageSelector compact={true} />
+            <ThemeToggle />
+            <button onClick={handleLogout} style={styles.logoutBtn} title={user?.email}>
+              <ArrowRightOnRectangleIcon style={styles.logoutIcon} />
+            </button>
           </div>
         </div>
       </nav>
@@ -135,29 +153,38 @@ const getStyles = (theme) => ({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    gap: '1rem',
   },
   logo: {
     color: theme.primary,
     fontSize: '1.5rem',
     fontWeight: 'bold',
     textDecoration: 'none',
+    flexShrink: 0,
   },
-  navLinks: {
+  navCenter: {
     display: 'flex',
-    gap: '0.5rem',
+    gap: '0.25rem',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    flex: 1,
+    justifyContent: 'center',
   },
   link: {
     color: theme.text,
     textDecoration: 'none',
-    padding: '0.75rem 1rem',
-    borderRadius: '8px',
+    padding: '0.5rem 0.6rem',
+    borderRadius: '6px',
     transition: 'all 0.2s ease',
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     fontWeight: '500',
     whiteSpace: 'nowrap',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.35rem',
+  },
+  navIcon: {
+    width: '16px',
+    height: '16px',
   },
   activeLink: {
     backgroundColor: theme.primary,
@@ -167,9 +194,9 @@ const getStyles = (theme) => ({
   navRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1rem',
-    marginLeft: '2rem',
-    paddingLeft: '2rem',
+    gap: '0.75rem',
+    flexShrink: 0,
+    paddingLeft: '1rem',
     borderLeft: `1px solid ${theme.border}`,
   },
   userEmail: {
@@ -181,12 +208,17 @@ const getStyles = (theme) => ({
     backgroundColor: '#ef4444',
     color: 'white',
     border: 'none',
-    padding: '0.5rem 1rem',
+    padding: '0.5rem',
     borderRadius: '6px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    fontSize: '0.875rem',
-    fontWeight: '500',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoutIcon: {
+    width: '18px',
+    height: '18px',
   },
   main: {
     width: '100%',

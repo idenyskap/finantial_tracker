@@ -139,6 +139,7 @@ const getStyles = (theme) => ({
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     textAlign: 'left',
+    color: theme.text,
   },
   languageCardActive: {
     borderColor: theme.primary,
@@ -190,6 +191,7 @@ const getStyles = (theme) => ({
     borderRadius: '6px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
+    color: theme.text,
   },
   compactIcon: {
     width: '1rem',
@@ -228,6 +230,7 @@ const getStyles = (theme) => ({
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     fontSize: '0.875rem',
+    color: theme.text,
   },
   compactOptionActive: {
     backgroundColor: theme.backgroundSecondary,

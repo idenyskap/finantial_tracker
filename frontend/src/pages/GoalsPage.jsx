@@ -78,8 +78,6 @@ function GoalsPage() {
     mutationFn: goalService.contribute,
     onSuccess: () => {
       queryClient.invalidateQueries(['goals']);
-      queryClient.invalidateQueries(['transactions']);
-      queryClient.invalidateQueries(['dashboard']);
       toast.success('Contribution added successfully');
     },
     onError: (error) => {

@@ -2,9 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { goalService } from '../../services/goalService';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '../../hooks/useCurrency';
+import { useLanguage } from '../../hooks/useLanguage';
 
 function GoalsWidget() {
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const { data: goalsData } = useQuery({
     queryKey: ['goals', true],
     queryFn: () => goalService.getAll(true),
@@ -18,11 +20,11 @@ function GoalsWidget() {
     return (
       <div style={styles.widget}>
         <h3 style={styles.title}>
-          Financial Goals
+          {t('dashboard.financialGoals')}
         </h3>
         <div style={styles.empty}>
-          <p>No active goals yet</p>
-          <Link to="/goals" style={styles.link}>Create your first goal →</Link>
+          <p>{t('dashboard.noActiveGoals')}</p>
+          <Link to="/goals" style={styles.link}>{t('dashboard.createFirstGoal')}</Link>
         </div>
       </div>
     );
@@ -32,9 +34,9 @@ function GoalsWidget() {
     <div style={styles.widget}>
       <div style={styles.header}>
         <h3 style={styles.title}>
-          Financial Goals
+          {t('dashboard.financialGoals')}
         </h3>
-        <Link to="/goals" style={styles.viewAll}>View all</Link>
+        <Link to="/goals" style={styles.viewAll}>{t('dashboard.viewAll')}</Link>
       </div>
 
       <div style={styles.goalsList}>
@@ -56,7 +58,7 @@ function GoalsWidget() {
                 <div style={styles.progressInfo}>
                   <span style={styles.currentAmount}>{formatCurrency(goal.currentAmount)}</span>
                   <span style={styles.targetAmount}>
-                    of {formatCurrency(goal.targetAmount)}
+                    {t('goals.of')} {formatCurrency(goal.targetAmount)}
                   </span>
                 </div>
 
@@ -88,13 +90,13 @@ function GoalsWidget() {
       <div style={styles.quickStats}>
         <div style={styles.stat}>
           <span style={styles.statValue}>{goals.length}</span>
-          <span style={styles.statLabel}>Active Goals</span>
+          <span style={styles.statLabel}>{t('goals.activeGoals')}</span>
         </div>
         <div style={styles.stat}>
           <span style={styles.statValue}>
             {formatCurrency(goals.reduce((sum, g) => sum + g.currentAmount, 0))}
           </span>
-          <span style={styles.statLabel}>Total Saved</span>
+          <span style={styles.statLabel}>{t('goals.totalSaved')}</span>
         </div>
       </div>
     </div>

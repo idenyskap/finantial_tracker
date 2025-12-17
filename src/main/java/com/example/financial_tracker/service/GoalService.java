@@ -2,10 +2,8 @@ package com.example.financial_tracker.service;
 
 import com.example.financial_tracker.dto.GoalContributionDTO;
 import com.example.financial_tracker.dto.GoalDTO;
-import com.example.financial_tracker.dto.TransactionDTO;
 import com.example.financial_tracker.entity.*;
 import com.example.financial_tracker.enumerations.GoalStatus;
-import com.example.financial_tracker.enumerations.TransactionType;
 import com.example.financial_tracker.exception.BusinessLogicException;
 import com.example.financial_tracker.exception.ResourceNotFoundException;
 import com.example.financial_tracker.mapper.GoalMapper;
@@ -33,7 +31,6 @@ public class GoalService {
   private final GoalRepository goalRepository;
   private final GoalMapper goalMapper;
   private final CategoryRepository categoryRepository;
-  private final TransactionService transactionService;
 
   @Transactional(readOnly = true)
   public List<GoalDTO> getUserGoals(User user) {
@@ -133,30 +130,18 @@ public class GoalService {
     }
 
     BigDecimal newAmount;
-    String transactionDescription;
 
     if (contribution.getType() == GoalContributionDTO.ContributionType.ADD) {
       newAmount = goal.getCurrentAmount().add(contribution.getAmount());
-      transactionDescription = "Contribution to goal: " + goal.getName();
-
-      if (goal.getCategory() != null) {
-        TransactionDTO transaction = TransactionDTO.builder()
-          .amount(contribution.getAmount())
-          .type(TransactionType.EXPENSE.name())
-          .categoryId(goal.getCategory().getId())
-          .date(contribution.getDate() != null ? contribution.getDate() : LocalDate.now())
-          .description(transactionDescription +
-            (contribution.getNote() != null ? " - " + contribution.getNote() : ""))
-          .build();
-
-        transactionService.createTransaction(transaction, user);
-      }
+      log.info("Adding {} to goal '{}' for user: {}",
+        contribution.getAmount(), goal.getName(), user.getEmail());
     } else {
       newAmount = goal.getCurrentAmount().subtract(contribution.getAmount());
       if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
         throw new BusinessLogicException("Cannot withdraw more than current amount");
       }
-      transactionDescription = "Withdrawal from goal: " + goal.getName();
+      log.info("Withdrawing {} from goal '{}' for user: {}",
+        contribution.getAmount(), goal.getName(), user.getEmail());
     }
 
     goal.setCurrentAmount(newAmount);

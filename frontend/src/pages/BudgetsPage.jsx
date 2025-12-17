@@ -99,7 +99,7 @@ function BudgetsPage() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this budget?')) {
+    if (window.confirm(t('budgets.confirmDelete'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -195,13 +195,13 @@ function BudgetsPage() {
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Category (Optional)</label>
+                <label style={styles.label}>{t('budgets.categoryOptional')}</label>
                 <select
                   value={form.categoryId}
                   onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                   style={styles.select}
                 >
-                  <option value="">📊 All Categories</option>
+                  <option value="">{t('budgets.allCategories')}</option>
                   {expenseCategories.map(cat => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
@@ -213,7 +213,7 @@ function BudgetsPage() {
 
             <div style={styles.formGroup}>
               <label style={styles.label}>
-                🚨 Alert Threshold: {form.notifyThreshold}%
+                {t('budgets.alertThreshold')}: {form.notifyThreshold}%
               </label>
               <div style={styles.sliderContainer}>
                 <input
@@ -249,7 +249,7 @@ function BudgetsPage() {
       {isLoading ? (
         <div style={styles.loading}>
           <div style={styles.loadingSpinner}></div>
-          <p>Loading budgets...</p>
+          <p>{t('budgets.loading')}</p>
         </div>
       ) : budgets.length === 0 ? (
         <div style={styles.emptyState}>

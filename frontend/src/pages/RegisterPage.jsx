@@ -5,6 +5,7 @@ import { useThemedStyles } from '../hooks/useThemedStyles';
 import { useLanguage } from '../hooks/useLanguage';
 import { CheckCircleIcon, XCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
+import AuthHeader from '../components/auth/AuthHeader';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -159,6 +160,7 @@ const RegisterPage = () => {
   if (registrationSuccess) {
     return (
       <div style={styles.container}>
+        <AuthHeader currentPage="register" />
         <div style={styles.card}>
           <div style={styles.successContainer}>
             <div style={styles.successIconWrapper}>
@@ -206,6 +208,7 @@ const RegisterPage = () => {
 
   return (
     <div style={styles.container}>
+      <AuthHeader currentPage="register" />
       <div style={styles.card}>
         <div style={styles.header}>
           <h2 style={styles.title}>{t('register.createAccount') || 'Create your account'}</h2>
@@ -332,12 +335,6 @@ const RegisterPage = () => {
             {loading ? (t('register.creatingAccount') || 'Creating account...') : (t('register.createAccountButton') || 'Create Account')}
           </button>
         </form>
-
-        <div style={styles.footer}>
-          <Link to="/" style={styles.backLink}>
-            {t('register.backToHome') || '← Back to Home'}
-          </Link>
-        </div>
       </div>
     </div>
   );
@@ -351,6 +348,8 @@ const getStyles = (theme) => ({
     justifyContent: 'center',
     backgroundColor: theme.background,
     padding: '20px',
+    paddingTop: '80px',
+    position: 'relative',
   },
   card: {
     backgroundColor: theme.backgroundSecondary,

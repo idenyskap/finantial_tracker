@@ -211,7 +211,9 @@ function CategoriesPage() {
               <h2 style={styles.sectionTitle}>
                 <span style={styles.sectionIcon}>💰</span>
                 {t('categories.incomeCategories')}
-                <span style={styles.badge}>{incomeCategories.length}</span>
+                {incomeCategories.length > 0 && (
+                  <span style={styles.badge}>{incomeCategories.length}</span>
+                )}
               </h2>
             </div>
             
@@ -225,37 +227,31 @@ function CategoriesPage() {
               <div style={styles.grid}>
                 {incomeCategories.map(category => (
                   <div key={category.id} style={styles.card}>
+                    <div
+                      style={{
+                        ...styles.colorStripe,
+                        backgroundColor: category.color,
+                      }}
+                    />
                     <div style={styles.cardContent}>
-                      <div style={styles.cardHeader}>
-                        <div style={styles.cardInfo}>
-                          <div
-                            style={{
-                              ...styles.colorIndicator,
-                              backgroundColor: category.color,
-                            }}
-                          />
-                          <div>
-                            <h4 style={styles.cardTitle}>{category.name}</h4>
-                            <p style={styles.cardType}>{t('categories.income')}</p>
-                          </div>
+                      <div style={styles.cardMain}>
+                        <h4 style={styles.cardTitle}>{category.name}</h4>
+                        <div style={styles.cardActions}>
+                          <button
+                            onClick={() => handleEdit(category)}
+                            style={styles.editBtn}
+                            title={t('categories.editTooltip')}
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDelete(category.id)}
+                            style={styles.deleteBtn}
+                            title={t('categories.deleteTooltip')}
+                          >
+                            🗑️
+                          </button>
                         </div>
-                      </div>
-                      
-                      <div style={styles.cardActions}>
-                        <button
-                          onClick={() => handleEdit(category)}
-                          style={styles.editBtn}
-                          title={t('categories.editTooltip')}
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => handleDelete(category.id)}
-                          style={styles.deleteBtn}
-                          title={t('categories.deleteTooltip')}
-                        >
-                          🗑️
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -270,7 +266,9 @@ function CategoriesPage() {
               <h2 style={styles.sectionTitle}>
                 <span style={styles.sectionIcon}>💸</span>
                 {t('categories.expenseCategories')}
-                <span style={styles.badge}>{expenseCategories.length}</span>
+                {expenseCategories.length > 0 && (
+                  <span style={styles.badge}>{expenseCategories.length}</span>
+                )}
               </h2>
             </div>
             
@@ -284,37 +282,31 @@ function CategoriesPage() {
               <div style={styles.grid}>
                 {expenseCategories.map(category => (
                   <div key={category.id} style={styles.card}>
+                    <div
+                      style={{
+                        ...styles.colorStripe,
+                        backgroundColor: category.color,
+                      }}
+                    />
                     <div style={styles.cardContent}>
-                      <div style={styles.cardHeader}>
-                        <div style={styles.cardInfo}>
-                          <div
-                            style={{
-                              ...styles.colorIndicator,
-                              backgroundColor: category.color,
-                            }}
-                          />
-                          <div>
-                            <h4 style={styles.cardTitle}>{category.name}</h4>
-                            <p style={styles.cardType}>{t('categories.expense')}</p>
-                          </div>
+                      <div style={styles.cardMain}>
+                        <h4 style={styles.cardTitle}>{category.name}</h4>
+                        <div style={styles.cardActions}>
+                          <button
+                            onClick={() => handleEdit(category)}
+                            style={styles.editBtn}
+                            title={t('categories.editTooltip')}
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDelete(category.id)}
+                            style={styles.deleteBtn}
+                            title={t('categories.deleteTooltip')}
+                          >
+                            🗑️
+                          </button>
                         </div>
-                      </div>
-                      
-                      <div style={styles.cardActions}>
-                        <button
-                          onClick={() => handleEdit(category)}
-                          style={styles.editBtn}
-                          title={t('categories.editTooltip')}
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => handleDelete(category.id)}
-                          style={styles.deleteBtn}
-                          title={t('categories.deleteTooltip')}
-                        >
-                          🗑️
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -595,42 +587,32 @@ const getStyles = (theme) => ({
     borderRadius: '8px',
     transition: 'all 0.2s ease',
     overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  colorStripe: {
+    width: '6px',
+    flexShrink: 0,
   },
   cardContent: {
     padding: '1rem',
+    flex: 1,
   },
-  cardHeader: {
-    marginBottom: '1rem',
-  },
-  cardInfo: {
+  cardMain: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
-  },
-  colorIndicator: {
-    width: '12px',
-    height: '12px',
-    borderRadius: '3px',
-    flexShrink: 0,
+    justifyContent: 'space-between',
+    gap: '1rem',
   },
   cardTitle: {
     fontSize: '1rem',
     fontWeight: '600',
     color: theme.text,
-    marginBottom: '0.25rem',
-  },
-  cardType: {
-    fontSize: '0.75rem',
-    color: theme.textSecondary,
-    textTransform: 'uppercase',
-    fontWeight: '500',
-    letterSpacing: '0.05em',
+    margin: 0,
   },
   cardActions: {
     display: 'flex',
     gap: '0.5rem',
-    paddingTop: '1rem',
-    borderTop: `1px solid ${theme.borderLight}`,
   },
   editBtn: {
     padding: '0.5rem',

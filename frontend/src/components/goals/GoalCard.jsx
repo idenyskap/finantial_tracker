@@ -139,7 +139,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
 
       {showContribution && (
         <div style={styles.contributionForm}>
-          <div style={styles.contributionRow}>
+          <div style={styles.contributionInputRow}>
             <input
               type="number"
               step="0.01"
@@ -156,10 +156,10 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onStatusChange }) {
               <option value="ADD">{t('goals.addFundsOption')}</option>
               <option value="WITHDRAW">{t('goals.withdraw')}</option>
             </select>
-            <button onClick={handleContribute} style={styles.contributionButton}>
-              {t('goals.confirm')}
-            </button>
           </div>
+          <button onClick={handleContribute} style={styles.contributionButton}>
+            {t('goals.confirm')}
+          </button>
         </div>
       )}
 
@@ -462,34 +462,47 @@ const getStyles = (theme) => ({
     backgroundColor: theme.warningBackground,
     border: `1px solid ${theme.warning}`,
     borderRadius: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem',
   },
-  contributionRow: {
+  contributionInputRow: {
     display: 'flex',
     gap: '0.5rem',
+    flexWrap: 'wrap',
   },
   contributionInput: {
-    flex: 1,
-    padding: '0.5rem',
+    flex: '1 1 120px',
+    minWidth: '100px',
+    padding: '0.625rem 0.75rem',
     border: `1px solid ${theme.inputBorder}`,
-    borderRadius: '4px',
+    borderRadius: '6px',
     backgroundColor: theme.inputBackground,
     color: theme.inputText,
+    fontSize: '0.9rem',
   },
   contributionSelect: {
-    padding: '0.5rem',
+    flex: '0 1 auto',
+    minWidth: '120px',
+    padding: '0.625rem 0.75rem',
     border: `1px solid ${theme.inputBorder}`,
-    borderRadius: '4px',
+    borderRadius: '6px',
     backgroundColor: theme.inputBackground,
     color: theme.inputText,
+    fontSize: '0.9rem',
+    cursor: 'pointer',
   },
   contributionButton: {
-    padding: '0.5rem 1rem',
+    width: '100%',
+    padding: '0.75rem 1rem',
     backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontWeight: '500',
+    fontWeight: '600',
+    fontSize: '0.9rem',
+    transition: 'opacity 0.2s ease',
   },
   details: {
     display: 'grid',
