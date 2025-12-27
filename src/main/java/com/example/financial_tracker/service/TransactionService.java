@@ -609,6 +609,18 @@ public class TransactionService {
     return searchTransactions(user, searchDto);
   }
 
+  public ImportResultDTO importFromFile(User user, MultipartFile file) {
+    String filename = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
+
+    if (filename.endsWith(".csv")) {
+      return importFromCsv(user, file);
+    } else if (filename.endsWith(".xlsx") || filename.endsWith(".xls")) {
+      return importFromExcel(user, file);
+    } else {
+      throw new BusinessLogicException("Unsupported file format. Use CSV or Excel files.");
+    }
+  }
+
   public ImportResultDTO importFromCsv(User user, MultipartFile file) {
     ImportResultDTO result = ImportResultDTO.builder()
       .errors(new ArrayList<>())
@@ -650,6 +662,136 @@ public class TransactionService {
     }
 
     return result;
+  }
+
+  public ImportResultDTO importFromExcel(User user, MultipartFile file) {
+    ImportResultDTO result = ImportResultDTO.builder()
+      .errors(new ArrayList<>())
+      .importedTransactions(new ArrayList<>())
+      .build();
+
+    try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+      Sheet sheet = workbook.getSheetAt(0);
+
+      if (sheet.getPhysicalNumberOfRows() <= 1) {
+        throw new BusinessLogicException("Excel file is empty or has only headers");
+      }
+
+      int rowNumber = 0;
+      for (Row row : sheet) {
+        rowNumber++;
+
+        if (rowNumber == 1) {
+          continue;
+        }
+
+        result.setTotalRows(result.getTotalRows() + 1);
+
+        try {
+          TransactionDTO transaction = parseExcelRow(row, rowNumber, user);
+          Transaction saved = createTransactionFromImport(transaction, user);
+          result.getImportedTransactions().add(transactionMapper.toDto(saved));
+          result.setSuccessfulImports(result.getSuccessfulImports() + 1);
+        } catch (Exception e) {
+          result.setFailedImports(result.getFailedImports() + 1);
+          result.getErrors().add(String.format("Row %d: %s", rowNumber, e.getMessage()));
+
+          if (result.getErrors().size() >= 10) {
+            result.getErrors().add("Import stopped due to too many errors");
+            break;
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new BusinessLogicException("Error reading Excel file: " + e.getMessage());
+    }
+
+    return result;
+  }
+
+  private TransactionDTO parseExcelRow(Row row, int rowNumber, User user) {
+    try {
+      TransactionDTO dto = new TransactionDTO();
+
+      Cell dateCell = row.getCell(0);
+      if (dateCell == null) {
+        throw new IllegalArgumentException("Date is required");
+      }
+      if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
+        dto.setDate(dateCell.getLocalDateTimeCellValue().toLocalDate());
+      } else {
+        dto.setDate(LocalDate.parse(getCellStringValue(dateCell)));
+      }
+
+      Cell amountCell = row.getCell(1);
+      if (amountCell == null) {
+        throw new IllegalArgumentException("Amount is required");
+      }
+      if (amountCell.getCellType() == CellType.NUMERIC) {
+        dto.setAmount(BigDecimal.valueOf(amountCell.getNumericCellValue()));
+      } else {
+        dto.setAmount(new BigDecimal(getCellStringValue(amountCell)));
+      }
+
+      Cell typeCell = row.getCell(2);
+      if (typeCell == null) {
+        throw new IllegalArgumentException("Type is required");
+      }
+      String type = getCellStringValue(typeCell).toUpperCase();
+      if (!type.equals("INCOME") && !type.equals("EXPENSE")) {
+        throw new IllegalArgumentException("Type must be INCOME or EXPENSE");
+      }
+      dto.setType(type);
+
+      Cell categoryCell = row.getCell(3);
+      if (categoryCell == null) {
+        throw new IllegalArgumentException("Category is required");
+      }
+      String categoryName = getCellStringValue(categoryCell);
+      Category category = categoryRepository.findByNameAndUser(categoryName, user)
+        .orElseThrow(() -> new IllegalArgumentException("Category '" + categoryName + "' not found"));
+      dto.setCategoryId(category.getId());
+
+      Cell descCell = row.getCell(4);
+      if (descCell != null) {
+        dto.setDescription(getCellStringValue(descCell));
+      }
+
+      return dto;
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Invalid date format. Use YYYY-MM-DD");
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid amount format");
+    }
+  }
+
+  private String getCellStringValue(Cell cell) {
+    if (cell == null) {
+      return "";
+    }
+    switch (cell.getCellType()) {
+      case STRING:
+        return cell.getStringCellValue().trim();
+      case NUMERIC:
+        if (DateUtil.isCellDateFormatted(cell)) {
+          return cell.getLocalDateTimeCellValue().toLocalDate().toString();
+        }
+        double numValue = cell.getNumericCellValue();
+        if (numValue == Math.floor(numValue)) {
+          return String.valueOf((long) numValue);
+        }
+        return String.valueOf(numValue);
+      case BOOLEAN:
+        return String.valueOf(cell.getBooleanCellValue());
+      case FORMULA:
+        try {
+          return cell.getStringCellValue().trim();
+        } catch (Exception e) {
+          return String.valueOf(cell.getNumericCellValue());
+        }
+      default:
+        return "";
+    }
   }
 
   private TransactionDTO parseCsvLine(String line, int rowNumber, User user) {
